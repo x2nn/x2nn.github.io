@@ -4,16 +4,16 @@
   
   
   <entry>
-    <title>正则匹配的学习</title>
+    <title>JavaScript正则表达式</title>
     <link href="/2023/10/22/%E6%AD%A3%E5%88%99%E5%8C%B9%E9%85%8D/"/>
     <url>/2023/10/22/%E6%AD%A3%E5%88%99%E5%8C%B9%E9%85%8D/</url>
     
-    <content type="html"><![CDATA[<h2 id="1、正则匹配的介绍"><a href="#1、正则匹配的介绍" class="headerlink" title="1、正则匹配的介绍"></a>1、正则匹配的介绍</h2><h2 id="2、Javascript正则匹配的学习"><a href="#2、Javascript正则匹配的学习" class="headerlink" title="2、Javascript正则匹配的学习"></a>2、Javascript正则匹配的学习</h2>]]></content>
+    <content type="html"><![CDATA[<h2 id="1、介绍"><a href="#1、介绍" class="headerlink" title="1、介绍"></a>1、介绍</h2><p>正则表达式是用于匹配字符串中字符组合的模式。在JavaScript中，正则表达式也是对象。这些模式被用于<code>RegExp</code>的<code>exec</code>和<code>test</code>方法，以及<code>String</code>的<code>match</code>、<code>matchAll</code>、<code>replace</code>、<code>search</code>和<code>split</code>方法。</p><h2 id="2、使用"><a href="#2、使用" class="headerlink" title="2、使用"></a>2、使用</h2>]]></content>
     
     
     <categories>
       
-      <category>Javascript</category>
+      <category>JavaScript</category>
       
     </categories>
     
