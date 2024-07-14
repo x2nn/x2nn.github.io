@@ -8,7 +8,7 @@
       <link href="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/"/>
       <url>/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/</url>
       
-        <content type="html"><![CDATA[<p>test</p>]]></content>
+        <content type="html"><![CDATA[<p>code test！！！</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">  print(<span class="string">&quot;hello word!!!&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>picture test！！！</p><p><img src="/.io//07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/1.jpg" alt="1"></p>]]></content>
       
       
       <categories>
