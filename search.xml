@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>搭建Burp Collaborator</title>
+      <link href="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"/>
+      <url>/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/</url>
+      
+        <content type="html"><![CDATA[<p>参考：<a href="https://hackplaza.net/2021/12/17/how-to-setup-private-burp-collaborator/">https://hackplaza.net/2021/12/17/how-to-setup-private-burp-collaborator/</a></p><h4 id="要求"><a href="#要求" class="headerlink" title="要求"></a>要求</h4><p>Docker、域名、BurpSuite、服务器Ubuntu 20（尽量选择香港服务器，域名不需要备案可访问）</p><h4 id="设置域名"><a href="#设置域名" class="headerlink" title="设置域名"></a>设置域名</h4><p>去到自己的域名的DNS管理器。设置一个burp collaborator子域名，并将NS记录添加到你的burp collaborator子域名，一个A记录指向你的服务器，如下图所示。</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/1.png"></p><p>NS记录的域名为你使用的BurpSuite Collaborator域名。</p><h4 id="环境设置"><a href="#环境设置" class="headerlink" title="环境设置"></a>环境设置</h4><p>如果没有docker需要安装docker。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update &amp;&amp; <span class="built_in">sudo</span> apt upgrade -y </span><br><span class="line"><span class="built_in">sudo</span> apt install docker.io</span><br></pre></td></tr></table></figure><p>安装docker以后，继续</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/integrity-sa/burpcollaborator-docker.git &amp;&amp; cd burpcollaborator-docker</span><br></pre></td></tr></table></figure><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/2.png"></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget <span class="string">&quot;https://portswigger.net/burp/releases/download?product=pro&amp;version=2021.10.3&amp;type=Jar&quot;</span></span><br><span class="line"><span class="built_in">mv</span> <span class="string">&#x27;download?product=pro&amp;version=2021.10.3&amp;type=Jar&#x27;</span> burp.jar &amp;&amp; <span class="built_in">mv</span> burp.jar ./burp/pkg/burp.jar</span><br></pre></td></tr></table></figure><p>确保将域名和IP替换为响应的域名和服务器IP</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./init.sh burp.hackplaza.net 20.119.42.229</span><br></pre></td></tr></table></figure><p>如果你遇到这样的错误。</p><p>Error starting userland proxy: listen tcp4 0.0.0.0:53: bind: address already in use.</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/3.png"></p><p>使用下面的命令解决。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl stop systemd-resolved</span><br></pre></td></tr></table></figure><h4 id="入站规则"><a href="#入站规则" class="headerlink" title="入站规则"></a>入站规则</h4><p>如果你再次遇到这样的错误。</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/4.png"></p><p>你必须在网络组中进行一些更改才能允许入站链接。你必须相应地在VPS提供商中执行此操作。我正在使用Azure，所以这是如何做到的。</p><p>Click on VM &gt; Networking &gt; Add inbound port rule &gt; In Destination Port ranges keep * in it and finally click on Add</p><p>单击“VM”&gt;“网络&gt;”添加入站端口规则“&gt;”在目标端口范围中保留 *“，最后单击”添加”</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/5.png"></p><p>再次运行</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./init.sh burp.hackplaza.net 20.119.42.229</span><br></pre></td></tr></table></figure><p>将域名和服务器IP替换为你自己的IP。</p><p>成功完整的安装输出将如下所示：</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/6.png"></p><h4 id="使用BurpSuite-Pro进行测试"><a href="#使用BurpSuite-Pro进行测试" class="headerlink" title="使用BurpSuite Pro进行测试"></a>使用BurpSuite Pro进行测试</h4><p>打开您的 Burp Suite Professional</p><p>Click on Project Options Tab &gt; Misc &gt; Burp Collaborator Server<br>单击“项目选项”选项卡 &gt; “杂项”&gt; Burp Collaborator Server</p><p>Select use private collaborator and do like shown in picture and click on Run Health check</p><p>选择使用private collaborator，并如图所示，然后单击运行运行状况检查</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/7.png"></p><p>现在，您可以从BurpSuite Pro正常使用您的private Burp Collaborator服务器。</p><p>上述为原文的翻译部分，下面为自己安装时遇到的问题。</p><h4 id="配置问题"><a href="#配置问题" class="headerlink" title="配置问题"></a>配置问题</h4><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/8.png"></p><h4 id="证书问题"><a href="#证书问题" class="headerlink" title="证书问题"></a>证书问题</h4><p>certbot默认生成证书使用的是EC算法，处理证书使用的是处理RSA证书的代码，所以需要修改证书为RSA证书。</p><p>&#x2F;burpcollaborator-docker&#x2F;certbot&#x2F;new.sh</p><p>这个是生成证书的文件，在末尾加上<code>--key-type rsa</code>即可。</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/9.png"></p><p>Burpsuite Collaborator配置</p><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/10.png"></p><h4 id="其他问题"><a href="#其他问题" class="headerlink" title="其他问题"></a>其他问题</h4><p><code>docker logs burp</code>查看burp报错的原因，找问题所在。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> BurpSuite </tag>
+            
+            <tag> dnslog </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>CTF刷题篇1</title>
       <link href="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/"/>
       <url>/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/</url>

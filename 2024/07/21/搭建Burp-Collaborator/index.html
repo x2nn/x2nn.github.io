@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="参考：https:&#x2F;&#x2F;hackplaza.net&#x2F;2021&#x2F;12&#x2F;17&#x2F;how-to-setup-private-burp-collaborator&#x2F; 要求Docker、域名、BurpSuite、服务器Ubuntu 20（尽量选择香港服务器，域名不需要备案可访问） 设置域名去到自己的域名的DNS管理器。设置一个burp collaborator子域名，并将NS记录添加到你的burp collabo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建Burp Collaborator">
+<meta property="og:url" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/index.html">
+<meta property="og:site_name" content="X2n.">
+<meta property="og:description" content="参考：https:&#x2F;&#x2F;hackplaza.net&#x2F;2021&#x2F;12&#x2F;17&#x2F;how-to-setup-private-burp-collaborator&#x2F; 要求Docker、域名、BurpSuite、服务器Ubuntu 20（尽量选择香港服务器，域名不需要备案可访问） 设置域名去到自己的域名的DNS管理器。设置一个burp collaborator子域名，并将NS记录添加到你的burp collabo">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/1.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/2.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/3.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/4.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/5.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/6.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/7.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/8.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/9.png">
+<meta property="og:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/10.png">
+<meta property="article:published_time" content="2024-07-20T23:22:42.000Z">
+<meta property="article:modified_time" content="2024-07-21T00:03:35.474Z">
+<meta property="article:author" content="🖤">
+<meta property="article:tag" content="BurpSuite">
+<meta property="article:tag" content="dnslog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>搭建Burp Collaborator</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2024/07/14/CTF%E5%88%B7%E9%A2%98%E7%AF%871/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&text=搭建Burp Collaborator"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&is_video=false&description=搭建Burp Collaborator"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=搭建Burp Collaborator&body=Check out this article: https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&name=搭建Burp Collaborator&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&t=搭建Burp Collaborator"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A6%81%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">要求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%9F%9F%E5%90%8D"><span class="toc-number">2.</span> <span class="toc-text">设置域名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E8%AE%BE%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">环境设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A5%E7%AB%99%E8%A7%84%E5%88%99"><span class="toc-number">4.</span> <span class="toc-text">入站规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8BurpSuite-Pro%E8%BF%9B%E8%A1%8C%E6%B5%8B%E8%AF%95"><span class="toc-number">5.</span> <span class="toc-text">使用BurpSuite Pro进行测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">配置问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E9%97%AE%E9%A2%98"><span class="toc-number">7.</span> <span class="toc-text">证书问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%97%AE%E9%A2%98"><span class="toc-number">8.</span> <span class="toc-text">其他问题</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        搭建Burp Collaborator
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">🖤</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-07-20T23:22:42.000Z" class="dt-published" itemprop="datePublished">2024-07-21</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Web/">Web</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/BurpSuite/" rel="tag">BurpSuite</a>, <a class="p-category" href="/tags/dnslog/" rel="tag">dnslog</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>参考：<a target="_blank" rel="noopener" href="https://hackplaza.net/2021/12/17/how-to-setup-private-burp-collaborator/">https://hackplaza.net/2021/12/17/how-to-setup-private-burp-collaborator/</a></p>
+<h4 id="要求"><a href="#要求" class="headerlink" title="要求"></a>要求</h4><p>Docker、域名、BurpSuite、服务器Ubuntu 20（尽量选择香港服务器，域名不需要备案可访问）</p>
+<h4 id="设置域名"><a href="#设置域名" class="headerlink" title="设置域名"></a>设置域名</h4><p>去到自己的域名的DNS管理器。设置一个burp collaborator子域名，并将NS记录添加到你的burp collaborator子域名，一个A记录指向你的服务器，如下图所示。</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/1.png"></p>
+<p>NS记录的域名为你使用的BurpSuite Collaborator域名。</p>
+<h4 id="环境设置"><a href="#环境设置" class="headerlink" title="环境设置"></a>环境设置</h4><p>如果没有docker需要安装docker。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update &amp;&amp; <span class="built_in">sudo</span> apt upgrade -y </span><br><span class="line"><span class="built_in">sudo</span> apt install docker.io</span><br></pre></td></tr></table></figure>
+
+<p>安装docker以后，继续</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/integrity-sa/burpcollaborator-docker.git &amp;&amp; cd burpcollaborator-docker</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/2.png"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget <span class="string">&quot;https://portswigger.net/burp/releases/download?product=pro&amp;version=2021.10.3&amp;type=Jar&quot;</span></span><br><span class="line"><span class="built_in">mv</span> <span class="string">&#x27;download?product=pro&amp;version=2021.10.3&amp;type=Jar&#x27;</span> burp.jar &amp;&amp; <span class="built_in">mv</span> burp.jar ./burp/pkg/burp.jar</span><br></pre></td></tr></table></figure>
+
+<p>确保将域名和IP替换为响应的域名和服务器IP</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./init.sh burp.hackplaza.net 20.119.42.229</span><br></pre></td></tr></table></figure>
+
+<p>如果你遇到这样的错误。</p>
+<p>Error starting userland proxy: listen tcp4 0.0.0.0:53: bind: address already in use.</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/3.png"></p>
+<p>使用下面的命令解决。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl stop systemd-resolved</span><br></pre></td></tr></table></figure>
+
+<h4 id="入站规则"><a href="#入站规则" class="headerlink" title="入站规则"></a>入站规则</h4><p>如果你再次遇到这样的错误。</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/4.png"></p>
+<p>你必须在网络组中进行一些更改才能允许入站链接。你必须相应地在VPS提供商中执行此操作。我正在使用Azure，所以这是如何做到的。</p>
+<p>Click on VM &gt; Networking &gt; Add inbound port rule &gt; In Destination Port ranges keep * in it and finally click on Add</p>
+<p>单击“VM”&gt;“网络&gt;”添加入站端口规则“&gt;”在目标端口范围中保留 *“，最后单击”添加”</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/5.png"></p>
+<p>再次运行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./init.sh burp.hackplaza.net 20.119.42.229</span><br></pre></td></tr></table></figure>
+
+<p>将域名和服务器IP替换为你自己的IP。</p>
+<p>成功完整的安装输出将如下所示：</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/6.png"></p>
+<h4 id="使用BurpSuite-Pro进行测试"><a href="#使用BurpSuite-Pro进行测试" class="headerlink" title="使用BurpSuite Pro进行测试"></a>使用BurpSuite Pro进行测试</h4><p>打开您的 Burp Suite Professional</p>
+<p>Click on Project Options Tab &gt; Misc &gt; Burp Collaborator Server<br>单击“项目选项”选项卡 &gt; “杂项”&gt; Burp Collaborator Server</p>
+<p>Select use private collaborator and do like shown in picture and click on Run Health check</p>
+<p>选择使用private collaborator，并如图所示，然后单击运行运行状况检查</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/7.png"></p>
+<p>现在，您可以从BurpSuite Pro正常使用您的private Burp Collaborator服务器。</p>
+<p>上述为原文的翻译部分，下面为自己安装时遇到的问题。</p>
+<h4 id="配置问题"><a href="#配置问题" class="headerlink" title="配置问题"></a>配置问题</h4><p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/8.png"></p>
+<h4 id="证书问题"><a href="#证书问题" class="headerlink" title="证书问题"></a>证书问题</h4><p>certbot默认生成证书使用的是EC算法，处理证书使用的是处理RSA证书的代码，所以需要修改证书为RSA证书。</p>
+<p>&#x2F;burpcollaborator-docker&#x2F;certbot&#x2F;new.sh</p>
+<p>这个是生成证书的文件，在末尾加上<code>--key-type rsa</code>即可。</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/9.png"></p>
+<p>Burpsuite Collaborator配置</p>
+<p><img src="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/10.png"></p>
+<h4 id="其他问题"><a href="#其他问题" class="headerlink" title="其他问题"></a>其他问题</h4><p><code>docker logs burp</code>查看burp报错的原因，找问题所在。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/">Tag</a></li>
+        
+          <li><a href="/categories/">Category</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A6%81%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">要求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%9F%9F%E5%90%8D"><span class="toc-number">2.</span> <span class="toc-text">设置域名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E8%AE%BE%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">环境设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A5%E7%AB%99%E8%A7%84%E5%88%99"><span class="toc-number">4.</span> <span class="toc-text">入站规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8BurpSuite-Pro%E8%BF%9B%E8%A1%8C%E6%B5%8B%E8%AF%95"><span class="toc-number">5.</span> <span class="toc-text">使用BurpSuite Pro进行测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">配置问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E9%97%AE%E9%A2%98"><span class="toc-number">7.</span> <span class="toc-text">证书问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%97%AE%E9%A2%98"><span class="toc-number">8.</span> <span class="toc-text">其他问题</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&text=搭建Burp Collaborator"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&is_video=false&description=搭建Burp Collaborator"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=搭建Burp Collaborator&body=Check out this article: https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&title=搭建Burp Collaborator"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&name=搭建Burp Collaborator&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/&t=搭建Burp Collaborator"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+      <div class="footer-left">
+        Copyright &copy;
+        
+        
+        2024
+        🖤
+      </div>
+      <div class="footer-right">
+        <nav>
+          <ul>
+            <!--
+          --><li><a href="/">Home</a></li><!--
+        --><!--
+          --><li><a href="/archives/">Writing</a></li><!--
+        --><!--
+          --><li><a href="/tags/">Tag</a></li><!--
+        --><!--
+          --><li><a href="/categories/">Category</a></li><!--
+        --><!--
+          --><li><a href="/search/">Search</a></li><!--
+        --><!--
+          --><li><a href="/about/">About</a></li><!--
+        -->
+          </ul>
+          <ul>
+            
+              <!-- 不蒜子统计 -->
+              <span id="busuanzi_container_site_pv">
+                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+              </span>
+              <span class="post-meta-divider">|</span>
+              <span id="busuanzi_container_site_uv" style='display:none'>
+                      本站访客数<span id="busuanzi_value_site_uv"></span>人
+              </span>
+            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            
+          </ul>
+        </nav>
+      </div>
+      
+</footer>
+
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
