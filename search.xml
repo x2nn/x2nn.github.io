@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>xsshunter-express搭建</title>
+      <link href="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/"/>
+      <url>/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/</url>
+      
+        <content type="html"><![CDATA[<p>参考：<a href="https://www.youtube.com/watch?v=HF05dr8xhso&t=377s">https://www.youtube.com/watch?v=HF05dr8xhso&amp;t=377s</a></p><h4 id="域名配置"><a href="#域名配置" class="headerlink" title="域名配置"></a>域名配置</h4><p>首先配置一下自己的域名，以test.com域名为例，将xsshunter-express配置到域名xss.test.com上。</p><p><em><strong>注意：</strong></em>我的服务器为腾讯云的香港服务器无需备案可访问。</p><p><img src="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/1.png"></p><h4 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h4><p>首先下载xsshunter-express</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/mandatoryprogrammer/xsshunter-express.git</span><br><span class="line">cd xsshunter-express/</span><br></pre></td></tr></table></figure><p>安装使用的是docker环境，修改docker的配置文件。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim docker-compose.yml</span><br></pre></td></tr></table></figure><p>修改配置，将version修改为3.3，将HOSTNAME修改为你的域名xss.test.com。如果只是想让xsshunter-express可以使用，这样就行了，需要登陆xss.test.com看一下xss是否触发。还可以配置邮箱接收自己的xss触发提醒，这里我为了方便没有配置，想配置可以参考原视频。</p><p><img src="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/2.png"></p><p>开始安装</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d postgresdb</span><br><span class="line">docker-compose up xsshunterexpress</span><br></pre></td></tr></table></figure><p>安装成功，记一下密码。</p><p><img src="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/3.png"></p><h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>访问<a href="https://xss.test.com/admin/#/%EF%BC%8C%E8%BE%93%E5%85%A5%E4%BD%A0%E7%9A%84%E5%AF%86%E7%A0%81%E5%8D%B3%E5%8F%AF%E7%99%BB%E5%BD%95%E3%80%82">https://xss.test.com/admin/#/，输入你的密码即可登录。</a></p><p><img src="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/4.png"></p><p><img src="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/5.png"></p><p>在XSS PAYLOADS模块，随意找一个payload进行测试，我是用的<code>&lt;img&gt;</code>的测试标签。</p><p><img src="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/6.png"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> XSS </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>搭建Burp Collaborator</title>
       <link href="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"/>
       <url>/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/</url>
