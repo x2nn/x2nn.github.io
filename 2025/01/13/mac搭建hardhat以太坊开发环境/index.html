@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Node环境配置首先安装nvm，再安装node18，为了和hardhat的运行环境匹配 1brew install nvm  配置nvm环境，在～&#x2F;.zshrc中加入下面的内容。 编辑～&#x2F;.zshrc，如下： 1vim ~&#x2F;.zshrc  加入 123export NVM_DIR&#x3D;&quot;$HOME&#x2F;.nvm&quot;[ -s &quot;&#x2F;opt&#x2F;homebrew&#x2F;opt&#x2F;nvm&#x2F;nvm.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mac搭建hardhat以太坊开发环境">
+<meta property="og:url" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/index.html">
+<meta property="og:site_name" content="X2n.">
+<meta property="og:description" content="Node环境配置首先安装nvm，再安装node18，为了和hardhat的运行环境匹配 1brew install nvm  配置nvm环境，在～&#x2F;.zshrc中加入下面的内容。 编辑～&#x2F;.zshrc，如下： 1vim ~&#x2F;.zshrc  加入 123export NVM_DIR&#x3D;&quot;$HOME&#x2F;.nvm&quot;[ -s &quot;&#x2F;opt&#x2F;homebrew&#x2F;opt&#x2F;nvm&#x2F;nvm.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113214138233.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113214511440.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113232445250.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113234740753.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113221945116.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113222224915.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113235445672.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113235806214.png">
+<meta property="article:published_time" content="2025-01-13T13:29:11.000Z">
+<meta property="article:modified_time" content="2025-01-13T15:59:56.971Z">
+<meta property="article:author" content="💗">
+<meta property="article:tag" content="blockchain">
+<meta property="article:tag" content="智能合约">
+<meta property="article:tag" content="以太坊">
+<meta property="article:tag" content="solidity">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113214138233.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>mac搭建hardhat以太坊开发环境</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2025/01/09/GeoServer%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E(CVE-2024-36401)/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&text=mac搭建hardhat以太坊开发环境"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&is_video=false&description=mac搭建hardhat以太坊开发环境"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=mac搭建hardhat以太坊开发环境&body=Check out this article: https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&name=mac搭建hardhat以太坊开发环境&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&t=mac搭建hardhat以太坊开发环境"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Node%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">Node环境配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%AD%E5%BB%BAhardhat%E7%8E%AF%E5%A2%83"><span class="toc-number">2.</span> <span class="toc-text">搭建hardhat环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6"><span class="toc-number">3.</span> <span class="toc-text">部署智能合约</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E7%94%A8%E5%90%88%E7%BA%A6%E5%87%BD%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">调用合约函数</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        mac搭建hardhat以太坊开发环境
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">💗</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-01-13T13:29:11.000Z" class="dt-published" itemprop="datePublished">2025-01-13</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/blockchain/" rel="tag">blockchain</a>, <a class="p-category" href="/tags/solidity/" rel="tag">solidity</a>, <a class="p-category" href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" rel="tag">以太坊</a>, <a class="p-category" href="/tags/%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6/" rel="tag">智能合约</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="Node环境配置"><a href="#Node环境配置" class="headerlink" title="Node环境配置"></a>Node环境配置</h2><p>首先安装<code>nvm</code>，再安装<code>node18</code>，为了和<code>hardhat</code>的运行环境匹配</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install nvm</span><br></pre></td></tr></table></figure>
+
+<p>配置nvm环境，在<code>～/.zshrc</code>中加入下面的内容。</p>
+<p>编辑<code>～/.zshrc</code>，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<p>加入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export NVM_DIR=&quot;$HOME/.nvm&quot;</span><br><span class="line">[ -s &quot;/opt/homebrew/opt/nvm/nvm.sh&quot; ] &amp;&amp; \. &quot;/opt/homebrew/opt/nvm/nvm.sh&quot;  # This loads nvm</span><br><span class="line">[ -s &quot;/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm&quot; ] &amp;&amp; \. &quot;/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm&quot;  # This loads nvm bash_completion</span><br></pre></td></tr></table></figure>
+
+<p>保存，并</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<p>配置好后，如下：</p>
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113214138233.png" alt="image-20250113214138233"></p>
+<p>接下来，安装<code>node18</code>，使用下面命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvm install 18</span><br></pre></td></tr></table></figure>
+
+<p>如下，安装成功。</p>
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113214511440.png" alt="image-20250113214511440"></p>
+<h2 id="搭建hardhat环境"><a href="#搭建hardhat环境" class="headerlink" title="搭建hardhat环境"></a>搭建hardhat环境</h2><p>创建一个目录，专门用于以太坊学习，随意，如<code>/Web3</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd /Web3</span><br><span class="line">mkdir hardhat-simple-contract</span><br><span class="line">cd hardhat-simple-contract</span><br><span class="line">npm init -y</span><br><span class="line">npm install --save-dev hardhat</span><br></pre></td></tr></table></figure>
+
+<p>然后初始化<code>hardhat</code>项目</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx hardhat</span><br></pre></td></tr></table></figure>
+
+<p>选择第一个创建一个<code>JavaScript project</code>，项目路径选择刚开始创建文件夹的路径。</p>
+<p>注意⚠️我这里是换了一个路径演示一下。</p>
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113232445250.png" alt="image-20250113232445250"></p>
+<p>初始化后的文件目录如下：</p>
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113234740753.png" alt="image-20250113234740753"></p>
+<p>其中的<code>scripts</code>文件夹需要自己创建。</p>
+<h2 id="部署智能合约"><a href="#部署智能合约" class="headerlink" title="部署智能合约"></a>部署智能合约</h2><p>进入到文件夹<code>contracts</code>下，创建合约文件<code>SimpleStorage.sol</code>，简单的部署一个合约，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.0;</span><br><span class="line"></span><br><span class="line">contract SimpleStorage &#123;</span><br><span class="line">    uint256 private storedValue;</span><br><span class="line"></span><br><span class="line">    event ValueChanged(uint256 newValue);</span><br><span class="line"></span><br><span class="line">    function set(uint256 value) public &#123;</span><br><span class="line">        storedValue = value;</span><br><span class="line">        emit ValueChanged(value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function get() public view returns (uint256) &#123;</span><br><span class="line">        return storedValue;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后进入到创建的<code>scripts</code>文件夹下，创建部署合约的脚本<code>deploy.js</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> hre = <span class="built_in">require</span>(<span class="string">&quot;hardhat&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">main</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="comment">// 获取合约工厂</span></span><br><span class="line">    <span class="keyword">const</span> <span class="title class_">SimpleStorage</span> = <span class="keyword">await</span> hre.<span class="property">ethers</span>.<span class="title function_">getContractFactory</span>(<span class="string">&quot;SimpleStorage&quot;</span>);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 部署合约</span></span><br><span class="line">    <span class="keyword">const</span> simpleStorage = <span class="keyword">await</span> <span class="title class_">SimpleStorage</span>.<span class="title function_">deploy</span>();</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 等待部署完成</span></span><br><span class="line">    <span class="keyword">await</span> simpleStorage.<span class="title function_">waitForDeployment</span>();</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 获取合约地址</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`SimpleStorage deployed to: <span class="subst">$&#123;simpleStorage.target&#125;</span>`</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">main</span>()</span><br><span class="line">    .<span class="title function_">then</span>(<span class="function">() =&gt;</span> process.<span class="title function_">exit</span>(<span class="number">0</span>))</span><br><span class="line">    .<span class="title function_">catch</span>(<span class="function">(<span class="params">error</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">error</span>(error);</span><br><span class="line">      process.<span class="title function_">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>首先需要对编写的智能合约进行编译</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx hardhat compile</span><br></pre></td></tr></table></figure>
+
+<p>编译成功后，会输出<code>Compiled 2 Solidity files successfully (evm target: paris)</code></p>
+<p>然后启动本地的以太坊网络，如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx hardhat node</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113221945116.png" alt="image-20250113221945116"></p>
+<p>以太坊网络启动成功。</p>
+<p>进行合约的部署，执行部署的js文件如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx hardhat run scripts/deploy.js --network localhost</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113222224915.png" alt="image-20250113222224915"></p>
+<p>合约成功部署，得到部署合约的地址<code>0x5fbdb2315678afecb367f032d93f642f64180aa3</code>。</p>
+<h2 id="调用合约函数"><a href="#调用合约函数" class="headerlink" title="调用合约函数"></a>调用合约函数</h2><p>创建一个调用合约的代码<code>test.js</code>，如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// scripts/test.js</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">main</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="title class_">SimpleStorage</span> = <span class="keyword">await</span> ethers.<span class="title function_">getContractAt</span>(<span class="string">&quot;SimpleStorage&quot;</span>, <span class="string">&quot;0x5fbdb2315678afecb367f032d93f642f64180aa3&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在这里继续编写脚本逻辑，例如读取或调用合约方法</span></span><br><span class="line">    <span class="keyword">const</span> value = <span class="keyword">await</span> <span class="title class_">SimpleStorage</span>.<span class="title function_">set</span>(<span class="number">42</span>); <span class="comment">// 假设你的合约有一个 `get` 方法</span></span><br><span class="line">    <span class="comment">//const value = await SimpleStorage.get()</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;Stored value:&quot;</span>, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 捕获错误</span></span><br><span class="line"><span class="title function_">main</span>().<span class="title function_">catch</span>(<span class="function">(<span class="params">error</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">error</span>(error);</span><br><span class="line">    process.<span class="property">exitCode</span> = <span class="number">1</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>将其保存在<code>scripts</code>文件夹下。</p>
+<p>代码的大致意思是，调用合约的<code>set</code>函数方法，设置值为<code>42</code>，然后再调用<code>get</code>方法去读取数据。</p>
+<p>先是调用<code>set</code>方法，如图所示：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx hardhat run scripts/test.js  --network localhost</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113235445672.png" alt="image-20250113235445672"></p>
+<p>然后再调用<code>get</code>方法，获取<code>set</code>的值。</p>
+<p><img src="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/image-20250113235806214.png" alt="image-20250113235806214"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/">Tag</a></li>
+        
+          <li><a href="/categories/">Category</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Node%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">Node环境配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%AD%E5%BB%BAhardhat%E7%8E%AF%E5%A2%83"><span class="toc-number">2.</span> <span class="toc-text">搭建hardhat环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6"><span class="toc-number">3.</span> <span class="toc-text">部署智能合约</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E7%94%A8%E5%90%88%E7%BA%A6%E5%87%BD%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">调用合约函数</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&text=mac搭建hardhat以太坊开发环境"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&is_video=false&description=mac搭建hardhat以太坊开发环境"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=mac搭建hardhat以太坊开发环境&body=Check out this article: https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&title=mac搭建hardhat以太坊开发环境"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&name=mac搭建hardhat以太坊开发环境&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/&t=mac搭建hardhat以太坊开发环境"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+      <div class="footer-left">
+        Copyright &copy;
+        
+        
+        2024-2025
+        💗
+      </div>
+      <div class="footer-right">
+        <nav>
+          <ul>
+            <!--
+          --><li><a href="/">Home</a></li><!--
+        --><!--
+          --><li><a href="/archives/">Writing</a></li><!--
+        --><!--
+          --><li><a href="/tags/">Tag</a></li><!--
+        --><!--
+          --><li><a href="/categories/">Category</a></li><!--
+        --><!--
+          --><li><a href="/search/">Search</a></li><!--
+        --><!--
+          --><li><a href="/about/">About</a></li><!--
+        -->
+          </ul>
+          <ul>
+            
+              <!-- 不蒜子统计 -->
+              <span id="busuanzi_container_site_pv">
+                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+              </span>
+              <span class="post-meta-divider">|</span>
+              <span id="busuanzi_container_site_uv" style='display:none'>
+                      本站访客数<span id="busuanzi_value_site_uv"></span>人
+              </span>
+            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            
+          </ul>
+        </nav>
+      </div>
+      
+</footer>
+
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
