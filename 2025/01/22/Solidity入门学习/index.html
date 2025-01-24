@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Hello Web3Solidity简介Solidity是一种用于编写以太坊虚拟机(EVM)智能合约的编程语言。 Hello Web3简单的程序HelloWeb3.sol如下： 12345&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.8.21;contract HelloWeb3&#123;    string public _string &#x3D;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Solidity入门学习">
+<meta property="og:url" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="X2n.">
+<meta property="og:description" content="Hello Web3Solidity简介Solidity是一种用于编写以太坊虚拟机(EVM)智能合约的编程语言。 Hello Web3简单的程序HelloWeb3.sol如下： 12345&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.8.21;contract HelloWeb3&#123;    string public _string &#x3D;">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122224953662.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122234241902.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122234959766.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123030906176.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123031819323.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123031506521.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123032230889.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123033818196.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123034641393.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123234741062.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124163637660.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124165024783.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124230136670.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124232933314.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124233108775.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124234418473.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250125004147867.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250125004238778.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250125011902342.png">
+<meta property="article:published_time" content="2025-01-22T05:29:59.000Z">
+<meta property="article:modified_time" content="2025-01-24T17:32:19.946Z">
+<meta property="article:author" content="💗">
+<meta property="article:tag" content="以太坊">
+<meta property="article:tag" content="solidity">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122224953662.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Solidity入门学习</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&text=Solidity入门学习"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&is_video=false&description=Solidity入门学习"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Solidity入门学习&body=Check out this article: https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&name=Solidity入门学习&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&t=Solidity入门学习"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello-Web3"><span class="toc-number">1.</span> <span class="toc-text">Hello Web3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solidity%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">Solidity简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hello-Web3-1"><span class="toc-number">1.2.</span> <span class="toc-text">Hello Web3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%80%BC%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">值类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solidity%E4%B8%AD%E7%9A%84%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.1.</span> <span class="toc-text">Solidity中的变量类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.2.</span> <span class="toc-text">地址类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E9%95%BF%E5%AD%97%E8%8A%82%E6%95%B0%E7%BB%84"><span class="toc-number">2.3.</span> <span class="toc-text">定长字节数组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%9A%E4%B8%BEenum"><span class="toc-number">2.4.</span> <span class="toc-text">枚举enum</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%92%8C%E5%87%BD%E6%95%B0%E8%BE%93%E5%87%BA"><span class="toc-number">3.</span> <span class="toc-text">函数和函数输出</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.</span> <span class="toc-text">函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E7%9A%84%E4%BB%A3%E7%A0%81%E5%BD%A2%E5%BC%8F"><span class="toc-number">3.1.1.</span> <span class="toc-text">函数的代码形式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AFPure%E5%92%8CView%EF%BC%9F"><span class="toc-number">3.1.2.</span> <span class="toc-text">到底什么是Pure和View？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%B5%8B%E8%AF%95"><span class="toc-number">3.1.3.</span> <span class="toc-text">代码测试</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#pure%E5%92%8Cview"><span class="toc-number">3.1.3.1.</span> <span class="toc-text">pure和view</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#internal%E5%92%8Cexternal%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">3.1.3.2.</span> <span class="toc-text">internal和external的对比</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#payable%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">3.1.3.3.</span> <span class="toc-text">payable的使用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%BE%93%E5%87%BA"><span class="toc-number">3.2.</span> <span class="toc-text">函数输出</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%80%BC%EF%BC%9Areturn%E5%92%8Creturns"><span class="toc-number">3.2.1.</span> <span class="toc-text">返回值：return和returns</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E5%BC%8F%E8%BF%94%E5%9B%9E"><span class="toc-number">3.2.2.</span> <span class="toc-text">命名式返回</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E6%9E%84%E5%BC%8F%E5%A4%8D%E5%88%B6"><span class="toc-number">3.2.3.</span> <span class="toc-text">解构式复制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E5%92%8C%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">4.</span> <span class="toc-text">变量数据存储和作用域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solidity%E4%B8%AD%E7%9A%84%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-number">4.1.</span> <span class="toc-text">Solidity中的引用类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE"><span class="toc-number">4.2.</span> <span class="toc-text">数据位置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE%E5%92%8C%E8%B5%8B%E5%80%BC%E8%A7%84%E5%88%99"><span class="toc-number">4.2.1.</span> <span class="toc-text">数据位置和赋值规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E7%9A%84%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">4.3.</span> <span class="toc-text">变量的作用域</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F%EF%BC%88state-variable%EF%BC%89"><span class="toc-number">4.3.1.</span> <span class="toc-text">状态变量（state variable）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%EF%BC%88local-variable%EF%BC%89"><span class="toc-number">4.3.2.</span> <span class="toc-text">局部变量（local variable）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%EF%BC%88global-variable%EF%BC%89"><span class="toc-number">4.3.3.</span> <span class="toc-text">全局变量（global variable）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F-%E4%BB%A5%E5%A4%AA%E5%8D%95%E4%BD%8D%E4%B8%8E%E6%97%B6%E9%97%B4%E5%8D%95%E4%BD%8D"><span class="toc-number">4.3.4.</span> <span class="toc-text">全局变量-以太单位与时间单位</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E5%92%8C%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">引用类型和映射类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">引用类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E7%BB%84array"><span class="toc-number">5.1.1.</span> <span class="toc-text">数组array</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%95%B0%E7%BB%84%E7%9A%84%E8%A7%84%E5%88%99"><span class="toc-number">5.1.1.1.</span> <span class="toc-text">创建数组的规则</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E6%88%90%E5%91%98"><span class="toc-number">5.1.1.2.</span> <span class="toc-text">数组成员</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93struct"><span class="toc-number">5.1.2.</span> <span class="toc-text">结构体struct</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.2.</span> <span class="toc-text">映射类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%A0%E5%B0%84Mapping"><span class="toc-number">5.2.1.</span> <span class="toc-text">映射Mapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E7%9A%84%E8%A7%84%E5%88%99"><span class="toc-number">5.2.2.</span> <span class="toc-text">映射的规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">5.2.3.</span> <span class="toc-text">映射的原理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">6.</span> <span class="toc-text">变量初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%80%BC%E7%B1%BB%E5%9E%8B%E5%88%9D%E5%A7%8B%E5%80%BC"><span class="toc-number">6.1.</span> <span class="toc-text">值类型初始值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E5%88%9D%E5%A7%8B%E5%80%BC"><span class="toc-number">6.2.</span> <span class="toc-text">引用类型初始值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete%E6%93%8D%E4%BD%9C%E7%AC%A6"><span class="toc-number">6.3.</span> <span class="toc-text">delete操作符</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E6%95%B0"><span class="toc-number">7.</span> <span class="toc-text">常数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#constant%E5%92%8Cimmutable"><span class="toc-number">7.1.</span> <span class="toc-text">constant和immutable</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#constant"><span class="toc-number">7.1.1.</span> <span class="toc-text">constant</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#immutable"><span class="toc-number">7.1.2.</span> <span class="toc-text">immutable</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="toc-number">8.</span> <span class="toc-text">控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81-1"><span class="toc-number">8.1.</span> <span class="toc-text">控制流</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E4%BF%AE%E9%A5%B0%E5%99%A8"><span class="toc-number">9.</span> <span class="toc-text">构造函数和修饰器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6"><span class="toc-number">10.</span> <span class="toc-text">事件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF"><span class="toc-number">11.</span> <span class="toc-text">继承</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%BD%E8%B1%A1%E5%90%88%E7%BA%A6%E5%92%8C%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.</span> <span class="toc-text">抽象合约和接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8"><span class="toc-number">13.</span> <span class="toc-text">异常</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">14.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Solidity入门学习
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">💗</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-01-22T05:29:59.000Z" class="dt-published" itemprop="datePublished">2025-01-22</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Web3/">Web3</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/solidity/" rel="tag">solidity</a>, <a class="p-category" href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" rel="tag">以太坊</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="Hello-Web3"><a href="#Hello-Web3" class="headerlink" title="Hello Web3"></a>Hello Web3</h2><h3 id="Solidity简介"><a href="#Solidity简介" class="headerlink" title="Solidity简介"></a>Solidity简介</h3><p><code>Solidity</code>是一种用于编写以太坊虚拟机(<code>EVM</code>)智能合约的编程语言。</p>
+<h3 id="Hello-Web3-1"><a href="#Hello-Web3-1" class="headerlink" title="Hello Web3"></a>Hello Web3</h3><p>简单的程序<code>HelloWeb3.sol</code>如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract HelloWeb3&#123;</span><br><span class="line">    string public _string = &quot;Hello Web3!&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用到<a target="_blank" rel="noopener" href="https://remix.ethereum.org/%EF%BC%8C%E8%BF%9B%E8%A1%8C%E7%BC%96%E8%AF%91%E5%92%8C%E9%83%A8%E7%BD%B2%EF%BC%8C%E7%82%B9%E5%87%BB%60_string%60%E8%BE%93%E5%87%BA%E3%80%82">https://remix.ethereum.org/，进行编译和部署，点击`_string`输出。</a></p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122224953662.png" alt="image-20250122224953662"></p>
+<p>代码中的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pragma solidity ^0.8.21;</span><br></pre></td></tr></table></figure>
+
+<p>表示源文件将不允许小于 0.8.21 版本或大于等于 0.9.0 的编译器编译（第二个条件由 <code>^</code> 提供）。</p>
+<p>其中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">string public _string = &quot;Hello Web3!&quot;;</span><br></pre></td></tr></table></figure>
+
+<p><code>public</code> 修饰符表示 <code>_string</code> 变量是公开的，任何人都可以读取该变量的值。</p>
+<p>Solidity 会自动为 <code>public</code> 修饰的状态变量生成一个 getter 函数，允许外部代码（如其他合约或外部用户）通过合约的 ABI（应用二进制接口）访问这个变量的值。</p>
+<h2 id="值类型"><a href="#值类型" class="headerlink" title="值类型"></a>值类型</h2><h3 id="Solidity中的变量类型"><a href="#Solidity中的变量类型" class="headerlink" title="Solidity中的变量类型"></a>Solidity中的变量类型</h3><ol>
+<li>**值类型(Value Type)**：包括布尔型、整数型等等，这类变量赋值时候直接传递数值。</li>
+<li>**引用类型(Reference Type)**：包括数组和结构体，这类变量占空间大，赋值时候直接传递地址（类似指针）。</li>
+<li>**映射类型(Mapping Type)**：Solidity中存储键值对的数据结构，可以理解为哈希表。</li>
+</ol>
+<p>编写一个简单的程序<code>ValueTypes.sol</code>，介绍一下各种变量类型，程序如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.4;</span><br><span class="line">contract ValueTypes&#123;</span><br><span class="line">    // 布尔值</span><br><span class="line">    bool public _bool = true;</span><br><span class="line">    // 布尔运算</span><br><span class="line">    bool public _bool1 = !_bool; //取非</span><br><span class="line">    bool public _bool2 = _bool &amp;&amp; _bool1; //与</span><br><span class="line">    bool public _bool3 = _bool || _bool2; //或</span><br><span class="line">    bool public _bool4 = _bool == _bool; //相等</span><br><span class="line">    bool public _bool5 = _bool != _bool1; //不想等</span><br><span class="line">    // 整数</span><br><span class="line">    int public _int = -1;</span><br><span class="line">    uint public _uint = 1;</span><br><span class="line">    uint256 public _number = 20250122;</span><br><span class="line">    // 整数运算</span><br><span class="line">    uint256 public _number1 = _number + 1; // +，-，*，/</span><br><span class="line">    uint256 public _number2 = 2**2; // 指数</span><br><span class="line">    uint256 public _number3 = 7 % 2; // 取余数</span><br><span class="line">    bool public _numberbool = _number2 &gt; _number3; // 比大小</span><br><span class="line">    // 地址</span><br><span class="line">    address public _address = 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2;</span><br><span class="line">    address payable public _address1 = payable(_address); // payable address，可以转账、查余额</span><br><span class="line">    // 地址类型的成员</span><br><span class="line">    uint256 public balance = _address1.balance; // balance of address</span><br><span class="line">    // 固定长度的字节数组</span><br><span class="line">    bytes32 public _byte32 = &quot;MiniSolidity&quot;; </span><br><span class="line">    bytes1 public _byte = _byte32[0];</span><br><span class="line"></span><br><span class="line">    // 用enum将uint 0， 1， 2表示为Buy, Hold, Sell</span><br><span class="line">    enum ActionSet &#123; Buy, Hold, Sell &#125;</span><br><span class="line">    // 创建enum变量 action</span><br><span class="line">    //ActionSet action = ActionSet.Buy;</span><br><span class="line">    ActionSet action = ActionSet.Buy;</span><br><span class="line">    // enum可以和uint显式的转换</span><br><span class="line">    function enumToUint() external view returns(uint)&#123;</span><br><span class="line">        return uint(action);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="地址类型"><a href="#地址类型" class="headerlink" title="地址类型"></a>地址类型</h3><p>地址类型(address)有两类：</p>
+<ul>
+<li>普通地址（address）: 存储一个 20 字节的值（以太坊地址的大小）。</li>
+<li>payable address: 比普通地址多了 <code>transfer</code> 和 <code>send</code> 两个成员方法，用于接收转账。</li>
+</ul>
+<h3 id="定长字节数组"><a href="#定长字节数组" class="headerlink" title="定长字节数组"></a>定长字节数组</h3><p>字节数组分为定长和不定长两种：</p>
+<ul>
+<li>定长字节数组: 属于值类型，数组长度在声明之后不能改变。根据字节数组的长度分为 <code>bytes1</code>, <code>bytes8</code>, <code>bytes32</code> 等类型。定长字节数组最多存储 32 bytes 数据，即<code>bytes32</code>。</li>
+<li>不定长字节数组: 属于引用类型，数组长度在声明之后可以改变，包括 <code>bytes</code> 等。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 固定长度的字节数组</span><br><span class="line">bytes32 public _byte32 = &quot;MiniSolidity&quot;; </span><br><span class="line">bytes1 public _byte = _byte32[0]; </span><br></pre></td></tr></table></figure>
+
+<p>在上述代码中，<code>MiniSolidity</code> 变量以字节的方式存储进变量 <code>_byte32</code>。如果把它转换成 <code>16 进制</code>，就是：<code>0x4d696e69536f6c69646974790000000000000000000000000000000000000000</code></p>
+<p><code>_byte</code> 变量的值为 <code>_byte32</code> 的第一个字节，即 <code>0x4d</code>。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122234241902.png" alt="image-20250122234241902"></p>
+<h3 id="枚举enum"><a href="#枚举enum" class="headerlink" title="枚举enum"></a>枚举enum</h3><p>枚举（<code>enum</code>）是 Solidity 中用户定义的数据类型。它主要用于为 <code>uint</code> 分配名称，使程序易于阅读和维护。它与 <code>C 语言</code> 中的 <code>enum</code> 类似，使用名称来代替从 <code>0</code> 开始的 <code>uint</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 用enum将uint 0， 1， 2表示为Buy, Hold, Sell</span><br><span class="line">enum ActionSet &#123; Buy, Hold, Sell &#125;</span><br><span class="line">// 创建enum变量 action</span><br><span class="line">ActionSet action = ActionSet.Buy;</span><br></pre></td></tr></table></figure>
+
+<p>枚举可以显式地和 <code>uint</code> 相互转换，并会检查转换的正整数是否在枚举的长度内，否则会报错： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// enum可以和uint显式的转换</span><br><span class="line">function enumToUint() external view returns(uint)&#123;</span><br><span class="line">    return uint(action);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>enum</code> 是一个比较冷门的变量，几乎没什么人用。</p>
+<p><code>enum</code>和<code>uint</code>相互转换，如下：</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250122234959766.png" alt="image-20250122234959766"></p>
+<h2 id="函数和函数输出"><a href="#函数和函数输出" class="headerlink" title="函数和函数输出"></a>函数和函数输出</h2><h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><h4 id="函数的代码形式"><a href="#函数的代码形式" class="headerlink" title="函数的代码形式"></a>函数的代码形式</h4><p>Solidity 中函数的形式(方括号中的是可写可不 写的关键字)：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">function &lt;function name&gt;(&lt;parameter types&gt;) &#123;internal|external|public|private&#125; [pure|view|payable] [returns (&lt;return types&gt;)]</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p><code>function</code>：声明函数时的固定用法。要编写函数，就需要以 <code>function</code> 关键字开头。</p>
+</li>
+<li><p><code>&lt;function name&gt;</code>：函数名。</p>
+</li>
+<li><p><code>(&lt;parameter types&gt;)</code>：圆括号内写入函数的参数，即输入到函数的变量类型和名称。</p>
+</li>
+<li><p><code>&#123;internal|external|public|private&#125;</code>：函数可见性说明符，共有4种。</p>
+<ul>
+<li><p><code>public</code>：内部和外部均可见。</p>
+</li>
+<li><p><code>private</code>：只能从本合约内部访问，继承的合约也不能使用。</p>
+</li>
+<li><p><code>external</code>：只能从合约外部访问（但内部可以通过 <code>this.f()</code> 来调用，<code>f</code>是函数名）。</p>
+</li>
+<li><p><code>internal</code>: 只能从合约内部访问，继承的合约可以用。</p>
+</li>
+</ul>
+<p><strong>注意1⚠️</strong>：合约中定义的函数需要明确指定可见性，它们没有默认值。</p>
+<p><strong>注意2</strong>⚠️：<code>public|private|internal</code> 也可用于修饰状态变量。<code>public</code>变量会自动生成同名的<code>getter</code>函数，用于查询数值。未标明可见性类型的状态变量，默认为<code>internal</code>。</p>
+</li>
+<li><p><code>[pure|view|payable]</code>：决定函数权限&#x2F;功能的关键字。<code>payable</code>（可支付的）很好理解，带着它的函数，运行的时候可以给合约转入 ETH。</p>
+</li>
+<li><p><code>[returns (&lt;return types&gt;)]</code>：函数返回的变量类型和名称。</p>
+</li>
+</ol>
+<h4 id="到底什么是Pure和View？"><a href="#到底什么是Pure和View？" class="headerlink" title="到底什么是Pure和View？"></a>到底什么是<code>Pure</code>和<code>View</code>？</h4><p><code>solidity</code> 引入这两个关键字主要是因为 以太坊交易需要支付gas fee。合约的状态变量存储在链上，gas fee 很贵，如果计算不改变链上状态，就可以不用付 <code>gas</code>。包含 <code>pure</code> 和 <code>view</code> 关键字的函数是不改写链上状态的，因此用户直接调用它们是不需要付 gas 的（注意⚠️，合约中非 <code>pure</code>&#x2F;<code>view</code> 函数调用 <code>pure</code>&#x2F;<code>view</code> 函数时需要付gas）。</p>
+<p>在以太坊中，以下语句被视为修改链上状态：</p>
+<ol>
+<li>写入状态变量。</li>
+<li>释放事件。</li>
+<li>创建其他合约。</li>
+<li>使用 <code>selfdestruct</code>.</li>
+<li>通过调用发送以太币。</li>
+<li>调用任何未标记 <code>view</code> 或 <code>pure</code> 的函数。</li>
+<li>使用低级调用（low-level calls）。</li>
+<li>使用包含某些操作码的内联汇编。</li>
+</ol>
+<ul>
+<li><code>pure</code>函数既不能读取也不能写入链上的状态变量。</li>
+<li><code>view</code>函数能读取但不能写入状态变量。</li>
+<li>非<code>pure</code>或<code>view</code>的函数既可以读取也可以写入状态变量。</li>
+</ul>
+<h4 id="代码测试"><a href="#代码测试" class="headerlink" title="代码测试"></a>代码测试</h4><p>测试代码<code>FunctionTypes.sol</code>如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract FunctionTypes&#123;</span><br><span class="line">    uint256 public number = 5;</span><br><span class="line">    // 默认function</span><br><span class="line">    function add() external&#123;</span><br><span class="line">        number = number + 1;</span><br><span class="line">    &#125;</span><br><span class="line">    // 验证pure和view</span><br><span class="line">    // function addtest() external view&#123;</span><br><span class="line">    //     number = number + 1;</span><br><span class="line">    // &#125;</span><br><span class="line">    </span><br><span class="line">    // pure</span><br><span class="line">    function addPure(uint256 _number) external pure returns(uint256 new_number)&#123;</span><br><span class="line">        new_number = _number + 1;</span><br><span class="line">    &#125;</span><br><span class="line">    // view</span><br><span class="line">    function addView() external view returns(uint256 new_number) &#123;</span><br><span class="line">        new_number = number + 1;</span><br><span class="line">    &#125;</span><br><span class="line">    // internal: 内部函数</span><br><span class="line">    function minus() internal &#123;</span><br><span class="line">        number = number - 1;</span><br><span class="line">    &#125;</span><br><span class="line">    // 合约内的函数可以调用内部函数</span><br><span class="line">    function minusCall() external &#123;</span><br><span class="line">        minus();</span><br><span class="line">    &#125;</span><br><span class="line">    // payable: 递钱，能给合约支付eth的函数</span><br><span class="line">    function minusPayable() external payable returns(uint256 balance) &#123;</span><br><span class="line">        minus();    </span><br><span class="line">        balance = address(this).balance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="pure和view"><a href="#pure和view" class="headerlink" title="pure和view"></a>pure和view</h5><p>在代码中定义了一个<code>add()</code>函数，每次调用会使得<code>number</code>加1。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 默认function</span><br><span class="line">function add() external&#123;</span><br><span class="line">    number = number + 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果 <code>add()</code> 函数被标记为 <code>pure</code>，比如 <code>function add() external pure</code>，就会报错。因为 <code>pure</code> 是不能读取合约里的状态变量的，更不能改写。</p>
+<p>使用到了<code>pure</code>出现的报错，如下：</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123030906176.png" alt="image-20250123030906176"></p>
+<p>如果使用<code>view</code>，则代码会报错，证实了<code>view</code>是只能读取而不能写入状态变量。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123031819323.png" alt="image-20250123031819323"></p>
+<p>那 <code>pure</code> 函数能做些什么？举个例子，你可以给函数传递一个参数 <code>_number</code>，然后让他返回 <code>_number + 1</code>，这个操作不会读取或写入状态变量。</p>
+<p>如代码中的<code>addPure</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// pure</span><br><span class="line">function addPure(uint256 _number) external pure returns(uint256 new_number)&#123;</span><br><span class="line">    new_number = _number + 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123031506521.png" alt="image-20250123031506521"></p>
+<p><code>view</code>读取状态变量，然后对读取的结果进行加1。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// view</span><br><span class="line">function addView() external view returns(uint256 new_number) &#123;</span><br><span class="line">    new_number = number + 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123032230889.png" alt="image-20250123032230889"></p>
+<h5 id="internal和external的对比"><a href="#internal和external的对比" class="headerlink" title="internal和external的对比"></a>internal和external的对比</h5><p>代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// internal: 内部函数</span><br><span class="line">function minus() internal &#123;</span><br><span class="line">    number = number - 1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 合约内的函数可以调用内部函数</span><br><span class="line">function minusCall() external &#123;</span><br><span class="line">    minus();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>定义了一个 <code>internal</code> 的 <code>minus()</code> 函数，每次调用使得 <code>number</code> 变量减少 1。由于 <code>internal</code> 函数只能由合约内部调用，我们必须再定义一个 <code>external</code> 的 <code>minusCall()</code> 函数，外部通过它间接调用内部的 <code>minus()</code> 函数。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123033818196.png" alt="image-20250123033818196"></p>
+<h5 id="payable的使用"><a href="#payable的使用" class="headerlink" title="payable的使用"></a>payable的使用</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// payable: 递钱，能给合约支付eth的函数</span><br><span class="line">function minusPayable() external payable returns(uint256 balance) &#123;</span><br><span class="line">    minus();    </span><br><span class="line">    balance = address(this).balance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>定义一个 <code>external payable</code> 的 <code>minusPayable()</code> 函数，间接的调用 <code>minus()</code>，并且返回合约里的 ETH 余额（<code>this</code> 关键字可以让我们引用合约地址）。我们可以在调用 <code>minusPayable()</code> 时往合约里转入1个 ETH。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123034641393.png" alt="image-20250123034641393"></p>
+<h3 id="函数输出"><a href="#函数输出" class="headerlink" title="函数输出"></a>函数输出</h3><p>测试代码<code>Return.sol</code>如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.4;</span><br><span class="line">contract Return&#123;</span><br><span class="line">    // 返回多个变量</span><br><span class="line">    function returnMultiple() public pure returns(uint256, bool, uint256[3] memory)&#123;</span><br><span class="line">        return(1, true, [uint256(1),2,5]);</span><br><span class="line">    &#125;</span><br><span class="line">    // 命名式返回</span><br><span class="line">    function returnNamed() public pure returns(uint256 _number, bool _bool, uint256[3] memory _array)&#123;</span><br><span class="line">        _number = 2;</span><br><span class="line">        _bool = false;</span><br><span class="line">        _array = [uint256(3),2,1];</span><br><span class="line">    &#125;</span><br><span class="line">    // 命名式返回，依然支持return</span><br><span class="line">    function returnNamed2() public pure returns(uint256 _number, bool _bool, uint256[3] memory _array)&#123;</span><br><span class="line">        return(1, true, [uint256(1),2,5]);</span><br><span class="line">    &#125;</span><br><span class="line">    //读取返回值，解构式赋值</span><br><span class="line">    function readReturn() public pure&#123;</span><br><span class="line">        //读取全部返回值</span><br><span class="line">        uint256 _number;</span><br><span class="line">        bool _bool;</span><br><span class="line">        bool _bool2;</span><br><span class="line">        uint256[3] memory _array;</span><br><span class="line">        (_number, _bool, _array) = returnNamed();</span><br><span class="line"></span><br><span class="line">        //读取部分返回值</span><br><span class="line">        (,_bool2,) = returnNamed();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="返回值：return和returns"><a href="#返回值：return和returns" class="headerlink" title="返回值：return和returns"></a>返回值：return和returns</h4><ul>
+<li><code>returns</code>: 跟在函数名后面，用于声明返回的变量类型及变量名。</li>
+<li><code>return</code>: 用于函数主体中，返回指定的变量。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 返回多个变量</span><br><span class="line">function returnMultiple() public pure returns(uint256, bool, uint256[3] memory)&#123;</span><br><span class="line">    return(1, true, [uint256(1),2,5]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上述代码中，我们利用 <code>returns</code> 关键字声明了有多个返回值的 <code>returnMultiple()</code> 函数，然后我们在函数主体中使用 <code>return(1, true, [uint256(1),2,5])</code> 确定了返回值。</p>
+<p>这里<code>uint256[3]</code>声明了一个长度为<code>3</code>且类型为<code>uint256</code>的数组作为返回值。<strong>因为<code>[1,2,3]</code>会默认为<code>uint8(3)</code>，因此<code>[uint256(1),2,5]</code>中首个元素必须强转<code>uint256</code>来声明该数组内的元素皆为此类型</strong>。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250123234741062.png" alt="image-20250123234741062"></p>
+<h4 id="命名式返回"><a href="#命名式返回" class="headerlink" title="命名式返回"></a>命名式返回</h4><p>可以在 <code>returns</code> 中标明返回变量的名称。Solidity 会初始化这些变量，并且自动返回这些函数的值，无需使用 <code>return</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 命名式返回</span><br><span class="line">function returnNamed() public pure returns(uint256 _number, bool _bool, uint256[3] memory _array)&#123;</span><br><span class="line">    _number = 2;</span><br><span class="line">    _bool = false;</span><br><span class="line">    _array = [uint256(3),2,1];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上述代码中，我们用 <code>returns(uint256 _number, bool _bool, uint256[3] memory _array)</code> 声明了返回变量类型以及变量名。这样，在主体中只需为变量 <code>_number</code>、<code>_bool</code>和<code>_array</code> 赋值，即可<strong>自动返回</strong>。</p>
+<p>也可以在命名式返回中用 <code>return</code> 来返回变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 命名式返回，依然支持return</span><br><span class="line">function returnNamed2() public pure returns(uint256 _number, bool _bool, uint256[3] memory _array)&#123;</span><br><span class="line">    return(1, true, [uint256(1),2,5]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="解构式复制"><a href="#解构式复制" class="headerlink" title="解构式复制"></a>解构式复制</h4><p>Solidity 支持使用解构式赋值规则来读取函数的全部或部分返回值。</p>
+<ul>
+<li>读取所有返回值：声明变量，然后将要赋值的变量用<code>,</code>隔开，按顺序排列。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uint256 _number;</span><br><span class="line">bool _bool;</span><br><span class="line">uint256[3] memory _array;</span><br><span class="line">(_number, _bool, _array) = returnNamed();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>读取部分返回值：声明要读取的返回值对应的变量，不读取的留空。在下面的代码中，我们只读取<code>_bool</code>，而不读取返回的<code>_number</code>和<code>_array</code>：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(, _bool2, ) = returnNamed();</span><br></pre></td></tr></table></figure>
+
+<h2 id="变量数据存储和作用域"><a href="#变量数据存储和作用域" class="headerlink" title="变量数据存储和作用域"></a>变量数据存储和作用域</h2><p>测试代码<code>DataStorage.sol</code>，如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line"></span><br><span class="line">contract DataStorage &#123;</span><br><span class="line">    // The data location of x is storage.</span><br><span class="line">    // This is the only place where the</span><br><span class="line">    // data location can be omitted.</span><br><span class="line">    uint[] public x = [1,2,3];</span><br><span class="line"></span><br><span class="line">    function fStorage() public&#123;</span><br><span class="line">        //声明一个storage的变量xStorage，指向x。修改xStorage也会影响x</span><br><span class="line">        uint[] storage xStorage = x;</span><br><span class="line">        xStorage[0] = 100;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function fMemory() public view&#123;</span><br><span class="line">        //声明一个Memory的变量xMemory，复制x。修改xMemory不会影响x</span><br><span class="line">        uint[] memory xMemory = x;</span><br><span class="line">        xMemory[0] = 100;</span><br><span class="line">        xMemory[1] = 200;</span><br><span class="line">        uint[] memory xMemory2 = x;</span><br><span class="line">        xMemory2[0] = 300;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function fCalldata(uint[] calldata _x) public pure returns(uint[] calldata)&#123;</span><br><span class="line">        //参数为calldata数组，不能被修改</span><br><span class="line">        // _x[0] = 0 //这样修改会报错</span><br><span class="line">        return(_x);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试代码<code>Variables.sol</code>，如下图所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line"></span><br><span class="line">contract Variables &#123;</span><br><span class="line">    uint public x = 1;</span><br><span class="line">    uint public y;</span><br><span class="line">    string public z;</span><br><span class="line"></span><br><span class="line">    function foo() external&#123;</span><br><span class="line">        // 可以在函数里更改状态变量的值</span><br><span class="line">        x = 5;</span><br><span class="line">        y = 2;</span><br><span class="line">        z = &quot;0xAA&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function bar() external pure returns(uint)&#123;</span><br><span class="line">        uint xx = 1;</span><br><span class="line">        uint yy = 3;</span><br><span class="line">        uint zz = xx + yy;</span><br><span class="line">        return(zz);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function global() external view returns(address, uint, bytes memory)&#123;</span><br><span class="line">        address sender = msg.sender;</span><br><span class="line">        uint blockNum = block.number;</span><br><span class="line">        bytes memory data = msg.data;</span><br><span class="line">        return(sender, blockNum, data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function weiUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 wei == 1e0);</span><br><span class="line">        assert(1 wei == 1);</span><br><span class="line">        return 1 wei;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function gweiUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 gwei == 1e9);</span><br><span class="line">        assert(1 gwei == 1000000000);</span><br><span class="line">        return 1 gwei;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function etherUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 ether == 1e18);</span><br><span class="line">        assert(1 ether == 1000000000000000000);</span><br><span class="line">        return 1 ether;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    function secondsUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 seconds == 1);</span><br><span class="line">        return 1 seconds;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function minutesUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 minutes == 60);</span><br><span class="line">        assert(1 minutes == 60 seconds);</span><br><span class="line">        return 1 minutes;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function hoursUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 hours == 3600);</span><br><span class="line">        assert(1 hours == 60 minutes);</span><br><span class="line">        return 1 hours;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function daysUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 days == 86400);</span><br><span class="line">        assert(1 days == 24 hours);</span><br><span class="line">        return 1 days;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function weeksUnit() external pure returns(uint) &#123;</span><br><span class="line">        assert(1 weeks == 604800);</span><br><span class="line">        assert(1 weeks == 7 days);</span><br><span class="line">        return 1 weeks;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Solidity中的引用类型"><a href="#Solidity中的引用类型" class="headerlink" title="Solidity中的引用类型"></a>Solidity中的引用类型</h3><p>**引用类型(Reference Type)**：包括数组（<code>array</code>）和结构体（<code>struct</code>），由于这类变量比较复杂，占用存储空间大，我们在使用时必须要声明数据存储的位置。</p>
+<h3 id="数据位置"><a href="#数据位置" class="headerlink" title="数据位置"></a>数据位置</h3><p>Solidity数据存储位置有三类：<code>storage</code>，<code>memory</code>和<code>calldata</code>。不同存储位置的<code>gas</code>成本不同。</p>
+<ul>
+<li><p><code>storage</code>类型的数据存在链上，类似计算机的硬盘，消耗<code>gas</code>多；</p>
+</li>
+<li><p><code>memory</code>和<code>calldata</code>类型的临时存在内存里，消耗<code>gas</code>少。</p>
+</li>
+</ul>
+<p>大致用法：</p>
+<ol>
+<li><code>storage</code>：合约里的状态变量默认都是<code>storage</code>，存储在链上。</li>
+<li><code>memory</code>：函数里的参数和临时变量一般用<code>memory</code>，存储在内存中，不上链。尤其是如果返回数据类型是变长的情况下，必须加memory修饰，例如：string, bytes, array和自定义结构。</li>
+<li><code>calldata</code>：和<code>memory</code>类似，存储在内存中，不上链。与<code>memory</code>的不同点在于<code>calldata</code>变量不能修改（<code>immutable</code>），一般用于函数的参数。</li>
+</ol>
+<p><code>calldata</code>修饰的变量不能被修改，例子如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">function fCalldata(uint[] calldata _x) public pure returns(uint[] calldata)&#123;</span><br><span class="line">    //参数为calldata数组，不能被修改</span><br><span class="line">    _x[0] = 0; //这样修改会报错</span><br><span class="line">    return(_x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124163637660.png" alt="image-20250124163637660"></p>
+<h4 id="数据位置和赋值规则"><a href="#数据位置和赋值规则" class="headerlink" title="数据位置和赋值规则"></a>数据位置和赋值规则</h4><p>在不同存储类型相互赋值时候，<strong>有时会产生独立的副本（修改新变量不会影响原变量），有时会产生引用（修改新变量会影响原变量）</strong>。规则如下：</p>
+<ol>
+<li>赋值本质上是创建<strong>引用</strong>指向本体，因此修改本体或者是引用，变化可以被同步。</li>
+</ol>
+<ul>
+<li><code>storage</code>（合约的状态变量）赋值给本地<code>storage</code>（函数里的）时候，会创建引用，改变新变量会影响原变量。样例如下：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">uint[] x = [1,2,3]; // 状态变量：数组 x</span><br><span class="line"></span><br><span class="line">function fStorage() public&#123;</span><br><span class="line">    //声明一个storage的变量 xStorage，指向x。修改xStorage也会影响x</span><br><span class="line">    uint[] storage xStorage = x;</span><br><span class="line">    xStorage[0] = 100;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>部署调用一下<code>fStorage</code>函数，然后利用交易的<code>hash</code>对代码进行调试，发现数值被更改。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124165024783.png" alt="image-20250124165024783"></p>
+<ul>
+<li><code>memory</code>赋值给<code>memory</code>，会创建引用，改变新变量会影响原变量。</li>
+</ul>
+<ol start="2">
+<li>其他情况下，赋值创建的是本体的副本，即对二者之一的修改，并不会同步到另一方。</li>
+</ol>
+<h3 id="变量的作用域"><a href="#变量的作用域" class="headerlink" title="变量的作用域"></a>变量的作用域</h3><p><code>Solidity</code>中变量按作用域划分有三种，分别是<strong>状态变量（state variable）</strong>，<strong>局部变量（local variable）</strong>和<strong>全局变量(global variable)</strong></p>
+<h4 id="状态变量（state-variable）"><a href="#状态变量（state-variable）" class="headerlink" title="状态变量（state variable）"></a>状态变量（state variable）</h4><p>状态变量是数据存储在链上的变量，所有合约内函数都可以访问，<code>gas</code>消耗高。状态变量在合约内、函数外声明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">contract Variables &#123;</span><br><span class="line">    uint public x = 1;</span><br><span class="line">    uint public y;</span><br><span class="line">    string public z;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以在函数里更改状态变量的值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function foo() external&#123;</span><br><span class="line">    // 可以在函数里更改状态变量的值</span><br><span class="line">    x = 5;</span><br><span class="line">    y = 2;</span><br><span class="line">    z = &quot;0xAA&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="局部变量（local-variable）"><a href="#局部变量（local-variable）" class="headerlink" title="局部变量（local variable）"></a>局部变量（local variable）</h4><p>局部变量是仅在函数执行过程中有效的变量，<strong>函数退出后，变量无效</strong>。局部变量的<strong>数据存储在内存里，不上链，<code>gas</code>低。</strong></p>
+<p>局部变量在函数内声明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function bar() external pure returns(uint)&#123;</span><br><span class="line">    uint xx = 1;</span><br><span class="line">    uint yy = 3;</span><br><span class="line">    uint zz = xx + yy;</span><br><span class="line">    return(zz);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="全局变量（global-variable）"><a href="#全局变量（global-variable）" class="headerlink" title="全局变量（global variable）"></a>全局变量（global variable）</h4><p>全局变量是全局范围工作的变量，都是<code>solidity</code>预留关键字。他们可以在函数内不声明直接使用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function global() external view returns(address, uint, bytes memory)&#123;</span><br><span class="line">    address sender = msg.sender;</span><br><span class="line">    uint blockNum = block.number;</span><br><span class="line">    bytes memory data = msg.data;</span><br><span class="line">    return(sender, blockNum, data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面例子里，我们使用了3个常用的全局变量：<code>msg.sender</code>，<code>block.number</code>和<code>msg.data</code>，他们分别代表请求发起地址，当前区块高度，和请求数据。下面是一些常用的全局变量，更完整的列表请看这个<a target="_blank" rel="noopener" href="https://learnblockchain.cn/docs/solidity/units-and-global-variables.html#special-variables-and-functions">链接</a>：</p>
+<ul>
+<li><code>blockhash(uint blockNumber)</code>: (<code>bytes32</code>) 给定区块的哈希值 – 只适用于256最近区块, 不包含当前区块。</li>
+<li><code>block.coinbase</code>: (<code>address payable</code>) 当前区块矿工的地址</li>
+<li><code>block.gaslimit</code>: (<code>uint</code>) 当前区块的gaslimit</li>
+<li><code>block.number</code>: (<code>uint</code>) 当前区块的number</li>
+<li><code>block.timestamp</code>: (<code>uint</code>) 当前区块的时间戳，为unix纪元以来的秒</li>
+<li><code>gasleft()</code>: (<code>uint256</code>) 剩余 gas</li>
+<li><code>msg.data</code>: (<code>bytes calldata</code>) 完整call data</li>
+<li><code>msg.sender</code>: (<code>address payable</code>) 消息发送者 (当前 caller)</li>
+<li><code>msg.sig</code>: (<code>bytes4</code>) calldata的前四个字节 (function identifier)</li>
+<li><code>msg.value</code>: (<code>uint</code>) 当前交易发送的 <code>wei</code> 值</li>
+<li><code>block.blobbasefee</code>: (<code>uint</code>) 当前区块的blob基础费用。这是Cancun升级新增的全局变量。</li>
+<li><code>blobhash(uint index)</code>: (<code>bytes32</code>) 返回跟当前交易关联的第 <code>index</code> 个blob的版本化哈希（第一个字节为版本号，当前为<code>0x01</code>，后面接KZG承诺的SHA256哈希的最后31个字节）。若当前交易不包含blob，则返回空字节。这是Cancun升级新增的全局变量。</li>
+</ul>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124230136670.png" alt="image-20250124230136670"></p>
+<h4 id="全局变量-以太单位与时间单位"><a href="#全局变量-以太单位与时间单位" class="headerlink" title="全局变量-以太单位与时间单位"></a>全局变量-以太单位与时间单位</h4><p><strong>以太单位</strong></p>
+<p><code>Solidity</code>中不存在小数点，以<code>0</code>代替为小数点，来确保交易的精确度，并且防止精度的损失，利用以太单位可以避免误算的问题，方便程序员在合约中处理货币交易。</p>
+<ul>
+<li><code>wei</code>: 1</li>
+<li><code>gwei</code>: 1e9 &#x3D; 1000000000</li>
+<li><code>ether</code>: 1e18 &#x3D; 1000000000000000000</li>
+</ul>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124232933314.png" alt="image-20250124232933314"></p>
+<p><strong>时间单位</strong></p>
+<p>可以在合约中规定一个操作必须在一周内完成，或者某个事件在一个月后发生。这样就能让合约的执行可以更加精确，不会因为技术上的误差而影响合约的结果。因此，时间单位在<code>Solidity</code>中是一个重要的概念，有助于提高合约的可读性和可维护性。</p>
+<ul>
+<li><code>seconds</code>: 1</li>
+<li><code>minutes</code>: 60 seconds &#x3D; 60</li>
+<li><code>hours</code>: 60 minutes &#x3D; 3600</li>
+<li><code>days</code>: 24 hours &#x3D; 86400</li>
+<li><code>weeks</code>: 7 days &#x3D; 604800</li>
+</ul>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124233108775.png" alt="image-20250124233108775"></p>
+<h2 id="引用类型和映射类型"><a href="#引用类型和映射类型" class="headerlink" title="引用类型和映射类型"></a>引用类型和映射类型</h2><h3 id="引用类型"><a href="#引用类型" class="headerlink" title="引用类型"></a>引用类型</h3><p>这一讲，我们将介绍<code>Solidity</code>中的两个重要变量类型：数组（<code>array</code>）和结构体（<code>struct</code>）。</p>
+<h4 id="数组array"><a href="#数组array" class="headerlink" title="数组array"></a>数组array</h4><p>数组（<code>Array</code>）是<code>Solidity</code>常用的一种变量类型，用来存储一组数据（整数，字节，地址等等）。数组分为固定长度数组和可变长度数组两种：</p>
+<ul>
+<li>固定长度数组：在声明时指定数组的长度。用<code>T[k]</code>的格式声明，其中<code>T</code>是元素的类型，<code>k</code>是长度，例如：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 固定长度 Array</span><br><span class="line">uint[8] array1;</span><br><span class="line">bytes1[5] array2;</span><br><span class="line">address[100] array3;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可变长度数组（动态数组）：在声明时不指定数组的长度。用<code>T[]</code>的格式声明，其中<code>T</code>是元素的类型，例如：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 可变长度 Array</span><br><span class="line">uint[] array4;</span><br><span class="line">bytes1[] array5;</span><br><span class="line">address[] array6;</span><br><span class="line">bytes array7;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意⚠️</strong>：<code>bytes</code>比较特殊，是数组，但是不用加<code>[]</code>。另外，不能用<code>byte[]</code>声明单字节数组，可以使用<code>bytes</code>或<code>bytes1[]</code>。<code>bytes</code> 比 <code>bytes1[]</code> 省gas。</p>
+<h5 id="创建数组的规则"><a href="#创建数组的规则" class="headerlink" title="创建数组的规则"></a>创建数组的规则</h5><p>在Solidity里，创建数组有一些规则：</p>
+<ul>
+<li>对于<code>memory</code>修饰的<code>动态数组</code>，可以用<code>new</code>操作符来创建，但是必须声明长度，并且声明后长度不能改变。例子：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// memory动态数组</span><br><span class="line">uint[] memory array8 = new uint[](5);</span><br><span class="line">bytes memory array9 = new bytes(9);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>数组字面常数(Array Literals)是写作表达式形式的数组，用方括号包着来初始化array的一种方式，并且里面每一个元素的type是以第一个元素为准的，例如<code>[1,2,3]</code>里面所有的元素都是<code>uint8</code>类型，因为在Solidity中，如果一个值没有指定type的话，会根据上下文推断出元素的类型，默认就是最小单位的type，这里默认最小单位类型是<code>uint8</code>。而<code>[uint(1),2,3]</code>里面的元素都是<code>uint</code>类型，因为第一个元素指定了是<code>uint</code>类型了，里面每一个元素的type都以第一个元素为准。</p>
+<p>下面的例子中，<strong>如果没有对传入 <code>g()</code> 函数的数组进行 <code>uint</code> 转换，是会报错的。</strong></p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: GPL-3.0</span><br><span class="line">pragma solidity &gt;=0.4.16 &lt;0.9.0;</span><br><span class="line"></span><br><span class="line">contract C &#123;</span><br><span class="line">    function f() public pure &#123;</span><br><span class="line">        g([uint(1), 2, 3]);</span><br><span class="line">    &#125;</span><br><span class="line">    function g(uint[3] memory _data) public pure &#123;</span><br><span class="line">        // ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果创建的是动态数组，你需要一个一个元素的赋值。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uint[] memory x = new uint[](3);</span><br><span class="line">x[0] = 1;</span><br><span class="line">x[1] = 3;</span><br><span class="line">x[2] = 4;</span><br></pre></td></tr></table></figure>
+
+<h5 id="数组成员"><a href="#数组成员" class="headerlink" title="数组成员"></a>数组成员</h5><ul>
+<li><code>length</code>: 数组有一个包含元素数量的<code>length</code>成员，<code>memory</code>数组的长度在创建后是固定的。</li>
+<li><code>push()</code>: <code>动态数组</code>拥有<code>push()</code>成员，可以<strong>在数组最后添加一个<code>0</code>元素，并返回该元素的引用</strong>。</li>
+<li><code>push(x)</code>: <code>动态数组</code>拥有<code>push(x)</code>成员，<strong>可以在数组最后添加一个<code>x</code>元素</strong>。</li>
+<li><code>pop()</code>: <code>动态数组</code>拥有<code>pop()</code>成员，<strong>可以移除数组最后一个元素。</strong></li>
+</ul>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250124234418473.png" alt="image-20250124234418473"></p>
+<h4 id="结构体struct"><a href="#结构体struct" class="headerlink" title="结构体struct"></a>结构体struct</h4><p>此时代码<code>StructTypes.sol</code>，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract StructTypes &#123;</span><br><span class="line">    // 结构体 Struct</span><br><span class="line">    struct Student&#123;</span><br><span class="line">        uint256 id;</span><br><span class="line">        uint256 score; </span><br><span class="line">    &#125;</span><br><span class="line">    Student student; // 初始一个student结构体</span><br><span class="line">    //  给结构体赋值</span><br><span class="line">    // 方法1:在函数中创建一个storage的struct引用</span><br><span class="line">    function initStudent1() external&#123;</span><br><span class="line">        Student storage _student = student; // assign a copy of student</span><br><span class="line">        _student.id = 11;</span><br><span class="line">        _student.score = 100;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 方法2:直接引用状态变量的struct</span><br><span class="line">    function initStudent2() external&#123;</span><br><span class="line">        student.id = 1;</span><br><span class="line">        student.score = 80;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    // 方法3:构造函数式</span><br><span class="line">    function initStudent3() external &#123;</span><br><span class="line">        student = Student(3, 90);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 方法4:key value</span><br><span class="line">    function initStudent4() external &#123;</span><br><span class="line">        student = Student(&#123;id: 4, score: 60&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Solidity</code>支持通过构造结构体的形式定义新的类型。结构体中的元素可以是原始类型，也可以是引用类型；结构体可以作为数组或映射的元素。创建结构体的方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 结构体</span><br><span class="line">struct Student&#123;</span><br><span class="line">    uint256 id;</span><br><span class="line">    uint256 score; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Student student; // 初始一个student结构体</span><br></pre></td></tr></table></figure>
+
+<p>给结构体赋值的四种方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//  给结构体赋值</span><br><span class="line">// 方法1:在函数中创建一个storage的struct引用</span><br><span class="line">function initStudent1() external&#123;</span><br><span class="line">    Student storage _student = student; // assign a copy of student</span><br><span class="line">    _student.id = 11;</span><br><span class="line">    _student.score = 100;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 方法2:直接引用状态变量的struct</span><br><span class="line">function initStudent2() external&#123;</span><br><span class="line">    student.id = 1;</span><br><span class="line">    student.score = 80;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 方法3:构造函数式</span><br><span class="line">function initStudent3() external &#123;</span><br><span class="line">    student = Student(3, 90);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 方法4:key value</span><br><span class="line">function initStudent4() external &#123;</span><br><span class="line">    student = Student(&#123;id: 4, score: 60&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="映射类型"><a href="#映射类型" class="headerlink" title="映射类型"></a>映射类型</h3><p>这一讲，我们将介绍映射（<code>Mapping</code>）类型，Solidity中存储键值对的数据结构，可以理解为哈希表。</p>
+<p>测试代码<code>Mapping.sol</code>，代码如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract Mapping &#123;</span><br><span class="line">    mapping(uint =&gt; address) public idToAddress; // id映射到地址</span><br><span class="line">    mapping(address =&gt; address) public swapPair; // 币对的映射，地址到地址</span><br><span class="line">    </span><br><span class="line">    // 规则1. _KeyType不能是自定义的 下面这个例子会报错</span><br><span class="line">    // 我们定义一个结构体 Struct</span><br><span class="line">    // struct Student&#123;</span><br><span class="line">    //    uint256 id;</span><br><span class="line">    //    uint256 score; </span><br><span class="line">    //&#125;</span><br><span class="line">    // mapping(Struct =&gt; uint) public testVar;</span><br><span class="line"></span><br><span class="line">    function writeMap (uint _Key, address _Value) public&#123;</span><br><span class="line">        idToAddress[_Key] = _Value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="映射Mapping"><a href="#映射Mapping" class="headerlink" title="映射Mapping"></a>映射Mapping</h4><p>在映射中，人们可以通过键（<code>Key</code>）来查询对应的值（<code>Value</code>），比如：通过一个人的<code>id</code>来查询他的钱包地址。</p>
+<p>声明映射的格式为<code>mapping(_KeyType =&gt; _ValueType)</code>，其中<code>_KeyType</code>和<code>_ValueType</code>分别是<code>Key</code>和<code>Value</code>的变量类型。例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mapping(uint =&gt; address) public idToAddress; // id映射到地址</span><br><span class="line">mapping(address =&gt; address) public swapPair; // 币对的映射，地址到地址</span><br></pre></td></tr></table></figure>
+
+<h4 id="映射的规则"><a href="#映射的规则" class="headerlink" title="映射的规则"></a>映射的规则</h4><ul>
+<li><strong>规则1</strong>：<strong>映射的<code>_KeyType</code>只能选择Solidity内置的值类型，比如<code>uint</code>，<code>address</code>等，不能用自定义的结构体。而<code>_ValueType</code>可以使用自定义的类型。</strong>下面这个例子会报错，因为<code>_KeyType</code>使用了我们自定义的结构体：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 我们定义一个结构体 Struct</span><br><span class="line">struct Student&#123;</span><br><span class="line">    uint256 id;</span><br><span class="line">    uint256 score; </span><br><span class="line">&#125;</span><br><span class="line">mapping(Student =&gt; uint) public testVar;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>规则2</strong>：映射的存储位置必须是<code>storage</code>，因此可以用于合约的状态变量，函数中的<code>storage</code>变量和library函数的参数（见<a target="_blank" rel="noopener" href="https://github.com/ethereum/solidity/issues/4635">例子</a>）。不能用于<code>public</code>函数的参数或返回结果中，因为<code>mapping</code>记录的是一种关系 (key - value pair)。</p>
+</li>
+<li><p><strong>规则3</strong>：如果映射声明为<code>public</code>，那么Solidity会自动给你创建一个<code>getter</code>函数，可以通过<code>Key</code>来查询对应的<code>Value</code>。</p>
+</li>
+<li><p><strong>规则4</strong>：给映射新增的键值对的语法为<code>_Var[_Key] = _Value</code>，其中<code>_Var</code>是映射变量名，<code>_Key</code>和<code>_Value</code>对应新增的键值对。例子：</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">function writeMap (uint _Key, address _Value) public&#123;</span><br><span class="line">    idToAddress[_Key] = _Value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>写入<code>mapping</code>，并读取。</p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250125004147867.png" alt="image-20250125004147867"></p>
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250125004238778.png" alt="image-20250125004238778"></p>
+<h4 id="映射的原理"><a href="#映射的原理" class="headerlink" title="映射的原理"></a>映射的原理</h4><ul>
+<li><strong>原理1</strong>: <strong>映射不储存任何键（<code>Key</code>）的资讯，也没有length的资讯。</strong></li>
+<li><strong>原理2</strong>: 映射使用<code>keccak256(abi.encodePacked(key, slot))</code>当成offset存取value，其中<code>slot</code>是映射变量定义所在的插槽位置。</li>
+<li><strong>原理3</strong>: 因为Ethereum会定义所有未使用的空间为0，所以<strong>未赋值（<code>Value</code>）的键（<code>Key</code>）初始值都是各个type的默认值</strong>，如uint的默认值是0。</li>
+</ul>
+<h2 id="变量初始化"><a href="#变量初始化" class="headerlink" title="变量初始化"></a>变量初始化</h2><p>在<code>Solidity</code>中，声明但没赋值的变量都有它的初始值或默认值。这一讲，我们将介绍常用变量的初始值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line"></span><br><span class="line">contract InitialValue &#123;</span><br><span class="line">    // Value Types</span><br><span class="line">    bool public _bool; // false</span><br><span class="line">    string public _string; // &quot;&quot;</span><br><span class="line">    int public _int; // 0</span><br><span class="line">    uint public _uint; // 0</span><br><span class="line">    address public _address; // 0x0000000000000000000000000000000000000000</span><br><span class="line"></span><br><span class="line">    enum ActionSet &#123; Buy, Hold, Sell&#125;</span><br><span class="line">    ActionSet public _enum; // 第一个元素 0</span><br><span class="line"></span><br><span class="line">    function fi() internal&#123;&#125; // internal空白方程 </span><br><span class="line">    function fe() external&#123;&#125; // external空白方程 </span><br><span class="line"></span><br><span class="line">    // Reference Types</span><br><span class="line">    uint[8] public _staticArray; // 所有成员设为其默认值的静态数组[0,0,0,0,0,0,0,0]</span><br><span class="line">    uint[] public _dynamicArray; // `[]`</span><br><span class="line">    mapping(uint =&gt; address) public _mapping; // 所有元素都为其默认值的mapping</span><br><span class="line">    // 所有成员设为其默认值的结构体 0, 0</span><br><span class="line">    struct Student&#123;</span><br><span class="line">        uint256 id;</span><br><span class="line">        uint256 score; </span><br><span class="line">    &#125;</span><br><span class="line">    Student public student;</span><br><span class="line"></span><br><span class="line">    // delete操作符</span><br><span class="line">    bool public _bool2 = true; </span><br><span class="line">    function d() external &#123;</span><br><span class="line">        delete _bool2; // delete 会让_bool2变为默认值，false</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="值类型初始值"><a href="#值类型初始值" class="headerlink" title="值类型初始值"></a>值类型初始值</h3><ul>
+<li><p><code>boolean</code>: <code>false</code></p>
+</li>
+<li><p><code>string</code>: <code>&quot;&quot;</code></p>
+</li>
+<li><p><code>int</code>: <code>0</code></p>
+</li>
+<li><p><code>uint</code>: <code>0</code></p>
+</li>
+<li><p><code>enum</code>: 枚举中的第一个元素</p>
+</li>
+<li><p><code>address</code>: <code>0x0000000000000000000000000000000000000000</code> (或 <code>address(0)</code>)</p>
+</li>
+<li><p><code>function</code></p>
+<ul>
+<li><p><code>internal</code>: 空白函数</p>
+</li>
+<li><p><code>external</code>: 空白函数</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>可以用<code>public</code>变量的<code>getter</code>函数验证上面写的初始值是否正确：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">bool public _bool; // false</span><br><span class="line">string public _string; // &quot;&quot;</span><br><span class="line">int public _int; // 0</span><br><span class="line">uint public _uint; // 0</span><br><span class="line">address public _address; // 0x0000000000000000000000000000000000000000</span><br><span class="line"></span><br><span class="line">enum ActionSet &#123; Buy, Hold, Sell&#125;</span><br><span class="line">ActionSet public _enum; // 第1个内容Buy的索引0</span><br><span class="line"></span><br><span class="line">function fi() internal&#123;&#125; // internal空白函数</span><br><span class="line">function fe() external&#123;&#125; // external空白函数 </span><br></pre></td></tr></table></figure>
+
+<h3 id="引用类型初始值"><a href="#引用类型初始值" class="headerlink" title="引用类型初始值"></a>引用类型初始值</h3><ul>
+<li>映射<code>mapping</code>: 所有元素都为其默认值的<code>mapping</code></li>
+<li>结构体<code>struct</code>: 所有成员设为其默认值的结构体</li>
+<li>数组<code>array</code><ul>
+<li>动态数组: <code>[]</code></li>
+<li>静态数组（定长）: 所有成员设为其默认值的静态数组</li>
+</ul>
+</li>
+</ul>
+<p>可以用<code>public</code>变量的<code>getter</code>函数验证上面写的初始值是否正确：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// Reference Types</span><br><span class="line">uint[8] public _staticArray; // 所有成员设为其默认值的静态数组[0,0,0,0,0,0,0,0]</span><br><span class="line">uint[] public _dynamicArray; // `[]`</span><br><span class="line">mapping(uint =&gt; address) public _mapping; // 所有元素都为其默认值的mapping</span><br><span class="line">// 所有成员设为其默认值的结构体 0, 0</span><br><span class="line">struct Student&#123;</span><br><span class="line">    uint256 id;</span><br><span class="line">    uint256 score; </span><br><span class="line">&#125;</span><br><span class="line">Student public student;</span><br></pre></td></tr></table></figure>
+
+<h3 id="delete操作符"><a href="#delete操作符" class="headerlink" title="delete操作符"></a><code>delete</code>操作符</h3><p><code>delete a</code>会让变量<code>a</code>的值变为初始值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// delete操作符</span><br><span class="line">bool public _bool2 = true; </span><br><span class="line">function d() external &#123;</span><br><span class="line">    delete _bool2; // delete 会让_bool2变为默认值，false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>值类型、引用类型<code>delete</code>操作后的默认值。</strong></p>
+<h2 id="常数"><a href="#常数" class="headerlink" title="常数"></a>常数</h2><p>这一讲，我们介绍Solidity中和常量相关的两个关键字，<code>constant</code>（常量）和<code>immutable</code>（不变量）。状态变量声明这两个关键字之后，不能在初始化后更改数值。这样做的好处是提升合约的安全性并节省<code>gas</code>。</p>
+<p>另外，只有数值变量可以声明<code>constant</code>和<code>immutable</code>；<code>string</code>和<code>bytes</code>可以声明为<code>constant</code>，但不能为<code>immutable</code>。</p>
+<p>测试代码<code>Constant.sol</code>，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract Constant &#123;</span><br><span class="line">    // constant变量必须在声明的时候初始化，之后不能改变</span><br><span class="line">    uint256 public constant CONSTANT_NUM = 10;</span><br><span class="line">    string public constant CONSTANT_STRING = &quot;0xAA&quot;;</span><br><span class="line">    bytes public constant CONSTANT_BYTES = &quot;WTF&quot;;</span><br><span class="line">    address public constant CONSTANT_ADDRESS = 0x0000000000000000000000000000000000000000;</span><br><span class="line"></span><br><span class="line">    // immutable变量可以在constructor里初始化，之后不能改变</span><br><span class="line">    uint256 public immutable IMMUTABLE_NUM = 9999999999;</span><br><span class="line">    address public immutable IMMUTABLE_ADDRESS;</span><br><span class="line">    uint256 public immutable IMMUTABLE_BLOCK;</span><br><span class="line">    uint256 public immutable IMMUTABLE_TEST;</span><br><span class="line"></span><br><span class="line">    // 利用constructor初始化immutable变量，因此可以利用</span><br><span class="line">    constructor()&#123;</span><br><span class="line">        IMMUTABLE_ADDRESS = address(this);</span><br><span class="line">        IMMUTABLE_NUM = 1118;</span><br><span class="line">        IMMUTABLE_TEST = test();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function test() public pure returns(uint256)&#123;</span><br><span class="line">        uint256 what = 9;</span><br><span class="line">        return(what);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="constant和immutable"><a href="#constant和immutable" class="headerlink" title="constant和immutable"></a>constant和immutable</h3><h4 id="constant"><a href="#constant" class="headerlink" title="constant"></a>constant</h4><p><code>constant</code>变量必须在声明的时候初始化，之后再也不能改变。尝试改变的话，编译不通过。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// constant变量必须在声明的时候初始化，之后不能改变</span><br><span class="line">uint256 constant CONSTANT_NUM = 10;</span><br><span class="line">string constant CONSTANT_STRING = &quot;0xAA&quot;;</span><br><span class="line">bytes constant CONSTANT_BYTES = &quot;WTF&quot;;</span><br><span class="line">address constant CONSTANT_ADDRESS = 0x0000000000000000000000000000000000000000;</span><br></pre></td></tr></table></figure>
+
+<h4 id="immutable"><a href="#immutable" class="headerlink" title="immutable"></a>immutable</h4><p><code>immutable</code>变量可以在声明时或构造函数中初始化，因此更加灵活。在<code>Solidity v8.0.21</code>以后，<code>immutable</code>变量不需要显式初始化。反之，则需要显式初始化。 若<code>immutable</code>变量既在声明时初始化，又在constructor中初始化，会使用constructor初始化的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// immutable变量可以在constructor里初始化，之后不能改变</span><br><span class="line">uint256 public immutable IMMUTABLE_NUM = 9999999999;</span><br><span class="line">address public immutable IMMUTABLE_ADDRESS;</span><br><span class="line">uint256 public immutable IMMUTABLE_BLOCK;</span><br><span class="line">uint256 public immutable IMMUTABLE_TEST;</span><br></pre></td></tr></table></figure>
+
+<p>你可以使用全局变量例如<code>address(this)</code>，<code>block.number</code> 或者自定义的函数给<code>immutable</code>变量初始化。在下面这个例子，我们利用了<code>test()</code>函数给<code>IMMUTABLE_TEST</code>初始化为<code>9</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// 利用constructor初始化immutable变量，因此可以利用</span><br><span class="line">constructor()&#123;</span><br><span class="line">    IMMUTABLE_ADDRESS = address(this);</span><br><span class="line">    IMMUTABLE_NUM = 1118;</span><br><span class="line">    IMMUTABLE_TEST = test();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function test() public pure returns(uint256)&#123;</span><br><span class="line">    uint256 what = 9;</span><br><span class="line">    return(what);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/image-20250125011902342.png" alt="image-20250125011902342"></p>
+<h2 id="控制流"><a href="#控制流" class="headerlink" title="控制流"></a>控制流</h2><p>这一讲，我们将介绍<code>Solidity</code>中的控制流。</p>
+<p>测试代码<code>Control.sol</code>，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract Controlflow &#123;</span><br><span class="line">    // if else</span><br><span class="line">    function ifElseTest(uint256 _number) public pure returns(bool)&#123;</span><br><span class="line">        if(_number == 0)&#123;</span><br><span class="line">            return(true);</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            return(false);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // for loop</span><br><span class="line">    function forLoopTest() public pure returns(uint256)&#123;</span><br><span class="line">        uint sum = 0;</span><br><span class="line">        for(uint i = 0; i &lt; 10; i++)&#123;</span><br><span class="line">            sum += i;</span><br><span class="line">        &#125;</span><br><span class="line">        return(sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // while</span><br><span class="line">    function whileTest() public pure returns(uint256)&#123;</span><br><span class="line">        uint sum = 0;</span><br><span class="line">        uint i = 0;</span><br><span class="line">        while(i &lt; 10)&#123;</span><br><span class="line">            sum += i;</span><br><span class="line">            i++;</span><br><span class="line">        &#125;</span><br><span class="line">        return(sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // do-while</span><br><span class="line">    function doWhileTest() public pure returns(uint256)&#123;</span><br><span class="line">        uint sum = 0;</span><br><span class="line">        uint i = 0;</span><br><span class="line">        do&#123;</span><br><span class="line">            sum += i;</span><br><span class="line">            i++;</span><br><span class="line">        &#125;while(i &lt; 10);</span><br><span class="line">        return(sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 三元运算符 ternary/conditional operator</span><br><span class="line">    function ternaryTest(uint256 x, uint256 y) public pure returns(uint256)&#123;</span><br><span class="line">        // return the max of x and y</span><br><span class="line">        return x &gt;= y ? x: y; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意⚠️</strong>：<code>Solidity</code>中最常用的变量类型是<code>uint</code>，也就是正整数，取到负值的话，会报<code>underflow</code>错误。</p>
+<h3 id="控制流-1"><a href="#控制流-1" class="headerlink" title="控制流"></a>控制流</h3><p><code>Solidity</code>的控制流与其他语言类似，主要包含以下几种：</p>
+<ol>
+<li>if-else</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function ifElseTest(uint256 _number) public pure returns(bool)&#123;</span><br><span class="line">    if(_number == 0)&#123;</span><br><span class="line">        return(true);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        return(false);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>for循环</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function forLoopTest() public pure returns(uint256)&#123;</span><br><span class="line">    uint sum = 0;</span><br><span class="line">    for(uint i = 0; i &lt; 10; i++)&#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line">    return(sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>while循环</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function whileTest() public pure returns(uint256)&#123;</span><br><span class="line">    uint sum = 0;</span><br><span class="line">    uint i = 0;</span><br><span class="line">    while(i &lt; 10)&#123;</span><br><span class="line">        sum += i;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line">    return(sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>do-while循环</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function doWhileTest() public pure returns(uint256)&#123;</span><br><span class="line">    uint sum = 0;</span><br><span class="line">    uint i = 0;</span><br><span class="line">    do&#123;</span><br><span class="line">        sum += i;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;while(i &lt; 10);</span><br><span class="line">    return(sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>三目运算</li>
+</ol>
+<p>三元运算符是<code>Solidity</code>中唯一一个接受三个操作数的运算符，规则<code>条件? 条件为真的表达式:条件为假的表达式</code>。此运算符经常用作<code>if</code>语句的快捷方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 三元运算符 ternary/conditional operator</span><br><span class="line">function ternaryTest(uint256 x, uint256 y) public pure returns(uint256)&#123;</span><br><span class="line">    // return the max of x and y</span><br><span class="line">    return x &gt;= y ? x: y; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>另外还有<code>continue</code>（立即进入下一个循环）和<code>break</code>（跳出当前循环）关键字可以使用。</strong></p>
+<h2 id="构造函数和修饰器"><a href="#构造函数和修饰器" class="headerlink" title="构造函数和修饰器"></a>构造函数和修饰器</h2><h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><h2 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h2><h2 id="抽象合约和接口"><a href="#抽象合约和接口" class="headerlink" title="抽象合约和接口"></a>抽象合约和接口</h2><h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://www.wtf.academy/docs/solidity-101/HelloWeb3">https://www.wtf.academy/docs/solidity-101/HelloWeb3</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/AmazingAng/WTF-Solidity">https://github.com/AmazingAng/WTF-Solidity</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/">Tag</a></li>
+        
+          <li><a href="/categories/">Category</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello-Web3"><span class="toc-number">1.</span> <span class="toc-text">Hello Web3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solidity%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">Solidity简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hello-Web3-1"><span class="toc-number">1.2.</span> <span class="toc-text">Hello Web3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%80%BC%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">值类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solidity%E4%B8%AD%E7%9A%84%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.1.</span> <span class="toc-text">Solidity中的变量类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.2.</span> <span class="toc-text">地址类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E9%95%BF%E5%AD%97%E8%8A%82%E6%95%B0%E7%BB%84"><span class="toc-number">2.3.</span> <span class="toc-text">定长字节数组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%9A%E4%B8%BEenum"><span class="toc-number">2.4.</span> <span class="toc-text">枚举enum</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%92%8C%E5%87%BD%E6%95%B0%E8%BE%93%E5%87%BA"><span class="toc-number">3.</span> <span class="toc-text">函数和函数输出</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.</span> <span class="toc-text">函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E7%9A%84%E4%BB%A3%E7%A0%81%E5%BD%A2%E5%BC%8F"><span class="toc-number">3.1.1.</span> <span class="toc-text">函数的代码形式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AFPure%E5%92%8CView%EF%BC%9F"><span class="toc-number">3.1.2.</span> <span class="toc-text">到底什么是Pure和View？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%B5%8B%E8%AF%95"><span class="toc-number">3.1.3.</span> <span class="toc-text">代码测试</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#pure%E5%92%8Cview"><span class="toc-number">3.1.3.1.</span> <span class="toc-text">pure和view</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#internal%E5%92%8Cexternal%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">3.1.3.2.</span> <span class="toc-text">internal和external的对比</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#payable%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">3.1.3.3.</span> <span class="toc-text">payable的使用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%BE%93%E5%87%BA"><span class="toc-number">3.2.</span> <span class="toc-text">函数输出</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%80%BC%EF%BC%9Areturn%E5%92%8Creturns"><span class="toc-number">3.2.1.</span> <span class="toc-text">返回值：return和returns</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E5%BC%8F%E8%BF%94%E5%9B%9E"><span class="toc-number">3.2.2.</span> <span class="toc-text">命名式返回</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E6%9E%84%E5%BC%8F%E5%A4%8D%E5%88%B6"><span class="toc-number">3.2.3.</span> <span class="toc-text">解构式复制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E5%92%8C%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">4.</span> <span class="toc-text">变量数据存储和作用域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solidity%E4%B8%AD%E7%9A%84%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-number">4.1.</span> <span class="toc-text">Solidity中的引用类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE"><span class="toc-number">4.2.</span> <span class="toc-text">数据位置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BD%8D%E7%BD%AE%E5%92%8C%E8%B5%8B%E5%80%BC%E8%A7%84%E5%88%99"><span class="toc-number">4.2.1.</span> <span class="toc-text">数据位置和赋值规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E7%9A%84%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">4.3.</span> <span class="toc-text">变量的作用域</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F%EF%BC%88state-variable%EF%BC%89"><span class="toc-number">4.3.1.</span> <span class="toc-text">状态变量（state variable）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%EF%BC%88local-variable%EF%BC%89"><span class="toc-number">4.3.2.</span> <span class="toc-text">局部变量（local variable）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%EF%BC%88global-variable%EF%BC%89"><span class="toc-number">4.3.3.</span> <span class="toc-text">全局变量（global variable）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F-%E4%BB%A5%E5%A4%AA%E5%8D%95%E4%BD%8D%E4%B8%8E%E6%97%B6%E9%97%B4%E5%8D%95%E4%BD%8D"><span class="toc-number">4.3.4.</span> <span class="toc-text">全局变量-以太单位与时间单位</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E5%92%8C%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">引用类型和映射类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">引用类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E7%BB%84array"><span class="toc-number">5.1.1.</span> <span class="toc-text">数组array</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%95%B0%E7%BB%84%E7%9A%84%E8%A7%84%E5%88%99"><span class="toc-number">5.1.1.1.</span> <span class="toc-text">创建数组的规则</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E6%88%90%E5%91%98"><span class="toc-number">5.1.1.2.</span> <span class="toc-text">数组成员</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93struct"><span class="toc-number">5.1.2.</span> <span class="toc-text">结构体struct</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.2.</span> <span class="toc-text">映射类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%A0%E5%B0%84Mapping"><span class="toc-number">5.2.1.</span> <span class="toc-text">映射Mapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E7%9A%84%E8%A7%84%E5%88%99"><span class="toc-number">5.2.2.</span> <span class="toc-text">映射的规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">5.2.3.</span> <span class="toc-text">映射的原理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">6.</span> <span class="toc-text">变量初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%80%BC%E7%B1%BB%E5%9E%8B%E5%88%9D%E5%A7%8B%E5%80%BC"><span class="toc-number">6.1.</span> <span class="toc-text">值类型初始值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E5%88%9D%E5%A7%8B%E5%80%BC"><span class="toc-number">6.2.</span> <span class="toc-text">引用类型初始值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete%E6%93%8D%E4%BD%9C%E7%AC%A6"><span class="toc-number">6.3.</span> <span class="toc-text">delete操作符</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E6%95%B0"><span class="toc-number">7.</span> <span class="toc-text">常数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#constant%E5%92%8Cimmutable"><span class="toc-number">7.1.</span> <span class="toc-text">constant和immutable</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#constant"><span class="toc-number">7.1.1.</span> <span class="toc-text">constant</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#immutable"><span class="toc-number">7.1.2.</span> <span class="toc-text">immutable</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="toc-number">8.</span> <span class="toc-text">控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81-1"><span class="toc-number">8.1.</span> <span class="toc-text">控制流</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E4%BF%AE%E9%A5%B0%E5%99%A8"><span class="toc-number">9.</span> <span class="toc-text">构造函数和修饰器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6"><span class="toc-number">10.</span> <span class="toc-text">事件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF"><span class="toc-number">11.</span> <span class="toc-text">继承</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%BD%E8%B1%A1%E5%90%88%E7%BA%A6%E5%92%8C%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.</span> <span class="toc-text">抽象合约和接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8"><span class="toc-number">13.</span> <span class="toc-text">异常</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">14.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&text=Solidity入门学习"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&is_video=false&description=Solidity入门学习"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Solidity入门学习&body=Check out this article: https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=Solidity入门学习"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&name=Solidity入门学习&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&t=Solidity入门学习"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+      <div class="footer-left">
+        Copyright &copy;
+        
+        
+        2024-2025
+        💗
+      </div>
+      <div class="footer-right">
+        <nav>
+          <ul>
+            <!--
+          --><li><a href="/">Home</a></li><!--
+        --><!--
+          --><li><a href="/archives/">Writing</a></li><!--
+        --><!--
+          --><li><a href="/tags/">Tag</a></li><!--
+        --><!--
+          --><li><a href="/categories/">Category</a></li><!--
+        --><!--
+          --><li><a href="/search/">Search</a></li><!--
+        --><!--
+          --><li><a href="/about/">About</a></li><!--
+        -->
+          </ul>
+          <ul>
+            
+              <!-- 不蒜子统计 -->
+              <span id="busuanzi_container_site_pv">
+                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+              </span>
+              <span class="post-meta-divider">|</span>
+              <span id="busuanzi_container_site_uv" style='display:none'>
+                      本站访客数<span id="busuanzi_value_site_uv"></span>人
+              </span>
+            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            
+          </ul>
+        </nav>
+      </div>
+      
+</footer>
+
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
