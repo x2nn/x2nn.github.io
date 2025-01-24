@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>X2n.</title>
+  <icon>https://x2nn.github.io/icon.png</icon>
+  <subtitle>test1</subtitle>
+  <link href="https://x2nn.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://x2nn.github.io/"/>
+  <updated>2025-01-24T17:40:01.540Z</updated>
+  <id>https://x2nn.github.io/</id>
+  
+  <author>
+    <name>💗</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Solidity入门学习</title>
+    <link href="https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/"/>
+    <id>https://x2nn.github.io/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/</id>
+    <published>2025-01-22T05:29:59.000Z</published>
+    <updated>2025-01-24T17:40:01.540Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Hello-Web3&quot;&gt;&lt;a href=&quot;#Hello-Web3&quot; class=&quot;headerlink&quot; title=&quot;Hello Web3&quot;&gt;&lt;/a&gt;Hello Web3&lt;/h2&gt;&lt;h3 id=&quot;Solidity简介&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="Web3" scheme="https://x2nn.github.io/categories/Web3/"/>
+    
+    
+    <category term="以太坊" scheme="https://x2nn.github.io/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/"/>
+    
+    <category term="solidity" scheme="https://x2nn.github.io/tags/solidity/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mac搭建hardhat以太坊开发环境</title>
+    <link href="https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/"/>
+    <id>https://x2nn.github.io/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/</id>
+    <published>2025-01-13T13:29:11.000Z</published>
+    <updated>2025-01-22T05:34:43.498Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Node环境配置&quot;&gt;&lt;a href=&quot;#Node环境配置&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="Web3" scheme="https://x2nn.github.io/categories/Web3/"/>
+    
+    
+    <category term="以太坊" scheme="https://x2nn.github.io/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/"/>
+    
+    <category term="solidity" scheme="https://x2nn.github.io/tags/solidity/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>GeoServer代码执行漏洞(CVE-2024-36401)</title>
+    <link href="https://x2nn.github.io/2025/01/09/GeoServer%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E(CVE-2024-36401)/"/>
+    <id>https://x2nn.github.io/2025/01/09/GeoServer%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E(CVE-2024-36401)/</id>
+    <published>2025-01-09T06:33:27.000Z</published>
+    <updated>2025-01-22T05:34:40.387Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;配置调试环境&quot;&gt;&lt;a href=&quot;#配置调试环境&quot; class=&quot;headerlink&quot; title=&quot;配置调试环境&quot;&gt;&lt;/a&gt;配置调试环境&lt;/h2&gt;&lt;p&gt;调试漏洞的GeoServer版本号为2.23.2，获取源代码。&lt;/p&gt;
+&lt;figure</summary>
+        
+      
+    
+    
+    
+    <category term="Web2" scheme="https://x2nn.github.io/categories/Web2/"/>
+    
+    
+    <category term="RCE" scheme="https://x2nn.github.io/tags/RCE/"/>
+    
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    
+    <category term="XPath" scheme="https://x2nn.github.io/tags/XPath/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>SSRF漏洞篇</title>
+    <link href="https://x2nn.github.io/2024/07/25/SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87/"/>
+    <id>https://x2nn.github.io/2024/07/25/SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87/</id>
+    <published>2024-07-24T16:52:28.000Z</published>
+    <updated>2025-01-22T05:34:48.060Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;SSRF打Redis&quot;&gt;&lt;a href=&quot;#SSRF打Redis&quot; class=&quot;headerlink&quot; title=&quot;SSRF打Redis&quot;&gt;&lt;/a&gt;SSRF打Redis&lt;/h2&gt;&lt;p&gt;CTF</summary>
+        
+      
+    
+    
+    
+    <category term="Web2" scheme="https://x2nn.github.io/categories/Web2/"/>
+    
+    
+    <category term="CTF" scheme="https://x2nn.github.io/tags/CTF/"/>
+    
+    <category term="SSRF" scheme="https://x2nn.github.io/tags/SSRF/"/>
+    
+    <category term="Redis" scheme="https://x2nn.github.io/tags/Redis/"/>
+    
+    <category term="gopher协议" scheme="https://x2nn.github.io/tags/gopher%E5%8D%8F%E8%AE%AE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>xsshunter-express搭建</title>
+    <link href="https://x2nn.github.io/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/"/>
+    <id>https://x2nn.github.io/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/</id>
+    <published>2024-07-22T03:51:48.000Z</published>
+    <updated>2025-01-22T05:36:17.182Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;参考：&lt;a href=&quot;https://www.youtube.com/watch?v=HF05dr8xhso&amp;t=377s&quot;&gt;https://www.youtube.com/watch?v=HF05dr8xhso&amp;amp;t=377s&lt;/a&gt;&lt;/p&gt;
+&lt;h4</summary>
+        
+      
+    
+    
+    
+    <category term="Tools" scheme="https://x2nn.github.io/categories/Tools/"/>
+    
+    
+    <category term="XSS" scheme="https://x2nn.github.io/tags/XSS/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>搭建Burp Collaborator</title>
+    <link href="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"/>
+    <id>https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/</id>
+    <published>2024-07-20T23:22:42.000Z</published>
+    <updated>2025-01-22T05:36:31.779Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;参考：&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="Tools" scheme="https://x2nn.github.io/categories/Tools/"/>
+    
+    
+    <category term="BurpSuite" scheme="https://x2nn.github.io/tags/BurpSuite/"/>
+    
+    <category term="dnslog" scheme="https://x2nn.github.io/tags/dnslog/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CTF做题记录</title>
+    <link href="https://x2nn.github.io/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/"/>
+    <id>https://x2nn.github.io/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/</id>
+    <published>2024-07-14T08:41:22.000Z</published>
+    <updated>2025-01-22T05:34:38.260Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3 id=&quot;NewStarCTF-2023-web-week3-midsql-sql&quot;&gt;&lt;a href=&quot;#NewStarCTF-2023-web-week3-midsql-sql&quot; class=&quot;headerlink&quot; title=&quot;[NewStarCTF 2023]</summary>
+        
+      
+    
+    
+    
+    <category term="Web2" scheme="https://x2nn.github.io/categories/Web2/"/>
+    
+    
+    <category term="SQL注入" scheme="https://x2nn.github.io/tags/SQL%E6%B3%A8%E5%85%A5/"/>
+    
+    <category term="二分法" scheme="https://x2nn.github.io/tags/%E4%BA%8C%E5%88%86%E6%B3%95/"/>
+    
+    <category term="Web" scheme="https://x2nn.github.io/tags/Web/"/>
+    
+    <category term="RCE" scheme="https://x2nn.github.io/tags/RCE/"/>
+    
+    <category term="CTF" scheme="https://x2nn.github.io/tags/CTF/"/>
+    
+  </entry>
+  
+</feed>
