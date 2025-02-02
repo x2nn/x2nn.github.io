@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-02-02T12:26:20.260Z</updated>
+  <updated>2025-01-27T05:08:36.114Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,25 +15,6 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>Solidity入门学习(三)</title>
-    <link href="https://x2nn.github.io/2025/02/02/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"/>
-    <id>https://x2nn.github.io/2025/02/02/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/</id>
-    <published>2025-02-02T12:25:10.000Z</published>
-    <updated>2025-02-02T12:26:20.260Z</updated>
-    
-    
-    
-    
-    <category term="Web3" scheme="https://x2nn.github.io/categories/Web3/"/>
-    
-    
-    <category term="以太坊" scheme="https://x2nn.github.io/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/"/>
-    
-    <category term="solidity" scheme="https://x2nn.github.io/tags/solidity/"/>
-    
-  </entry>
   
   <entry>
     <title>Solidity入门学习(二)</title>
