@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="重载Solidity中允许函数进行重载（overloading），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，**Solidity不允许修饰器（modifier）重载。** 测试代码Overloading.sol，如下： 12345678910111213141516&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Solidity入门学习(三)">
+<meta property="og:url" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/index.html">
+<meta property="og:site_name" content="X2n.">
+<meta property="og:description" content="重载Solidity中允许函数进行重载（overloading），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，**Solidity不允许修饰器（modifier）重载。** 测试代码Overloading.sol，如下： 12345678910111213141516&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204032523893.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204035623180.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204041504259.png">
+<meta property="article:published_time" content="2025-02-02T18:20:13.000Z">
+<meta property="article:modified_time" content="2025-02-03T20:18:53.128Z">
+<meta property="article:author" content="💗">
+<meta property="article:tag" content="以太坊">
+<meta property="article:tag" content="solidity">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204032523893.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Solidity入门学习(三)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n." type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&text=Solidity入门学习(三)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&is_video=false&description=Solidity入门学习(三)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Solidity入门学习(三)&body=Check out this article: https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&name=Solidity入门学习(三)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&t=Solidity入门学习(三)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E8%BD%BD"><span class="toc-number">1.</span> <span class="toc-text">重载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="toc-number">1.1.</span> <span class="toc-text">函数重载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%EF%BC%88Argument-Matching%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">参数匹配（Argument Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.</span> <span class="toc-text">库合约</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6-1"><span class="toc-number">2.1.</span> <span class="toc-text">库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Strings%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.2.</span> <span class="toc-text">Strings库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BA%93%E5%90%88%E7%BA%A6%EF%BC%9F"><span class="toc-number">2.3.</span> <span class="toc-text">如何使用库合约？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Import"><span class="toc-number">3.</span> <span class="toc-text">Import</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Import%E7%94%A8%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">Import用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AF%BC%E5%85%A5%E7%BB%93%E6%9E%9C"><span class="toc-number">3.2.</span> <span class="toc-text">测试导入结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.</span> <span class="toc-text">接收和发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH"><span class="toc-number">4.1.</span> <span class="toc-text">接收ETH</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.2.</span> <span class="toc-text">发送ETH</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Solidity入门学习(三)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">💗</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-02-02T18:20:13.000Z" class="dt-published" itemprop="datePublished">2025-02-03</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Web3/">Web3</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/solidity/" rel="tag">solidity</a>, <a class="p-category" href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" rel="tag">以太坊</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="重载"><a href="#重载" class="headerlink" title="重载"></a>重载</h2><p><code>Solidity</code>中允许函数进行重载（<code>overloading</code>），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，**<code>Solidity</code>不允许修饰器（<code>modifier</code>）重载。**</p>
+<p>测试代码<code>Overloading.sol</code>，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract Overloading&#123;</span><br><span class="line">    function saySomething() public pure returns(string memory)&#123;</span><br><span class="line">        return (&quot;Nothing&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    function saySomething(string memory something) public pure returns (string memory) &#123;</span><br><span class="line">        return(something);</span><br><span class="line">    &#125;</span><br><span class="line">    function f(uint8 _in) public pure returns (uint8 out) &#123;</span><br><span class="line">        out = _in;</span><br><span class="line">    &#125;</span><br><span class="line">    function f(uint256 _in) public pure returns (uint256 out) &#123;</span><br><span class="line">        out = _in;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="函数重载"><a href="#函数重载" class="headerlink" title="函数重载"></a>函数重载</h3><p>我们可以定义两个都叫<code>saySomething()</code>的函数，一个没有任何参数，输出<code>&quot;Nothing&quot;</code>；另一个接收一个<code>string</code>参数，输出这个<code>string</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function saySomething() public pure returns(string memory)&#123;</span><br><span class="line">        return (&quot;Nothing&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    function saySomething(string memory something) public pure returns (string memory) &#123;</span><br><span class="line">        return(something);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终重载函数在经过编译器编译后，由于不同的参数类型，都变成了不同的函数选择器（selector）。</p>
+<p>以 <code>Overloading.sol</code> 合约为例，在 Remix 上编译部署后，分别调用重载函数 <code>saySomething()</code> 和 <code>saySomething(string memory something)</code>，可以看到他们返回了不同的结果，被区分为不同的函数。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204032523893.png" alt="image-20250204032523893"></p>
+<h3 id="参数匹配（Argument-Matching）"><a href="#参数匹配（Argument-Matching）" class="headerlink" title="参数匹配（Argument Matching）"></a>参数匹配（Argument Matching）</h3><p>在调用重载函数时，会把输入的实际参数和函数参数的变量类型做匹配。 如果出现多个匹配的重载函数，则会报错。下面这个例子有两个叫<code>f()</code>的函数，一个参数为<code>uint8</code>，另一个为<code>uint256</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function f(uint8 _in) public pure returns (uint8 out) &#123;</span><br><span class="line">    out = _in;</span><br><span class="line">&#125;</span><br><span class="line">function f(uint256 _in) public pure returns (uint256 out) &#123;</span><br><span class="line">    out = _in;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们调用<code>f(50)</code>，因为<code>50</code>既可以被转换为<code>uint8</code>，也可以被转换为<code>uint256</code>，因此会报错。</p>
+<h2 id="库合约"><a href="#库合约" class="headerlink" title="库合约"></a>库合约</h2><p>这一讲，我们用<code>ERC721</code>的引用的库合约<code>Strings</code>为例介绍<code>Solidity</code>中的库合约（<code>Library</code>），并总结了常用的库合约。</p>
+<p>完整的测试代码<code>Library.sol</code>如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line"></span><br><span class="line">library Strings &#123;</span><br><span class="line">    bytes16 private constant _HEX_SYMBOLS = &quot;0123456789abcdef&quot;;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @dev Converts a `uint256` to its ASCII `string` decimal representation.</span><br><span class="line">     */</span><br><span class="line">    function toString(uint256 value) public pure returns (string memory) &#123;</span><br><span class="line">        // Inspired by OraclizeAPI&#x27;s implementation - MIT licence</span><br><span class="line">        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol</span><br><span class="line"></span><br><span class="line">        if (value == 0) &#123;</span><br><span class="line">            return &quot;0&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        uint256 temp = value;</span><br><span class="line">        uint256 digits;</span><br><span class="line">        while (temp != 0) &#123;</span><br><span class="line">            digits++;</span><br><span class="line">            temp /= 10;</span><br><span class="line">        &#125;</span><br><span class="line">        bytes memory buffer = new bytes(digits);</span><br><span class="line">        while (value != 0) &#123;</span><br><span class="line">            digits -= 1;</span><br><span class="line">            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));</span><br><span class="line">            value /= 10;</span><br><span class="line">        &#125;</span><br><span class="line">        return string(buffer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation.</span><br><span class="line">     */</span><br><span class="line">    function toHexString(uint256 value) public pure returns (string memory) &#123;</span><br><span class="line">        if (value == 0) &#123;</span><br><span class="line">            return &quot;0x00&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        uint256 temp = value;</span><br><span class="line">        uint256 length = 0;</span><br><span class="line">        while (temp != 0) &#123;</span><br><span class="line">            length++;</span><br><span class="line">            temp &gt;&gt;= 8;</span><br><span class="line">        &#125;</span><br><span class="line">        return toHexString(value, length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.</span><br><span class="line">     */</span><br><span class="line">    function toHexString(uint256 value, uint256 length) public pure returns (string memory) &#123;</span><br><span class="line">        bytes memory buffer = new bytes(2 * length + 2);</span><br><span class="line">        buffer[0] = &quot;0&quot;;</span><br><span class="line">        buffer[1] = &quot;x&quot;;</span><br><span class="line">        for (uint256 i = 2 * length + 1; i &gt; 1; --i) &#123;</span><br><span class="line">            buffer[i] = _HEX_SYMBOLS[value &amp; 0xf];</span><br><span class="line">            value &gt;&gt;= 4;</span><br><span class="line">        &#125;</span><br><span class="line">        require(value == 0, &quot;Strings: hex length insufficient&quot;);</span><br><span class="line">        return string(buffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// 用函数调用另一个库合约</span><br><span class="line">contract UseLibrary&#123;    </span><br><span class="line">    // 利用using for操作使用库</span><br><span class="line">    using Strings for uint256;</span><br><span class="line">    function getString1(uint256 _number) public pure returns(string memory)&#123;</span><br><span class="line">        // 库函数会自动添加为uint256型变量的成员</span><br><span class="line">        return _number.toHexString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 直接通过库合约名调用</span><br><span class="line">    function getString2(uint256 _number) public pure returns(string memory)&#123;</span><br><span class="line">        return Strings.toHexString(_number);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="库合约-1"><a href="#库合约-1" class="headerlink" title="库合约"></a>库合约</h3><p>库合约是一种特殊的合约，为了提升<code>Solidity</code>代码的复用性和减少<code>gas</code>而存在。库合约是一系列的函数合集，由大神或者项目方创作，咱们站在巨人的肩膀上，会用就行了。</p>
+<p>他和普通合约主要有以下几点不同：</p>
+<ol>
+<li>不能存在状态变量</li>
+<li>不能够继承或被继承</li>
+<li>不能接收以太币</li>
+<li>不可以被销毁</li>
+</ol>
+<p>需要注意的是，库合约中的函数可见性如果被设置为<code>public</code>或者<code>external</code>，则在调用函数时会触发一次<code>delegatecall</code>。而如果被设置为<code>internal</code>，则不会引起。对于设置为<code>private</code>可见性的函数来说，其仅能在库合约中可见，在其他合约中不可用。</p>
+<h3 id="Strings库合约"><a href="#Strings库合约" class="headerlink" title="Strings库合约"></a>Strings库合约</h3><p><code>Strings库合约</code>是将<code>uint256</code>类型转换为相应的<code>string</code>类型的代码库，样例代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">library Strings &#123;</span><br><span class="line">    bytes16 private constant _HEX_SYMBOLS = &quot;0123456789abcdef&quot;;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @dev Converts a `uint256` to its ASCII `string` decimal representation.</span><br><span class="line">     */</span><br><span class="line">    function toString(uint256 value) public pure returns (string memory) &#123;</span><br><span class="line">        // Inspired by OraclizeAPI&#x27;s implementation - MIT licence</span><br><span class="line">        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol</span><br><span class="line"></span><br><span class="line">        if (value == 0) &#123;</span><br><span class="line">            return &quot;0&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        uint256 temp = value;</span><br><span class="line">        uint256 digits;</span><br><span class="line">        while (temp != 0) &#123;</span><br><span class="line">            digits++;</span><br><span class="line">            temp /= 10;</span><br><span class="line">        &#125;</span><br><span class="line">        bytes memory buffer = new bytes(digits);</span><br><span class="line">        while (value != 0) &#123;</span><br><span class="line">            digits -= 1;</span><br><span class="line">            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));</span><br><span class="line">            value /= 10;</span><br><span class="line">        &#125;</span><br><span class="line">        return string(buffer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation.</span><br><span class="line">     */</span><br><span class="line">    function toHexString(uint256 value) public pure returns (string memory) &#123;</span><br><span class="line">        if (value == 0) &#123;</span><br><span class="line">            return &quot;0x00&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        uint256 temp = value;</span><br><span class="line">        uint256 length = 0;</span><br><span class="line">        while (temp != 0) &#123;</span><br><span class="line">            length++;</span><br><span class="line">            temp &gt;&gt;= 8;</span><br><span class="line">        &#125;</span><br><span class="line">        return toHexString(value, length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.</span><br><span class="line">     */</span><br><span class="line">    function toHexString(uint256 value, uint256 length) public pure returns (string memory) &#123;</span><br><span class="line">        bytes memory buffer = new bytes(2 * length + 2);</span><br><span class="line">        buffer[0] = &quot;0&quot;;</span><br><span class="line">        buffer[1] = &quot;x&quot;;</span><br><span class="line">        for (uint256 i = 2 * length + 1; i &gt; 1; --i) &#123;</span><br><span class="line">            buffer[i] = _HEX_SYMBOLS[value &amp; 0xf];</span><br><span class="line">            value &gt;&gt;= 4;</span><br><span class="line">        &#125;</span><br><span class="line">        require(value == 0, &quot;Strings: hex length insufficient&quot;);</span><br><span class="line">        return string(buffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它主要包含两个函数，<code>toString()</code>将<code>uint256</code>转换为10进制的<code>string</code>，<code>toHexString()</code>将<code>uint256</code>转换为16进制的<code>string</code>。</p>
+<h3 id="如何使用库合约？"><a href="#如何使用库合约？" class="headerlink" title="如何使用库合约？"></a>如何使用库合约？</h3><p>我们用<code>Strings</code>库合约的<code>toHexString()</code>来演示两种使用库合约中函数的办法。</p>
+<ul>
+<li>利用using for指令，指令<code>using A for B;</code>可用于附加库合约（从库<code> A</code>）到任何类型（<code>B</code>）。添加完指令后，库<code>A</code>中的函数会自动添加为<code>B</code>类型变量的成员，可以直接调用。注意：在调用的时候，这个变量会被当作第一个参数传递给函数：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 利用using for指令</span><br><span class="line">using Strings for uint256;</span><br><span class="line">function getString1(uint256 _number) public pure returns(string memory)&#123;</span><br><span class="line">    // 库合约中的函数会自动添加为uint256型变量的成员</span><br><span class="line">    return _number.toHexString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过库合约名称调用函数</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 直接通过库合约名调用</span><br><span class="line">function getString2(uint256 _number) public pure returns(string memory)&#123;</span><br><span class="line">    return Strings.toHexString(_number);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们部署合约并输入<code>130</code>测试一下，两种方法均能返回正确的16进制string <code>0x82</code>。证明我们调用库合约成功！</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204035623180.png" alt="image-20250204035623180"></p>
+<p>常见的库合约有：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Strings.sol">Strings</a>：将<code>uint256</code>转换为<code>String</code></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Address.sol">Address</a>：判断某个地址是否为合约地址</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Create2.sol">Create2</a>：更安全的使用<code>Create2 EVM opcode</code></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Arrays.sol">Arrays</a>：跟数组相关的库合约</li>
+</ol>
+<h2 id="Import"><a href="#Import" class="headerlink" title="Import"></a>Import</h2><p>在Solidity中，<code>import</code>语句可以帮助我们在一个文件中引用另一个文件的内容，提高代码的可重用性和组织性。本教程将向你介绍如何在Solidity中使用<code>import</code>语句。</p>
+<h3 id="Import用法"><a href="#Import用法" class="headerlink" title="Import用法"></a><code>Import</code>用法</h3><ul>
+<li>通过源文件相对位置导入，例子：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">文件结构</span><br><span class="line">├── Import.sol</span><br><span class="line">└── Yeye.sol</span><br><span class="line"></span><br><span class="line">// 通过文件相对位置import</span><br><span class="line">import &#x27;./Yeye.sol&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过源文件网址导入网上的合约的全局符号，例子：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 通过网址引用</span><br><span class="line">import &#x27;https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过<code>npm</code>的目录导入，例子：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import &#x27;@openzeppelin/contracts/access/Ownable.sol&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过指定<code>全局符号</code>导入合约特定的全局符号，例子：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import &#123;Yeye&#125; from &#x27;./Yeye.sol&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>引用(<code>import</code>)在代码中的位置为：在声明版本号之后，在其余代码之前。</li>
+</ul>
+<h3 id="测试导入结果"><a href="#测试导入结果" class="headerlink" title="测试导入结果"></a>测试导入结果</h3><p>我们可以用下面这段代码测试是否成功导入了外部源代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line"></span><br><span class="line">// 通过文件相对位置import</span><br><span class="line">import &#x27;./Yeye.sol&#x27;;</span><br><span class="line">// 通过`全局符号`导入特定的合约</span><br><span class="line">import &#123;Yeye&#125; from &#x27;./Yeye.sol&#x27;;</span><br><span class="line">// 通过网址引用</span><br><span class="line">import &#x27;https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol&#x27;;</span><br><span class="line">// 引用OpenZeppelin合约</span><br><span class="line">import &#x27;@openzeppelin/contracts/access/Ownable.sol&#x27;;</span><br><span class="line"></span><br><span class="line">contract Import &#123;</span><br><span class="line">    // 成功导入Address库</span><br><span class="line">    using Address for address;</span><br><span class="line">    // 声明yeye变量</span><br><span class="line">    Yeye yeye = new Yeye();</span><br><span class="line"></span><br><span class="line">    // 测试是否能调用yeye的函数</span><br><span class="line">    function test() external&#123;</span><br><span class="line">        yeye.hip();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Yeye.sol</code>代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line"></span><br><span class="line">// 第10讲合约继承中的Yeye合约</span><br><span class="line">contract Yeye &#123;</span><br><span class="line">    event Log(string msg);</span><br><span class="line"></span><br><span class="line">    // 定义3个function: hip(), pop(), yeye()，Log值为Yeye。</span><br><span class="line">    function hip() public virtual&#123;</span><br><span class="line">        emit Log(&quot;Yeye hip&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function pop() public virtual&#123;</span><br><span class="line">        emit Log(&quot;Yeye pop&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    function yeye() public virtual &#123;</span><br><span class="line">        emit Log(&quot;Yeye&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果如下：</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204041504259.png" alt="image-20250204041504259"></p>
+<h2 id="接收和发送ETH"><a href="#接收和发送ETH" class="headerlink" title="接收和发送ETH"></a>接收和发送ETH</h2><h3 id="接收ETH"><a href="#接收ETH" class="headerlink" title="接收ETH"></a>接收ETH</h3><h3 id="发送ETH"><a href="#发送ETH" class="headerlink" title="发送ETH"></a>发送ETH</h3>
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/">Tag</a></li>
+        
+          <li><a href="/categories/">Category</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E8%BD%BD"><span class="toc-number">1.</span> <span class="toc-text">重载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="toc-number">1.1.</span> <span class="toc-text">函数重载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%EF%BC%88Argument-Matching%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">参数匹配（Argument Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.</span> <span class="toc-text">库合约</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6-1"><span class="toc-number">2.1.</span> <span class="toc-text">库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Strings%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.2.</span> <span class="toc-text">Strings库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BA%93%E5%90%88%E7%BA%A6%EF%BC%9F"><span class="toc-number">2.3.</span> <span class="toc-text">如何使用库合约？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Import"><span class="toc-number">3.</span> <span class="toc-text">Import</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Import%E7%94%A8%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">Import用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AF%BC%E5%85%A5%E7%BB%93%E6%9E%9C"><span class="toc-number">3.2.</span> <span class="toc-text">测试导入结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.</span> <span class="toc-text">接收和发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH"><span class="toc-number">4.1.</span> <span class="toc-text">接收ETH</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.2.</span> <span class="toc-text">发送ETH</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&text=Solidity入门学习(三)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&is_video=false&description=Solidity入门学习(三)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Solidity入门学习(三)&body=Check out this article: https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&name=Solidity入门学习(三)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&t=Solidity入门学习(三)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+      <div class="footer-left">
+        Copyright &copy;
+        
+        
+        2024-2025
+        💗
+      </div>
+      <div class="footer-right">
+        <nav>
+          <ul>
+            <!--
+          --><li><a href="/">Home</a></li><!--
+        --><!--
+          --><li><a href="/archives/">Writing</a></li><!--
+        --><!--
+          --><li><a href="/tags/">Tag</a></li><!--
+        --><!--
+          --><li><a href="/categories/">Category</a></li><!--
+        --><!--
+          --><li><a href="/search/">Search</a></li><!--
+        --><!--
+          --><li><a href="/about/">About</a></li><!--
+        -->
+          </ul>
+          <ul>
+            
+              <!-- 不蒜子统计 -->
+              <span id="busuanzi_container_site_pv">
+                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+              </span>
+              <span class="post-meta-divider">|</span>
+              <span id="busuanzi_container_site_uv" style='display:none'>
+                      本站访客数<span id="busuanzi_value_site_uv"></span>人
+              </span>
+            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            
+          </ul>
+        </nav>
+      </div>
+      
+</footer>
+
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
