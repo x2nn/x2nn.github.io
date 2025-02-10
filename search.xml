@@ -4,6 +4,35 @@
   
     
     <entry>
+      <title>做个像Pump.fun一样的Memecoin启动台</title>
+      <link href="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/"/>
+      <url>/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/</url>
+      
+        <content type="html"><![CDATA[<h2 id="安装初始环境"><a href="#安装初始环境" class="headerlink" title="安装初始环境"></a>安装初始环境</h2><p>配置node环境，我使用的<code>node</code>环境为<code>v22.13.0</code></p><p>下载github项目</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone -b starter_code https://github.com/dappuniversity/fun-pump</span><br></pre></td></tr></table></figure><p>进入到当前目录下<code>/Users/x2n/Blockchain/Web3/FUN-PUMP</code>，使用<code>npm install</code>进行安装</p><h2 id="创建Token"><a href="#创建Token" class="headerlink" title="创建Token"></a>创建Token</h2><p>使用<code>ERC20.sol</code>创建<code>token</code>，参考<code>openzeppelin</code>。</p><p>使用到<code>Remix</code>去编写<code>token</code>的solidity，<code>Token.sol</code>的代码如下：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: UNLICENSED</span><br><span class="line">pragma solidity 0.8.27;</span><br><span class="line"></span><br><span class="line">import &#123;ERC20&#125; from &quot;@openzeppelin/contracts/token/ERC20/ERC20.sol&quot;;</span><br><span class="line"></span><br><span class="line">contract Token is ERC20 &#123;</span><br><span class="line">    address payable public owner;</span><br><span class="line">    address public creator;</span><br><span class="line"></span><br><span class="line">    constructor(</span><br><span class="line">        address _creator,</span><br><span class="line">        string memory _name,</span><br><span class="line">        string memory _symbol,</span><br><span class="line">        uint256 _totalSupply</span><br><span class="line">    ) ERC20(_name, _symbol) &#123;</span><br><span class="line">        owner = payable(msg.sender);</span><br><span class="line">        creator = _creator;</span><br><span class="line"></span><br><span class="line">        _mint(msg.sender, _totalSupply);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>先使用<code>Remix</code>去部署测试，再在使用<code>hardhat</code>在本地部署。</p><p><img src="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/image-20250207190149258.png" alt="image-20250207190149258"></p><p>部署成功。</p><p><img src="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/Snipaste_2025-02-07_19-03-39.png" alt="Snipaste_2025-02-07_19-03-39"></p><h2 id="创建Factory"><a href="#创建Factory" class="headerlink" title="创建Factory"></a>创建Factory</h2>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web3 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> solidity </tag>
+            
+            <tag> DAPP </tag>
+            
+            <tag> ReactJS </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Solidity入门学习(三)</title>
       <link href="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"/>
       <url>/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/</url>
