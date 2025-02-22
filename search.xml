@@ -152,7 +152,7 @@
       
       <categories>
           
-          <category> Web2漏洞复现 </category>
+          <category> Web漏洞复现 </category>
           
       </categories>
       
@@ -181,7 +181,7 @@
       
       <categories>
           
-          <category> Web2安全 </category>
+          <category> Web安全 </category>
           
       </categories>
       
@@ -264,7 +264,7 @@
       
       <categories>
           
-          <category> Web2安全 </category>
+          <category> CTF </category>
           
       </categories>
       
@@ -275,11 +275,7 @@
             
             <tag> 二分法 </tag>
             
-            <tag> Web </tag>
-            
             <tag> RCE </tag>
-            
-            <tag> CTF </tag>
             
         </tags>
       
