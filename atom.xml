@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-02-17T08:19:04.980Z</updated>
+  <updated>2025-02-23T02:33:53.909Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Codeql查询语法笔记</title>
+    <link href="https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/"/>
+    <id>https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/</id>
+    <published>2025-02-23T01:32:49.000Z</published>
+    <updated>2025-02-23T02:33:53.909Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;生成数据库&quot;&gt;生成数据库&lt;/h2&gt;
+&lt;p&gt;以下为各种语言创建数据库的命令。&lt;/p&gt;
+&lt;figure class=&quot;highlight shell&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span</summary>
+        
+      
+    
+    
+    
+    <category term="代码审计" scheme="https://x2nn.github.io/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
+    
+    
+    <category term="CodeQL" scheme="https://x2nn.github.io/tags/CodeQL/"/>
+    
+    <category term="QL语法" scheme="https://x2nn.github.io/tags/QL%E8%AF%AD%E6%B3%95/"/>
+    
+  </entry>
   
   <entry>
     <title>做个像Pump.fun一样的Memecoin启动台</title>
@@ -28,7 +57,7 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;安装初始环境&quot;&gt;&lt;a href=&quot;#安装初始环境&quot; class=&quot;headerlink&quot;</summary>
+    <summary type="html">&lt;h2</summary>
         
       
     
@@ -59,7 +88,7 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;重载&quot;&gt;&lt;a href=&quot;#重载&quot; class=&quot;headerlink&quot;</summary>
+    <summary type="html">&lt;h2</summary>
         
       
     
@@ -86,7 +115,10 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;控制流&quot;&gt;&lt;a href=&quot;#控制流&quot; class=&quot;headerlink&quot;</summary>
+    <summary type="html">&lt;h2 id=&quot;控制流&quot;&gt;控制流&lt;/h2&gt;
+&lt;p&gt;这一讲，我们将介绍&lt;code&gt;Solidity&lt;/code&gt;中的控制流。&lt;/p&gt;
+&lt;p&gt;测试代码&lt;code&gt;Control.sol&lt;/code&gt;，代码如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight</summary>
         
       
     
@@ -113,7 +145,8 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;Hello-Web3&quot;&gt;&lt;a href=&quot;#Hello-Web3&quot; class=&quot;headerlink&quot; title=&quot;Hello Web3&quot;&gt;&lt;/a&gt;Hello Web3&lt;/h2&gt;&lt;h3 id=&quot;Solidity简介&quot;&gt;&lt;a</summary>
+    <summary type="html">&lt;h2 id=&quot;Hello-Web3&quot;&gt;Hello Web3&lt;/h2&gt;
+&lt;h3</summary>
         
       
     
@@ -140,7 +173,9 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;Node环境配置&quot;&gt;&lt;a href=&quot;#Node环境配置&quot; class=&quot;headerlink&quot;</summary>
+    <summary type="html">&lt;h2 id=&quot;Node环境配置&quot;&gt;Node环境配置&lt;/h2&gt;
+&lt;p&gt;首先安装&lt;code&gt;nvm&lt;/code&gt;，再安装&lt;code&gt;node18&lt;/code&gt;，为了和&lt;code&gt;hardhat&lt;/code&gt;的运行环境匹配&lt;/p&gt;
+&lt;figure class=&quot;highlight</summary>
         
       
     
@@ -167,8 +202,9 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;配置调试环境&quot;&gt;&lt;a href=&quot;#配置调试环境&quot; class=&quot;headerlink&quot; title=&quot;配置调试环境&quot;&gt;&lt;/a&gt;配置调试环境&lt;/h2&gt;&lt;p&gt;调试漏洞的GeoServer版本号为2.23.2，获取源代码。&lt;/p&gt;
-&lt;figure</summary>
+    <summary type="html">&lt;h2 id=&quot;配置调试环境&quot;&gt;配置调试环境&lt;/h2&gt;
+&lt;p&gt;调试漏洞的GeoServer版本号为2.23.2，获取源代码。&lt;/p&gt;
+&lt;figure class=&quot;highlight shell&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span</summary>
         
       
     
@@ -197,7 +233,10 @@
       
         
         
-    <summary type="html">&lt;h2 id=&quot;SSRF打Redis&quot;&gt;&lt;a href=&quot;#SSRF打Redis&quot; class=&quot;headerlink&quot; title=&quot;SSRF打Redis&quot;&gt;&lt;/a&gt;SSRF打Redis&lt;/h2&gt;&lt;p&gt;CTF</summary>
+    <summary type="html">&lt;h2 id=&quot;SSRF打Redis&quot;&gt;SSRF打Redis&lt;/h2&gt;
+&lt;p&gt;CTF show的WEB入门360关卡，打Redis。&lt;/p&gt;
+&lt;p&gt;源码如下：&lt;/p&gt;
+&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td</summary>
         
       
     
@@ -206,13 +245,13 @@
     <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
     
     
-    <category term="CTF" scheme="https://x2nn.github.io/tags/CTF/"/>
-    
     <category term="SSRF" scheme="https://x2nn.github.io/tags/SSRF/"/>
     
     <category term="Redis" scheme="https://x2nn.github.io/tags/Redis/"/>
     
     <category term="gopher协议" scheme="https://x2nn.github.io/tags/gopher%E5%8D%8F%E8%AE%AE/"/>
+    
+    <category term="CTF" scheme="https://x2nn.github.io/tags/CTF/"/>
     
   </entry>
   
@@ -228,7 +267,7 @@
       
         
         
-    <summary type="html">&lt;p&gt;参考：&lt;a href=&quot;https://www.youtube.com/watch?v=HF05dr8xhso&amp;t=377s&quot;&gt;https://www.youtube.com/watch?v=HF05dr8xhso&amp;amp;t=377s&lt;/a&gt;&lt;/p&gt;
+    <summary type="html">&lt;p&gt;参考：&lt;a href=&quot;https://www.youtube.com/watch?v=HF05dr8xhso&amp;amp;t=377s&quot;&gt;https://www.youtube.com/watch?v=HF05dr8xhso&amp;amp;t=377s&lt;/a&gt;&lt;/p&gt;
 &lt;h4</summary>
         
       
@@ -247,14 +286,17 @@
     <link href="https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/"/>
     <id>https://x2nn.github.io/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/</id>
     <published>2024-07-20T23:22:42.000Z</published>
-    <updated>2025-01-22T05:36:31.779Z</updated>
+    <updated>2025-02-23T02:40:30.649Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;p&gt;参考：&lt;a</summary>
+    <summary type="html">&lt;h2 id=&quot;要求&quot;&gt;要求&lt;/h2&gt;
+&lt;p&gt;Docker、域名、BurpSuite、服务器Ubuntu 20（尽量选择香港服务器，域名不需要备案可访问）&lt;/p&gt;
+&lt;h2 id=&quot;设置域名&quot;&gt;设置域名&lt;/h2&gt;
+&lt;p&gt;去到自己的域名的DNS管理器。设置一个burp</summary>
         
       
     
@@ -281,7 +323,9 @@
       
         
         
-    <summary type="html">&lt;h3 id=&quot;NewStarCTF-2023-web-week3-midsql-sql&quot;&gt;&lt;a href=&quot;#NewStarCTF-2023-web-week3-midsql-sql&quot; class=&quot;headerlink&quot; title=&quot;[NewStarCTF 2023]</summary>
+    <summary type="html">&lt;h3 id=&quot;NewStarCTF-2023-web-week3-midsql-sql&quot;&gt;[NewStarCTF 2023] web week3 midsql_sql&lt;/h3&gt;
+&lt;p&gt;通过布尔判断存在sql注入。&lt;/p&gt;
+&lt;p&gt;&lt;img</summary>
         
       
     
