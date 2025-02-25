@@ -13,12 +13,16 @@
 <meta property="og:site_name" content="X2n.">
 <meta property="og:description" content="生成数据库 以下为各种语言创建数据库的命令。 12345678# javacodeql database create &quot;~&#x2F;CodeQL&#x2F;databases&#x2F;code-database&quot; --source-root&#x3D;&quot;~&#x2F;CodeQL&#x2F;projects&#x2F;java-code&quot; --language&#x3D;java --command&#x3D;&quot;mvn clean">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223211310603.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223210106772.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223211244232.png">
 <meta property="article:published_time" content="2025-02-23T01:32:49.000Z">
-<meta property="article:modified_time" content="2025-02-23T02:33:53.909Z">
+<meta property="article:modified_time" content="2025-02-24T11:10:55.049Z">
 <meta property="article:author" content="💗">
 <meta property="article:tag" content="CodeQL">
 <meta property="article:tag" content="QL语法">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223211310603.png">
     
     
       
@@ -98,6 +102,8 @@
     <span id="actions">
       <ul>
         
+        <li><a class="icon" aria-label="Previous post" href="/2025/02/24/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
         
         <li><a class="icon" aria-label="Next post" href="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
@@ -129,7 +135,7 @@
     
     
       <div id="toc">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">生成数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0"><span class="toc-number">2.</span> <span class="toc-text">查询语法学习</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">3.</span> <span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">生成数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">基础语法结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.</span> <span class="toc-text">编写第一个查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AAQL%E5%8C%85"><span class="toc-number">3.1.</span> <span class="toc-text">创建第一个QL包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.2.</span> <span class="toc-text">编写查询</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QL%E8%AF%AD%E8%A8%80%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">QL语言参考</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%93%E8%AF%8DPredicates"><span class="toc-number">4.1.</span> <span class="toc-text">谓词Predicates</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2Queries"><span class="toc-number">4.2.</span> <span class="toc-text">查询Queries</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8BTypes"><span class="toc-number">4.3.</span> <span class="toc-text">类型Types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97Modules"><span class="toc-number">4.4.</span> <span class="toc-text">模块Modules</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%AB%E5%90%8DAliases"><span class="toc-number">4.5.</span> <span class="toc-text">别名Aliases</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8FVariables"><span class="toc-number">4.6.</span> <span class="toc-text">变量Variables</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8FExpressions"><span class="toc-number">4.7.</span> <span class="toc-text">表达式Expressions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E5%BC%8FFormulas"><span class="toc-number">4.8.</span> <span class="toc-text">公式Formulas</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E8%A7%A3Annotations"><span class="toc-number">4.9.</span> <span class="toc-text">注解Annotations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8D%E7%A7%B0%E8%A7%A3%E6%9E%90Name-resolution"><span class="toc-number">4.10.</span> <span class="toc-text">名称解析Name-resolution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#QL%E8%AF%AD%E6%B3%95%E8%A7%84%E8%8C%83QL-language-specification"><span class="toc-number">4.11.</span> <span class="toc-text">QL语法规范QL-language-specification</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90Static-Analysis"><span class="toc-number">5.</span> <span class="toc-text">静态分析Static Analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90Data-Flow-Analysis"><span class="toc-number">6.</span> <span class="toc-text">数据流分析Data Flow Analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90Taint-Analysis"><span class="toc-number">7.</span> <span class="toc-text">污点分析Taint Analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84QL%E6%8A%80%E5%B7%A7%E6%9F%A5%E8%AF%A2%E6%8A%80%E5%B7%A7"><span class="toc-number">8.</span> <span class="toc-text">常用的QL技巧查询技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%93%E5%8F%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%AD%A3%E5%88%99"><span class="toc-number">8.1.</span> <span class="toc-text">抓取字符串正则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Method-3"><span class="toc-number">8.2.</span> <span class="toc-text">Method 3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">9.</span> <span class="toc-text">参考</span></a></li></ol>
       </div>
     
   </span>
@@ -182,17 +188,90 @@
     <h2 id="生成数据库">生成数据库</h2>
 <p>以下为各种语言创建数据库的命令。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">java</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/java-code&quot; --language=java --command=&quot;mvn clean install -file pom.xml&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Go</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/java-code&quot; --language=go</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Python</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/databases/code-database&quot; --language=python</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">JavaScript</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/databases/code-database&quot; --language=javascript</span><br></pre></td></tr></table></figure>
-<p><code>CodeQL</code>不支持<code>PHP</code>，对于<code>Java</code>代码有些不同，需要进行代码的编译后，才能生存相关的数据库。</p>
-<p>支持的编程语言类型，参考官网<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>。</p>
-<p>对于<code>Java</code>代码的特殊性<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，，实战中获取到的可能是编译后的<code>Java</code>代码，这里可以使用工具<code>CodeQLpy</code>，它可以对多种不同类型的java代码进行代码审计，包括jsp文件、SpringMVC的war包、SpringBoot的jar包、maven源代码。参考项目官网<a target="_blank" rel="noopener" href="https://github.com/webraybtl/CodeQLpy">https://github.com/webraybtl/CodeQLpy</a></p>
-<h2 id="查询语法学习">查询语法学习</h2>
+<p><code>CodeQL</code>不支持<code>PHP</code>，支持的编程语言类型，参考官网<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>。对于<code>Java</code>代码有些不同，需要进行代码的编译后<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，才能生成相关的数据库。</p>
+<p>编译过程中，若出现环境问题可使用<code>--verbose</code>输出详细的错误，进行错误的定位。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codeql database create webgoat-qldb -language= java --command &quot;./mvnw clean package -DskipTests&quot; --verbose</span><br></pre></td></tr></table></figure>
+<p>对于<code>Java</code>代码的特殊性<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>，，实战中获取到的可能是编译后的<code>Java</code>代码，这里可以使用工具<code>CodeQLpy</code><sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>，它可以对多种不同类型的java代码进行代码审计，包括jsp文件、SpringMVC的war包、SpringBoot的jar包、maven源代码。</p>
+<h2 id="基础语法结构">基础语法结构</h2>
+<p><code>Codeql</code>查询语法有点类似<code>SQL</code>查询，结构如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Query metadata</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">import <span class="comment">/* ... CodeQL libraries or modules ... */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* ... Optional, define CodeQL classes and predicates ... */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> <span class="comment">/* ... 变量声明 ... */</span></span><br><span class="line"><span class="keyword">where</span> <span class="comment">/* ... 逻辑处理 ... */</span></span><br><span class="line"><span class="keyword">select</span> <span class="comment">/* ... 表达式 ... */</span></span><br></pre></td></tr></table></figure>
+<h2 id="编写第一个查询">编写第一个查询</h2>
+<h3 id="创建第一个QL包">创建第一个QL包</h3>
+<p>这里以<code>WebGoat</code><sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>创建的数据库为查询对象。</p>
+<p>创建一个文件夹，用来存放后续你编写的<code>CodeQL</code>脚本，<code>CodeQL</code>官方称这个文件夹为<code>QL Pack</code>。</p>
+<p>例如名为<code>qltest</code>的文件夹，并在里面创建1个<code>QL Pack</code>的配置文件，名称固定为<code>qlpack.yml</code>。再创建一个ql后缀的文件，名称随意。</p>
+<p><img src="/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223211310603.png" alt="image-20250223211310603"></p>
+<p><code>qlpack.yml</code>文件中写入以下内容：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">qltest</span></span><br><span class="line"><span class="attr">version:</span> <span class="number">0.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">libraryPathDependencies:</span> <span class="string">codeql-java</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>第一行表示这个QL包的名称为<code>qltest</code>，必选，如果你在VSCode中同时打开多个QL包时，要保证这个name的值唯一不重复。</p>
+</li>
+<li>
+<p>第二行表示这个QL包的版本号，必选。</p>
+</li>
+<li>
+<p>第三行表示这个QL包的依赖，必选，codeql-java表示需要Java语言的QL标准库依赖。</p>
+</li>
+</ul>
+<p>在VSCode的CodeQL插件中添加用CodeQL创建的WebGoat的数据库</p>
+<p><img src="/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223210106772.png" alt="image-20250223210106772"></p>
+<h3 id="编写查询">编写查询</h3>
+<p>在<code>webgoat-query.ql</code>文件中编写如下代码，用来查找WebGoat项目中所有声明的方法。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import java</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> <span class="keyword">Method</span> m</span><br><span class="line"><span class="keyword">select</span> m</span><br></pre></td></tr></table></figure>
+<p>然后右键点击<code>webgoat-query.ql</code>文件，点击【CodeQL: Run Query 】来执行本次查询，执行完成后在右边可以看到多出一列用来显示查询结果。</p>
+<p><img src="/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/image-20250223211244232.png" alt="image-20250223211244232"></p>
+<h2 id="QL语言参考">QL语言参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/about-the-ql-language/">关于 QL 语言</a>：QL 是 CodeQL 的强大查询语言，用于分析代码。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/predicates/">谓词</a>：谓词用于描述构成 QL 程序的逻辑关系。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/queries/">查询</a>：查询是 QL 程序的输出。他们评估结果集。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/types/">类型</a>：QL 是一种静态类型语言，因此每个变量都必须有一个声明的类型。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/modules/">模块</a>：模块提供了一种通过将相关类型、谓词和其他模块组合在一起来组织 QL 代码的方法。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/aliases/">别名</a>：别名是现有 QL 实体的替代名称。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/variables/">变量</a>：QL 中的变量与代数或逻辑中的变量的使用方式类似。它们代表一组值，这些值通常受公式限制。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/expressions/">表达式</a>：表达式计算为一组值并具有类型。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/formulas/">公式</a>：公式定义了表达式中使用的自由变量之间的逻辑关系。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/annotations/">注释</a>：注释是一个字符串，您可以将其直接放在 QL 实体或名称的声明之前。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/recursion/">递归</a>：QL 为递归提供了强大的支持。如果 QL 中的谓词直接或间接依赖于自身，则称其为递归谓词。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/lexical-syntax/">词法语法</a>：QL 语法包括不同种类的关键字、标识符和注释。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/name-resolution/">名称解析</a>：QL 编译器将名称解析为程序元素。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/evaluation-of-ql-programs/">QL方案的评价</a>：以多个不同的步骤评估QL程序。</li>
+<li><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/ql-language-specification/">QL 语言规范</a>：QL语言的形式规范。它为术语，语法和有关QL的其他技术细节提供了全面的参考。</li>
+</ul>
+<h3 id="谓词Predicates">谓词Predicates</h3>
+<p>官方文档<sup class="footnote-ref"><a href="#fn6" id="fnref6">[6]</a></sup></p>
+<h3 id="查询Queries">查询Queries</h3>
+<h3 id="类型Types">类型Types</h3>
+<h3 id="模块Modules">模块Modules</h3>
+<h3 id="别名Aliases">别名Aliases</h3>
+<h3 id="变量Variables">变量Variables</h3>
+<h3 id="表达式Expressions">表达式Expressions</h3>
+<h3 id="公式Formulas">公式Formulas</h3>
+<h3 id="注解Annotations">注解Annotations</h3>
+<h3 id="名称解析Name-resolution">名称解析Name-resolution</h3>
+<h3 id="QL语法规范QL-language-specification">QL语法规范QL-language-specification</h3>
+<h2 id="静态分析Static-Analysis">静态分析Static Analysis</h2>
+<h2 id="数据流分析Data-Flow-Analysis">数据流分析Data Flow Analysis</h2>
+<h2 id="污点分析Taint-Analysis">污点分析Taint Analysis</h2>
+<h2 id="常用的QL技巧查询技巧">常用的QL技巧查询技巧</h2>
+<h3 id="抓取字符串正则">抓取字符串正则</h3>
+<h3 id="Method-3">Method 3</h3>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
 <ol class="footnotes-list">
-<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/">https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/">https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/</a> ↩ <a href="#fnref1" class="footnote-backref">↩︎</a></p>
 </li>
-<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/article-20135.htm">https://bbs.kanxue.com/article-20135.htm</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://paper.seebug.org/1324/">https://paper.seebug.org/1324/</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/article-20135.htm">https://bbs.kanxue.com/article-20135.htm</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/webraybtl/CodeQLpy">https://github.com/webraybtl/CodeQLpy</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/WebGoat/WebGoat">https://github.com/WebGoat/WebGoat</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://codeql.github.com/docs/ql-language-reference/predicates/">https://codeql.github.com/docs/ql-language-reference/predicates/</a> <a href="#fnref6" class="footnote-backref">↩︎</a></p>
 </li>
 </ol>
 </section>
@@ -227,7 +306,7 @@
     
     
       <div id="toc-footer" style="display: none">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">生成数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0"><span class="toc-number">2.</span> <span class="toc-text">查询语法学习</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">3.</span> <span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">生成数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">基础语法结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.</span> <span class="toc-text">编写第一个查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AAQL%E5%8C%85"><span class="toc-number">3.1.</span> <span class="toc-text">创建第一个QL包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.2.</span> <span class="toc-text">编写查询</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QL%E8%AF%AD%E8%A8%80%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">QL语言参考</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%93%E8%AF%8DPredicates"><span class="toc-number">4.1.</span> <span class="toc-text">谓词Predicates</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2Queries"><span class="toc-number">4.2.</span> <span class="toc-text">查询Queries</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E5%9E%8BTypes"><span class="toc-number">4.3.</span> <span class="toc-text">类型Types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97Modules"><span class="toc-number">4.4.</span> <span class="toc-text">模块Modules</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%AB%E5%90%8DAliases"><span class="toc-number">4.5.</span> <span class="toc-text">别名Aliases</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8FVariables"><span class="toc-number">4.6.</span> <span class="toc-text">变量Variables</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8FExpressions"><span class="toc-number">4.7.</span> <span class="toc-text">表达式Expressions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E5%BC%8FFormulas"><span class="toc-number">4.8.</span> <span class="toc-text">公式Formulas</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E8%A7%A3Annotations"><span class="toc-number">4.9.</span> <span class="toc-text">注解Annotations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8D%E7%A7%B0%E8%A7%A3%E6%9E%90Name-resolution"><span class="toc-number">4.10.</span> <span class="toc-text">名称解析Name-resolution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#QL%E8%AF%AD%E6%B3%95%E8%A7%84%E8%8C%83QL-language-specification"><span class="toc-number">4.11.</span> <span class="toc-text">QL语法规范QL-language-specification</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90Static-Analysis"><span class="toc-number">5.</span> <span class="toc-text">静态分析Static Analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90Data-Flow-Analysis"><span class="toc-number">6.</span> <span class="toc-text">数据流分析Data Flow Analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90Taint-Analysis"><span class="toc-number">7.</span> <span class="toc-text">污点分析Taint Analysis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84QL%E6%8A%80%E5%B7%A7%E6%9F%A5%E8%AF%A2%E6%8A%80%E5%B7%A7"><span class="toc-number">8.</span> <span class="toc-text">常用的QL技巧查询技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%93%E5%8F%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%AD%A3%E5%88%99"><span class="toc-number">8.1.</span> <span class="toc-text">抓取字符串正则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Method-3"><span class="toc-number">8.2.</span> <span class="toc-text">Method 3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">9.</span> <span class="toc-text">参考</span></a></li></ol>
       </div>
     
 
