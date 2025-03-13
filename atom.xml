@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-03-12T04:34:07.713Z</updated>
+  <updated>2025-03-13T06:25:59.854Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Frida学习</title>
+    <link href="https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"/>
+    <id>https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/</id>
+    <published>2025-03-13T06:22:45.000Z</published>
+    <updated>2025-03-13T06:25:59.854Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;一、什么是Frida&quot;&gt;一、什么是Frida?&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Frida&lt;/code&gt;</summary>
+        
+      
+    
+    
+    
+    <category term="Tools" scheme="https://x2nn.github.io/categories/Tools/"/>
+    
+    
+    <category term="Frida" scheme="https://x2nn.github.io/tags/Frida/"/>
+    
+    <category term="安卓逆向" scheme="https://x2nn.github.io/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/"/>
+    
+  </entry>
   
   <entry>
     <title>机器学习笔记</title>

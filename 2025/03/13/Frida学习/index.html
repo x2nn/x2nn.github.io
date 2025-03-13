@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="一、什么是Frida? Frida 是一款开源的动态插桩工具，可以插入一些代码到原生App的内存空间去动态地监视和修改其行为，支持Windows、Mac、Linux、Android或者iOS，从安卓层面来讲，可以实现Java层和Native层Hook操作。 项目地址 官网及使用文档 二、Frida原理及重要组件 Frida注入的原理就是找到目标进程,使用ptrace跟踪目标进程获取mmap，dlp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Frida学习">
+<meta property="og:url" content="https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="X2n.">
+<meta property="og:description" content="一、什么是Frida? Frida 是一款开源的动态插桩工具，可以插入一些代码到原生App的内存空间去动态地监视和修改其行为，支持Windows、Mac、Linux、Android或者iOS，从安卓层面来讲，可以实现Java层和Native层Hook操作。 项目地址 官网及使用文档 二、Frida原理及重要组件 Frida注入的原理就是找到目标进程,使用ptrace跟踪目标进程获取mmap，dlp">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-03-13T06:22:45.000Z">
+<meta property="article:modified_time" content="2025-03-13T06:25:59.854Z">
+<meta property="article:author" content="💗">
+<meta property="article:tag" content="Frida">
+<meta property="article:tag" content="安卓逆向">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Frida学习</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n." type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2025/02/24/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&text=Frida学习"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&is_video=false&description=Frida学习"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Frida学习&body=Check out this article: https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&name=Frida学习&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&t=Frida学习"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AFFrida"><span class="toc-number">1.</span> <span class="toc-text">一、什么是Frida?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Frida%E5%8E%9F%E7%90%86%E5%8F%8A%E9%87%8D%E8%A6%81%E7%BB%84%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">二、Frida原理及重要组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Frida%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-number">3.</span> <span class="toc-text">三、Frida基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%9F%BA%E7%A1%80%E6%8C%87%E4%BB%A4"><span class="toc-number">3.1.</span> <span class="toc-text">（1）基础指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E6%93%8D%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">（2）操作模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E6%B3%A8%E5%85%A5%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">3.3.</span> <span class="toc-text">（3）注入模式与启动命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Spawn%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.3.1.</span> <span class="toc-text">Spawn模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Attach%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.3.2.</span> <span class="toc-text">Attach模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Frida-Server%E8%87%AA%E5%AE%9A%E4%B9%89%E7%AB%AF%E5%8F%A3"><span class="toc-number">3.3.3.</span> <span class="toc-text">Frida_Server自定义端口</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95"><span class="toc-number">3.4.</span> <span class="toc-text">（4）基础语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%885%EF%BC%89%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA%E8%AF%AD%E6%B3%95%E5%8C%BA%E5%88%AB"><span class="toc-number">3.5.</span> <span class="toc-text">（5）日志输出语法区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%886%EF%BC%89Hook%E6%A1%86%E6%9E%B6%E6%A8%A1%E7%89%88"><span class="toc-number">3.6.</span> <span class="toc-text">（6）Hook框架模版</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Frida%E5%B8%B8%E7%94%A8API"><span class="toc-number">4.</span> <span class="toc-text">四、Frida常用API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%881%EF%BC%89Hook%E6%99%AE%E9%80%9A%E6%96%B9%E6%B3%95%E3%80%81%E6%89%93%E5%8D%B0%E5%8F%82%E6%95%B0%E5%92%8C%E4%BF%AE%E6%94%B9%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">4.1.</span> <span class="toc-text">（1）Hook普通方法、打印参数和修改返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%882%EF%BC%89Hook%E9%87%8D%E8%BD%BD%E5%8F%82%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">（2）Hook重载参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%883%EF%BC%89Hook%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.</span> <span class="toc-text">（3）Hook构造函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%884%EF%BC%89Hook%E5%AD%97%E6%AE%B5"><span class="toc-number">4.4.</span> <span class="toc-text">（4）Hook字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%885%EF%BC%89Hook%E5%86%85%E9%83%A8%E7%B1%BB"><span class="toc-number">4.5.</span> <span class="toc-text">（5）Hook内部类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%886%EF%BC%89%E6%9E%9A%E4%B8%BE%E6%89%80%E6%9C%89%E7%9A%84%E7%B1%BB%E4%B8%8E%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">4.6.</span> <span class="toc-text">（6）枚举所有的类与类的所有方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%887%EF%BC%89%E6%9E%9A%E4%B8%BE%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">4.7.</span> <span class="toc-text">（7）枚举所有方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%888%EF%BC%89%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-number">4.8.</span> <span class="toc-text">（8）主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="toc-number">4.8.1.</span> <span class="toc-text">静态方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%9E%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="toc-number">4.8.2.</span> <span class="toc-text">非静态方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Frida学习
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">💗</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-03-13T06:22:45.000Z" class="dt-published" itemprop="datePublished">2025-03-13</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Tools/">Tools</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Frida/" rel="tag">Frida</a>, <a class="p-category" href="/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/" rel="tag">安卓逆向</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="一、什么是Frida">一、什么是Frida?</h2>
+<p><code>Frida</code> 是一款开源的动态插桩工具，可以插入一些代码到原生App的内存空间去动态地监视和修改其行为，支持Windows、Mac、Linux、Android或者iOS，从安卓层面来讲，可以实现<code>Java</code>层和<code>Native</code>层<code>Hook</code>操作。<br>
+<a target="_blank" rel="noopener" href="https://github.com/frida/frida">项目地址</a><br>
+<a target="_blank" rel="noopener" href="https://frida.re/">官网及使用文档</a></p>
+<h2 id="二、Frida原理及重要组件">二、Frida原理及重要组件</h2>
+<p><code>Frida</code>注入的原理就是找到目标进程,使用<code>ptrace</code>跟踪目标进程获取<code>mmap</code>，<code>dlpoen</code>，<code>dlsym</code>等函数库的偏移获取<code>mmap</code>在目标进程申请一段内存空间将在目标进程中找到存放<code>frida-agent-32/64.so</code>的空间启动执行各种操作由<code>agent</code>去实现。</p>
+<table>
+<thead>
+<tr>
+<th>组件名称</th>
+<th style="text-align:center">功能描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frida-gum</td>
+<td style="text-align:center">提供了<code>inline-hook</code>的核心实现，还包含了代码跟踪模块<code>Stalker</code>，用于内存访问监控的<code>MemoryAccessMonitor</code>，以及符号查找、栈回溯实现、内存扫描、动态代码生成和重定位等功能</td>
+</tr>
+<tr>
+<td>frida-core</td>
+<td style="text-align:center"><code>fridahook</code>的核心，具有进程注入、进程间通信、会话管理、脚本生命周期管理等功能，屏蔽部分底层的实现细节并给最终用户提供开箱即用的操作接口。包含了<code>frida-server</code>、<code>frida-gadget</code>、<code>frida-agent</code>、<code>frida-helper</code>、<code>frida-inject</code>等关键模块和组件，以及之间的互相通信底座</td>
+</tr>
+<tr>
+<td>frida-gadget</td>
+<td style="text-align:center">本身是一个动态库，可以通过重打包修改动态库的依赖或者修改<code>smali</code>代码去实现向三方应用注入<code>gadget</code>，从而实现<code>Frida</code>的持久化或免<code>root</code></td>
+</tr>
+<tr>
+<td>frida-server</td>
+<td style="text-align:center">本质上是一个二进制文件，类似于前面学习到的<code>android_server</code>，需要在目标设备上运行并转发端口，在<code>Frida hook</code>中起到关键作用</td>
+</tr>
+</tbody>
+</table>
+<h2 id="三、Frida基础知识">三、Frida基础知识</h2>
+<h3 id="（1）基础指令">（1）基础指令</h3>
+<p><code>frida-ps -U</code> 查看当前手机运行的进程。<br>
+<code>frida-ps --help</code> 查看<code>help</code> 指令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">frida-ps --help</span><br><span class="line">使用方式: frida-ps [选项]</span><br><span class="line"></span><br><span class="line">选项:</span><br><span class="line">  -h, --help            显示帮助信息并退出</span><br><span class="line">  -D ID, --device ID    连接到具有给定ID的设备</span><br><span class="line">  -U, --usb             连接到USB设备</span><br><span class="line">  -R, --remote          连接到远程frida-server</span><br><span class="line">  -H HOST, --host HOST  连接到HOST上的远程frida-server</span><br><span class="line">  --certificate CERTIFICATE</span><br><span class="line">                        与HOST进行TLS通信，期望的CERTIFICATE</span><br><span class="line">  --origin ORIGIN       连接到设置了&quot;Origin&quot;头为ORIGIN的远程服务器</span><br><span class="line">  --token TOKEN         使用TOKEN验证HOST</span><br><span class="line">  --keepalive-interval INTERVAL</span><br><span class="line">                        设置心跳包间隔(秒)，或设置为0以禁用(默认为-1，根据传输方式自动选择)</span><br><span class="line">  --p2p                 与目标建立点对点连接</span><br><span class="line">  --stun-server ADDRESS</span><br><span class="line">                        设置与--p2p一起使用的STUN服务器地址</span><br><span class="line">  --relay address,username,password,turn-&#123;udp,tcp,tls&#125;</span><br><span class="line">                        添加与--p2p一起使用的中继</span><br><span class="line">  -O FILE, --options-file FILE</span><br><span class="line">                        包含额外命令行选项的文本文件</span><br><span class="line">  --version             显示程序版本号并退出</span><br><span class="line">  -a, --applications    只列出应用程序</span><br><span class="line">  -i, --installed       包括所有已安装的应用程序</span><br><span class="line">  -j, --json            以JSON格式输出结果</span><br></pre></td></tr></table></figure>
+<h3 id="（2）操作模式">（2）操作模式</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">操作模式</th>
+<th style="text-align:left">描述</th>
+<th style="text-align:left">优点</th>
+<th style="text-align:left">主要用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CLI（命令行）模式</td>
+<td style="text-align:left">通过命令行直接将JavaScript脚本注入进程中，对进程进行操作</td>
+<td style="text-align:left">便于直接注入和操作</td>
+<td style="text-align:left">在较小规模的操作或者需求比较简单的场景中使用</td>
+</tr>
+<tr>
+<td style="text-align:left">RPC模式</td>
+<td style="text-align:left">使用Python进行JavaScript脚本的注入工作，实际对进程进行操作的还是JavaScript脚本，可以通过RPC传输给Python脚本来进行复杂数据的处理</td>
+<td style="text-align:left">在对复杂数据的处理上可以通过RPC传输给Python脚本来进行，有利于减少被注入进程的性能损耗</td>
+<td style="text-align:left">在大规模调用中更加普遍，特别是对于复杂数据处理的需求</td>
+</tr>
+</tbody>
+</table>
+<h3 id="（3）注入模式与启动命令">（3）注入模式与启动命令</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">注入模式</th>
+<th style="text-align:left">描述</th>
+<th style="text-align:left">命令或参数</th>
+<th style="text-align:left">优点</th>
+<th style="text-align:left">主要用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Spawn模式</td>
+<td style="text-align:left">将启动App的权利交由Frida来控制，即使目标App已经启动，在使用Frida注入程序时还是会重新启动App</td>
+<td style="text-align:left">在CLI模式中，Frida通过加上 -f 参数指定包名以spawn模式操作App</td>
+<td style="text-align:left">适合于需要在App启动时即进行注入的场景，可以在App启动时即捕获其行为</td>
+<td style="text-align:left">当需要监控App从启动开始的所有行为时使用</td>
+</tr>
+<tr>
+<td style="text-align:left">Attach模式</td>
+<td style="text-align:left">在目标App已经启动的情况下，Frida通过ptrace注入程序从而执行Hook的操作</td>
+<td style="text-align:left">在CLI模式中，如果不添加 -f 参数，则默认会通过attach模式注入App</td>
+<td style="text-align:left">适合于已经运行的App，不会重新启动App，对用户体验影响较小</td>
+<td style="text-align:left">在App已经启动，或者我们只关心特定时刻或特定功能的行为时使用</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Spawn模式">Spawn模式</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida -U -f 进程名 -l hook.js</span><br></pre></td></tr></table></figure>
+<h4 id="Attach模式">Attach模式</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida -U 进程名 -l hook.js</span><br></pre></td></tr></table></figure>
+<h4 id="Frida-Server自定义端口">Frida_Server自定义端口</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">frida server 默认端口：27042</span><br><span class="line"></span><br><span class="line">taimen:/ $ su</span><br><span class="line">taimen:/ # cd data/local/tmp/</span><br><span class="line">taimen:/data/local/tmp # ./fs1280 -l 0.0.0.0:6666</span><br></pre></td></tr></table></figure>
+<p><code>logcat | grep &quot;D.zj2595&quot;</code>日志捕获<br>
+<code>adb connect 127.0.0.1:62001</code>模拟器端口转发</p>
+<h3 id="（4）基础语法">（4）基础语法</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">API名称</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>Java.use(className)</code></td>
+<td style="text-align:left">获取指定的Java类并使其在JavaScript代码中可用。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Java.perform(callback)</code></td>
+<td style="text-align:left">确保回调函数在Java的主线程上执行。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Java.choose(className, callbacks)</code></td>
+<td style="text-align:left">枚举指定类的所有实例。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Java.cast(obj, cls)</code></td>
+<td style="text-align:left">将一个Java对象转换成另一个Java类的实例。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Java.enumerateLoadedClasses(callbacks)</code></td>
+<td style="text-align:left">枚举进程中已经加载的所有Java类。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Java.enumerateClassLoaders(callbacks)</code></td>
+<td style="text-align:left">枚举进程中存在的所有Java类加载器。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Java.enumerateMethods(targetClassMethod)</code></td>
+<td style="text-align:left">枚举指定类的所有方法。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="（5）日志输出语法区别">（5）日志输出语法区别</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">日志方法</th>
+<th style="text-align:left">描述</th>
+<th style="text-align:left">区别</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>console.log()</code></td>
+<td style="text-align:left">使用JavaScript直接进行日志打印</td>
+<td style="text-align:left">多用于在CLI模式中，<code>console.log()</code>直接输出到命令行界面，使用户可以实时查看。在RPC模式中，<code>console.log()</code>同样输出在命令行，但可能被Python脚本的输出内容掩盖。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>send()</code></td>
+<td style="text-align:left">Frida的专有方法，用于发送数据或日志到外部Python脚本</td>
+<td style="text-align:left">多用于RPC模式中，它允许JavaScript脚本发送数据到Python脚本，Python脚本可以进一步处理或记录这些数据。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="（6）Hook框架模版">（6）Hook框架模版</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">main</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="title function_">hookTest1</span>();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">setImmediate</span>(main);</span><br></pre></td></tr></table></figure>
+<h2 id="四、Frida常用API">四、Frida常用API</h2>
+<h3 id="（1）Hook普通方法、打印参数和修改返回值">（1）Hook普通方法、打印参数和修改返回值</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义一个名为hookTest1的函数</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest1</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="comment">//获取一个名为&quot;类名&quot;的Java类，并将其实例赋值给JavaScript变量utils</span></span><br><span class="line">    <span class="keyword">var</span> utils = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;类名&quot;</span>);</span><br><span class="line">    <span class="comment">//修改&quot;类名&quot;的&quot;method&quot;方法的实现。这个新的实现会接收两个参数（a和b）</span></span><br><span class="line">    utils.<span class="property">method</span>.<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params">a, b</span>)&#123;</span><br><span class="line">            <span class="comment">//将参数a和b的值改为123和456。</span></span><br><span class="line">        a = <span class="number">123</span>;</span><br><span class="line">        b = <span class="number">456</span>;</span><br><span class="line">        <span class="comment">//调用修改过的&quot;method&quot;方法，并将返回值存储在`retval`变量中</span></span><br><span class="line">        <span class="keyword">var</span> retval = <span class="variable language_">this</span>.<span class="title function_">method</span>(a, b);</span><br><span class="line">        <span class="comment">//在控制台上打印参数a，b的值以及&quot;method&quot;方法的返回值</span></span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(a, b, retval);</span><br><span class="line">        <span class="comment">//返回&quot;method&quot;方法的返回值</span></span><br><span class="line">        <span class="keyword">return</span> retval;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（2）Hook重载参数">（2）Hook重载参数</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// .overload()</span></span><br><span class="line"><span class="comment">// .overload(&#x27;自定义参数&#x27;)</span></span><br><span class="line"><span class="comment">// .overload(&#x27;int&#x27;)</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest2</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="keyword">var</span> utils = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>);</span><br><span class="line">    <span class="comment">//overload定义重载函数，根据函数的参数类型填</span></span><br><span class="line">    utils.<span class="property">Inner</span>.<span class="title function_">overload</span>(<span class="string">&#x27;com.zj.wuaipojie.Demo$Animal&#x27;</span>,<span class="string">&#x27;java.lang.String&#x27;</span>).<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params">a，b</span>)&#123;</span><br><span class="line">        b = <span class="string">&quot;aaaaaaaaaa&quot;</span>;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="title class_">Inner</span>(a,b);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（3）Hook构造函数">（3）Hook构造函数</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest3</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="keyword">var</span> utils = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>);</span><br><span class="line">    <span class="comment">//修改类的构造函数的实现，$init表示构造函数</span></span><br><span class="line">    utils.<span class="property">$init</span>.<span class="title function_">overload</span>(<span class="string">&#x27;java.lang.String&#x27;</span>).<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params">str</span>)&#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(str);</span><br><span class="line">        str = <span class="string">&quot;52&quot;</span>;</span><br><span class="line">        <span class="variable language_">this</span>.$init(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（4）Hook字段">（4）Hook字段</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest5</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="comment">//静态字段的修改</span></span><br><span class="line">        <span class="keyword">var</span> utils = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>);</span><br><span class="line">        <span class="comment">//修改类的静态字段&quot;flag&quot;的值</span></span><br><span class="line">        utils.<span class="property">staticField</span>.<span class="property">value</span> = <span class="string">&quot;我是被修改的静态变量&quot;</span>;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(utils.<span class="property">staticField</span>.<span class="property">value</span>);</span><br><span class="line">        <span class="comment">//非静态字段的修改</span></span><br><span class="line">        <span class="comment">//使用`Java.choose()`枚举类的所有实例</span></span><br><span class="line">        <span class="title class_">Java</span>.<span class="title function_">choose</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>, &#123;</span><br><span class="line">            <span class="attr">onMatch</span>: <span class="keyword">function</span>(<span class="params">obj</span>)&#123;</span><br><span class="line">                    <span class="comment">//修改实例的非静态字段&quot;_privateInt&quot;的值为&quot;123456&quot;，并修改非静态字段&quot;privateInt&quot;的值为9999。</span></span><br><span class="line">                obj.<span class="property">_privateInt</span>.<span class="property">value</span> = <span class="string">&quot;123456&quot;</span>; <span class="comment">//字段名与函数名相同 前面加个下划线</span></span><br><span class="line">                obj.<span class="property">privateInt</span>.<span class="property">value</span> = <span class="number">9999</span>;</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">onComplete</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（5）Hook内部类">（5）Hook内部类</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest6</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="comment">//内部类</span></span><br><span class="line">        <span class="keyword">var</span> innerClass = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.zj.wuaipojie.Demo$innerClass&quot;</span>);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(innerClass);</span><br><span class="line">        innerClass.<span class="property">$init</span>.<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;eeeeeeee&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（6）枚举所有的类与类的所有方法">（6）枚举所有的类与类的所有方法</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest7</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="comment">//枚举所有的类与类的所有方法,异步枚举</span></span><br><span class="line">        <span class="title class_">Java</span>.<span class="title function_">enumerateLoadedClasses</span>(&#123;</span><br><span class="line">            <span class="attr">onMatch</span>: <span class="keyword">function</span>(<span class="params">name,handle</span>)&#123;</span><br><span class="line">                    <span class="comment">//过滤类名</span></span><br><span class="line">                <span class="keyword">if</span>(name.<span class="title function_">indexOf</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>) !=-<span class="number">1</span>)&#123;</span><br><span class="line">                    <span class="variable language_">console</span>.<span class="title function_">log</span>(name);</span><br><span class="line">                    <span class="keyword">var</span> clazz =<span class="title class_">Java</span>.<span class="title function_">use</span>(name);</span><br><span class="line">                    <span class="variable language_">console</span>.<span class="title function_">log</span>(clazz);</span><br><span class="line">                    <span class="keyword">var</span> methods = clazz.<span class="property">class</span>.<span class="title function_">getDeclaredMethods</span>();</span><br><span class="line">                    <span class="variable language_">console</span>.<span class="title function_">log</span>(methods);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">onComplete</span>: <span class="keyword">function</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（7）枚举所有方法">（7）枚举所有方法</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">hookTest8</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">Demo</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>);</span><br><span class="line">        <span class="comment">//getDeclaredMethods枚举所有方法</span></span><br><span class="line">        <span class="keyword">var</span> methods =<span class="title class_">Demo</span>.<span class="property">class</span>.<span class="title function_">getDeclaredMethods</span>();</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">var</span> j=<span class="number">0</span>; j &lt; methods.<span class="property">length</span>; j++)&#123;</span><br><span class="line">            <span class="keyword">var</span> methodName = methods[j].<span class="title function_">getName</span>();</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(methodName);</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">var</span> k=<span class="number">0</span>; k&lt;<span class="title class_">Demo</span>[methodName].<span class="property">overloads</span>.<span class="property">length</span>;k++)&#123;</span><br><span class="line">                <span class="title class_">Demo</span>[methodName].<span class="property">overloads</span>[k].<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">                    <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;<span class="variable language_">arguments</span>.<span class="property">length</span>;i++)&#123;</span><br><span class="line">                        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">arguments</span>[i]);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">return</span> <span class="variable language_">this</span>[methodName].<span class="title function_">apply</span>(<span class="variable language_">this</span>,<span class="variable language_">arguments</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="（8）主动调用">（8）主动调用</h3>
+<h4 id="静态方法">静态方法</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="title class_">ClassName</span>=<span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>); </span><br><span class="line"><span class="title class_">ClassName</span>.<span class="title function_">privateFunc</span>(<span class="string">&quot;传参&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="非静态方法">非静态方法</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ret = <span class="literal">null</span>;</span><br><span class="line"><span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">choose</span>(<span class="string">&quot;com.zj.wuaipojie.Demo&quot;</span>,&#123;    <span class="comment">//要hook的类</span></span><br><span class="line">        <span class="attr">onMatch</span>:<span class="keyword">function</span>(<span class="params">instance</span>)&#123;</span><br><span class="line">            ret=instance.<span class="title function_">privateFunc</span>(<span class="string">&quot;aaaaaaa&quot;</span>); <span class="comment">//要hook的方法</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">onComplete</span>:<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">                <span class="comment">//console.log(&quot;result: &quot; + ret);</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">//return ret;</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1823118-1-1.html">https://www.52pojie.cn/thread-1823118-1-1.html</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/">Tag</a></li>
+        
+          <li><a href="/categories/">Category</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AFFrida"><span class="toc-number">1.</span> <span class="toc-text">一、什么是Frida?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Frida%E5%8E%9F%E7%90%86%E5%8F%8A%E9%87%8D%E8%A6%81%E7%BB%84%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">二、Frida原理及重要组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Frida%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-number">3.</span> <span class="toc-text">三、Frida基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%9F%BA%E7%A1%80%E6%8C%87%E4%BB%A4"><span class="toc-number">3.1.</span> <span class="toc-text">（1）基础指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E6%93%8D%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">（2）操作模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E6%B3%A8%E5%85%A5%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">3.3.</span> <span class="toc-text">（3）注入模式与启动命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Spawn%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.3.1.</span> <span class="toc-text">Spawn模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Attach%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.3.2.</span> <span class="toc-text">Attach模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Frida-Server%E8%87%AA%E5%AE%9A%E4%B9%89%E7%AB%AF%E5%8F%A3"><span class="toc-number">3.3.3.</span> <span class="toc-text">Frida_Server自定义端口</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95"><span class="toc-number">3.4.</span> <span class="toc-text">（4）基础语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%885%EF%BC%89%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA%E8%AF%AD%E6%B3%95%E5%8C%BA%E5%88%AB"><span class="toc-number">3.5.</span> <span class="toc-text">（5）日志输出语法区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%886%EF%BC%89Hook%E6%A1%86%E6%9E%B6%E6%A8%A1%E7%89%88"><span class="toc-number">3.6.</span> <span class="toc-text">（6）Hook框架模版</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Frida%E5%B8%B8%E7%94%A8API"><span class="toc-number">4.</span> <span class="toc-text">四、Frida常用API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%881%EF%BC%89Hook%E6%99%AE%E9%80%9A%E6%96%B9%E6%B3%95%E3%80%81%E6%89%93%E5%8D%B0%E5%8F%82%E6%95%B0%E5%92%8C%E4%BF%AE%E6%94%B9%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">4.1.</span> <span class="toc-text">（1）Hook普通方法、打印参数和修改返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%882%EF%BC%89Hook%E9%87%8D%E8%BD%BD%E5%8F%82%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">（2）Hook重载参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%883%EF%BC%89Hook%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-number">4.3.</span> <span class="toc-text">（3）Hook构造函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%884%EF%BC%89Hook%E5%AD%97%E6%AE%B5"><span class="toc-number">4.4.</span> <span class="toc-text">（4）Hook字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%885%EF%BC%89Hook%E5%86%85%E9%83%A8%E7%B1%BB"><span class="toc-number">4.5.</span> <span class="toc-text">（5）Hook内部类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%886%EF%BC%89%E6%9E%9A%E4%B8%BE%E6%89%80%E6%9C%89%E7%9A%84%E7%B1%BB%E4%B8%8E%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">4.6.</span> <span class="toc-text">（6）枚举所有的类与类的所有方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%887%EF%BC%89%E6%9E%9A%E4%B8%BE%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">4.7.</span> <span class="toc-text">（7）枚举所有方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%EF%BC%888%EF%BC%89%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-number">4.8.</span> <span class="toc-text">（8）主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="toc-number">4.8.1.</span> <span class="toc-text">静态方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%9E%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="toc-number">4.8.2.</span> <span class="toc-text">非静态方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&text=Frida学习"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&is_video=false&description=Frida学习"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Frida学习&body=Check out this article: https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&title=Frida学习"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&name=Frida学习&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/&t=Frida学习"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+      <div class="footer-left">
+        Copyright &copy;
+        
+        
+        2024-2025
+        💗
+      </div>
+      <div class="footer-right">
+        <nav>
+          <ul>
+            <!--
+          --><li><a href="/">Home</a></li><!--
+        --><!--
+          --><li><a href="/archives/">Writing</a></li><!--
+        --><!--
+          --><li><a href="/tags/">Tag</a></li><!--
+        --><!--
+          --><li><a href="/categories/">Category</a></li><!--
+        --><!--
+          --><li><a href="/search/">Search</a></li><!--
+        --><!--
+          --><li><a href="/about/">About</a></li><!--
+        -->
+          </ul>
+          <ul>
+            
+              <!-- 不蒜子统计 -->
+              <span id="busuanzi_container_site_pv">
+                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+              </span>
+              <span class="post-meta-divider">|</span>
+              <span id="busuanzi_container_site_uv" style='display:none'>
+                      本站访客数<span id="busuanzi_value_site_uv"></span>人
+              </span>
+            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            
+          </ul>
+        </nav>
+      </div>
+      
+</footer>
+
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
