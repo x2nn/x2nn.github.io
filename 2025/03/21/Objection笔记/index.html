@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="一、确认要hook的apk 我使用的环境是真机环境，使用USB连接手机。安装的Objection的版本为1.11.0。这里注意，真机的frida-server的版本要和你电脑的frida版本一致，我是用的是15.2.2的frida。 使用frida-ps -U找到自己要查看的包名，可能是com.x2n.xxx的形式也可能是中文的名字。  找到自己的包，然后使用objection -g com.x2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objection笔记">
+<meta property="og:url" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="X2n.">
+<meta property="og:description" content="一、确认要hook的apk 我使用的环境是真机环境，使用USB连接手机。安装的Objection的版本为1.11.0。这里注意，真机的frida-server的版本要和你电脑的frida版本一致，我是用的是15.2.2的frida。 使用frida-ps -U找到自己要查看的包名，可能是com.x2n.xxx的形式也可能是中文的名字。  找到自己的包，然后使用objection -g com.x2">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235259345.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235804595.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250322000716481.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323165012672.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323173058671.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323173440288.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323174515328.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323181548491.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323182721262.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323182756596.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323192008745.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323192539602.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323193322876.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323195814075.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323201138858.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323201237383.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323203121588.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323215320587.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323221934874.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323222724278.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323223947608.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323231643853.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324145106214.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324150259874.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324151645694.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324152011009.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324233129462.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324234444822.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324235914989.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325000255731.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325001453566.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325001629404.png">
+<meta property="article:published_time" content="2025-03-21T15:42:40.000Z">
+<meta property="article:modified_time" content="2025-03-24T16:19:21.606Z">
+<meta property="article:author" content="💗">
+<meta property="article:tag" content="安卓逆向">
+<meta property="article:tag" content="Objection">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235259345.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Objection笔记</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n." type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&text=Objection笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&is_video=false&description=Objection笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Objection笔记&body=Check out this article: https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&name=Objection笔记&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&t=Objection笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E8%AE%A4%E8%A6%81hook%E7%9A%84apk"><span class="toc-number">1.</span> <span class="toc-text">一、确认要hook的apk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">2.</span> <span class="toc-text">二、常用的命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81help%E5%91%BD%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">1、help命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81jobs%E5%91%BD%E4%BB%A4"><span class="toc-number">2.2.</span> <span class="toc-text">2、jobs命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%86%85%E5%AD%98%E6%BC%AB%E6%B8%B8%E7%9B%B8%E5%85%B3%E6%8C%87%E4%BB%A4"><span class="toc-number">2.3.</span> <span class="toc-text">3、内存漫游相关指令</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%88%97%E5%87%BA%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%89%80%E6%9C%89%E7%B1%BB"><span class="toc-number">2.3.1.</span> <span class="toc-text">（1）列出内存中的所有类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E6%89%80%E6%9C%89%E5%B7%B2%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%B1%BB%E4%B8%AD%E6%90%9C%E7%B4%A2%E5%8C%85%E5%90%AB%E7%89%B9%E5%AE%9A%E5%85%B3%E9%94%AE%E8%AF%8D%E7%9A%84%E7%B1%BB"><span class="toc-number">2.3.2.</span> <span class="toc-text">（2）在内存中所有已加载的类中搜索包含特定关键词的类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E4%BB%8E%E5%86%85%E5%AD%98%E4%B8%AD%E6%90%9C%E7%B4%A2%E6%89%80%E6%9C%89%E5%8C%85%E5%90%AB%E5%85%B3%E9%94%AE%E8%AF%8Dkey%E7%9A%84%E6%96%B9%E6%B3%95%E3%80%82"><span class="toc-number">2.3.3.</span> <span class="toc-text">（3）从内存中搜索所有包含关键词key的方法。</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E6%9F%A5%E7%9C%8B%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">2.3.4.</span> <span class="toc-text">（4）查看类的所有方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%8E%B7%E5%8F%96%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9"><span class="toc-number">3.</span> <span class="toc-text">三、获取四大组件相关内容</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84activity"><span class="toc-number">3.1.</span> <span class="toc-text">1、列出进程所有的activity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84service"><span class="toc-number">3.2.</span> <span class="toc-text">2、列出进程所有的service</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Hook%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">四、Hook相关命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%9A%84%E6%96%B9%E6%B3%95%E8%BF%9B%E8%A1%8CHook"><span class="toc-number">4.1.</span> <span class="toc-text">1、对指定的方法进行Hook</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%B1%BB%E4%B8%AD%E6%89%80%E6%9C%89%E5%87%BD%E6%95%B0%E7%9A%84Hook"><span class="toc-number">4.2.</span> <span class="toc-text">2、对指定类中所有函数的Hook</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81Objection%E7%9A%84%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">五、Objection的主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9E%E4%BE%8B%E6%90%9C%E7%B4%A2-%E5%9F%BA%E4%BA%8EJava-choose%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.1.</span> <span class="toc-text">1、实例搜索(基于Java.choose实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81Objection%E4%B8%AD%E8%B0%83%E7%94%A8%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.</span> <span class="toc-text">2、Objection中调用实例方法的两种方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8execute"><span class="toc-number">5.2.1.</span> <span class="toc-text">第一种：使用execute</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8evaluate"><span class="toc-number">5.2.2.</span> <span class="toc-text">第二种：使用evaluate</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81Frida%E5%BC%80%E5%8F%91%E6%80%9D%E6%83%B3%F0%9F%8C%9F"><span class="toc-number">6.</span> <span class="toc-text">六、Frida开发思想🌟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9A%E4%BD%8D%EF%BC%9AObjection%E8%BE%85%E5%8A%A9%E5%AE%9A%E4%BD%8D"><span class="toc-number">6.1.</span> <span class="toc-text">1、定位：Objection辅助定位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%A9%E7%94%A8%EF%BC%9AFrida%E8%84%9A%E6%9C%AC%E4%BF%AE%E6%94%B9%E5%8F%82%E6%95%B0"><span class="toc-number">6.2.</span> <span class="toc-text">2、利用：Frida脚本修改参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">7.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Objection笔记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">💗</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-03-21T15:42:40.000Z" class="dt-published" itemprop="datePublished">2025-03-21</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/Tools/">Tools</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Objection/" rel="tag">Objection</a>, <a class="p-category" href="/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/" rel="tag">安卓逆向</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h3 id="一、确认要hook的apk">一、确认要hook的apk</h3>
+<p>我使用的环境是真机环境，使用<code>USB</code>连接手机。安装的<code>Objection</code>的版本为<code>1.11.0</code>。这里注意，真机的<code>frida-server</code>的版本要和你电脑的<code>frida</code>版本一致，我是用的是<code>15.2.2</code>的<code>frida</code>。</p>
+<p>使用<code>frida-ps -U</code>找到自己要查看的包名，可能是<code>com.x2n.xxx</code>的形式也可能是中文的名字。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235259345.png" alt="image-20250321235259345"></p>
+<p>找到自己的包，然后使用<code>objection -g com.x2n.xxx explore</code>进入到<code>REPL</code>模式。这里<code>com.x2n.xxx</code>为中文也可，中文时我使用<code>&quot;&quot;</code>进行包裹。我使用的<code>1.11.0</code>的<code>objection</code>支持中文，其它版本我不确定。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235804595.png" alt="image-20250321235804595"></p>
+<h3 id="二、常用的命令">二、常用的命令</h3>
+<p>进入到<code>Objection REPL</code>界面中，当不知道命令时通过按空格就会提示可用的命令。在出现提示后通过上下选择键及回车键便可以输入  命令。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250322000716481.png" alt="image-20250322000716481"></p>
+<p>下面以手机自带的<code>com.android.phone</code>为例，开始介绍正式的使用命令。</p>
+<h4 id="1、help命令">1、help命令</h4>
+<p>当不知道当前命令的效果是什么时，在当前命令前加上help（比如help env）再回车之后就会出现当前命令的解释信息。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323165012672.png" alt="image-20250323165012672"></p>
+<h4 id="2、jobs命令">2、jobs命令</h4>
+<p>作业系统很好用,用于查看和管理当前所执行  Hook的任务,建议一定要掌握,可以同时运行多项Hook作业。</p>
+<h4 id="3、内存漫游相关指令">3、内存漫游相关指令</h4>
+<p>Objection可以快速便捷地打印出内存中的各种类的相关信息,这对App快速定位有着无可比拟的优势,下  面介绍几个常用命令。</p>
+<h5 id="（1）列出内存中的所有类">（1）列出内存中的所有类</h5>
+<p>命令<code>android hooking list classes</code></p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323173058671.png" alt="image-20250323173058671"></p>
+<p>一共有22110个类。</p>
+<h5 id="（2）在内存中所有已加载的类中搜索包含特定关键词的类">（2）在内存中所有已加载的类中搜索包含特定关键词的类</h5>
+<p><code>android hooking search classes display</code></p>
+<p>这里搜索一下包含<code>display</code>关键词的类。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323173440288.png" alt="image-20250323173440288"></p>
+<h5 id="（3）从内存中搜索所有包含关键词key的方法。">（3）从内存中搜索所有包含关键词key的方法。</h5>
+<p><code>android hooking search methods &lt;key&gt;</code></p>
+<p>从上文中可以发现,内存中已加载的类高达22110个。它们的方法是类的个数的数倍,整个过程会相当耗时。</p>
+<p>这里展示搜索包含display关键词的方法。</p>
+<p><code>android hooking search methods display</code></p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323174515328.png" alt="image-20250323174515328"></p>
+<h5 id="（4）查看类的所有方法">（4）查看类的所有方法</h5>
+<p><code>android hooking list class_methods &lt;className&gt;</code></p>
+<p>随意找到一个类<code>com.android.internal.telephony.DisplayInfoControl</code>，结果如下：</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323181548491.png" alt="image-20250323181548491"></p>
+<h3 id="三、获取四大组件相关内容">三、获取四大组件相关内容</h3>
+<p><code>Android</code>基础中的基础就是<code>Android</code>的四大组件，即活动 (<code>Activity</code>) 、服务(<code>Service</code>) 、广播接收器(<code>Broadcast Receiver</code>)以及内容提供者(<code>Content Provider</code>)。</p>
+<p><code>Activity</code>可以理解为界面，一个<code>Activity</code>就是一个界面；<code>Service</code> 相当于Windows上的一个后台进程；<code>Broadcast Receiver</code>用于响应来自其他应用程序或者系统的广播消息；<code>Content Provider</code>用于进程间的交互，通常通过请求从一个应用程序向其他应用程序提供数据。</p>
+<p>第二部分介绍都是最基础的一些<code>Java</code>类相关的内容。在<code>Android</code>中，四大组件的相关内容是非常值得关注的，<code>Objection</code>在这方面也提供了支持，下面介绍一下。</p>
+<h4 id="1、列出进程所有的activity">1、列出进程所有的activity</h4>
+<p><code>android hooking list activities</code></p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323182721262.png" alt="image-20250323182721262"></p>
+<h4 id="2、列出进程所有的service">2、列出进程所有的service</h4>
+<p><code>android hooking list services</code></p>
+<p>结果如下：</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323182756596.png" alt="image-20250323182756596"></p>
+<p>需要列出其他两个组件的信息时,只要将对应的地方更换为<code>receivers</code>和<code>providers</code>即可，这里不再演示。</p>
+<h3 id="四、Hook相关命令">四、Hook相关命令</h3>
+<p>作为<code>Frida</code>的核心功能，<code>Hook</code>总是不能绕过的。同样地，<code>Objection</code>作为<code>Frida</code>优秀的开发工具，<code>Hook</code>相关的  命令是一定要实现的。事实上，<code>Objection</code>在这方面的表现确实令人称赞。</p>
+<h4 id="1、对指定的方法进行Hook">1、对指定的方法进行Hook</h4>
+<p><code>android hooking watch class_method &lt;methodName&gt;</code></p>
+<p>这里选择对<code>Java</code>中<code>File</code>类的构造函数进行<code>Hook</code>，结果如下：</p>
+<p><code>android hooking watch class_method java.io.File.$init --dump-args --dump-backtrace --dump-return</code></p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323192008745.png" alt="image-20250323192008745"></p>
+<p>在上述命令中 , 我们加上了<code>--dump-args</code>、<code>--dumpbacktrace</code>、<code>--dump-return</code>三个参数，分别用于打印函数的参数、  调用栈以及返回值。这三个参数对逆向分析的帮助是非常大的：有些函数的明文和密文非常有可能放在参数和返回值中，而打印调用栈可以让分析者快速进行调用链的溯源。</p>
+<p>另外需要注意的是,此时虽然只确定了<code>Hook</code>构造函数，但是默认会<code>Hook</code> 对应方法的<code>所有重载</code> 。 同时，在输出的最后一行显示<code>Registering job 561713</code>，这表示这个<code>Hook</code>被作为一个“作业”添加到<code>Objection</code>的作业系统中了，此时运行<code>job list</code>命令可以查看到这个“作业”的相关信息，如下图。可以发现这里的<code>Job  ID</code>对应的是<code>561713</code>，同时<code>Hooks</code>对应的<code>6</code>正是<code>Hook</code>的函数的数量。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323192539602.png" alt="image-20250323192539602"></p>
+<p>当我在<code>com.android.phone</code>对应的&quot;电话&quot;中进行操作时，会发现<code>java.io.File.File(java.io.File, java.lang.String)</code>这一个函数被调用了。在<code>Backtrace</code>之后打印的调用栈中，可以清楚地看到这个构造函数的调用来源，如下图。</p>
+<p>注意，调用栈的顺序是从下至上的，根据<code>Arguments</code>那一行会发现打开的文件路径是<code>/data/user_de/0/com.android.phone/files</code>，文件名为<code>persist_atoms.pb</code>。虽然<code>Return Value</code>后打印的返回值为<code>none</code>，表明这个函数没有返回值，但是也是真实地打印了返回值。当然，读者也可以<code>Hook</code>其他函数以打印返回值进行测试。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323193322876.png" alt="image-20250323193322876"></p>
+<p>测试结束后，可以根据&quot;作业&quot;的<code>ID</code>来删除&quot;作业&quot;，取消对这些函数的<code>Hook</code>，最终执行结果如下：</p>
+<p><code>jobs kill &lt;id&gt;</code></p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323195814075.png" alt="image-20250323195814075"></p>
+<h4 id="2、对指定类中所有函数的Hook">2、对指定类中所有函数的Hook</h4>
+<p>除了可以直接<code>Hook</code>一个函数之外，<code>Objection</code>还可以通过执行命令实现对指定类<code>classname</code>中所有函数的Hook**(这里的所有函  数并不包括构造函数的<code>Hook</code>)**。</p>
+<p><code>android hooking watch class &lt;classname&gt;</code></p>
+<p>同样以<code>java.io.File</code>类为例，最终执行效果如下：</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323201138858.png" alt="image-20250323201138858"></p>
+<p>一共<code>Hook</code>了<code>56</code>个函数，输出结果如下：</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323201237383.png" alt="image-20250323201237383"></p>
+<p>最终<code>Hook</code>的效果如下。当然，这里的调用顺序（自上而下）和之前的调用栈的打印是不同的。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323203121588.png" alt="image-20250323203121588"></p>
+<h3 id="五、Objection的主动调用">五、Objection的主动调用</h3>
+<p>主动调用：<code>android heap</code>相关命令。最后介绍<code>Frida</code>的一大特色——主动调用在<code>Objection</code>中的使用。</p>
+<h4 id="1、实例搜索-基于Java-choose实现">1、实例搜索(基于Java.choose实现)</h4>
+<p>基于最简单的<code>Java.choose</code>的实现，在<code>Frida</code>脚本中，对实例的搜索在<code>Objection</code>中是使用以下命令实现的:</p>
+<p><code>android heap search instances &lt;classname&gt;</code></p>
+<p>这里仍以<code>java.io.File</code>类为例，搜索到很多<code>File</code>的实例，并且打印出对应的<code>Handle</code>和<code>toString()</code>的结果。</p>
+<p>下图中显示的<code>Hashcode</code>十分重要，在之后的主动调用中都是以这个值作为实例的句柄来调用和执行函数。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323215320587.png" alt="image-20250323215320587"></p>
+<h4 id="2、Objection中调用实例方法的两种方法">2、Objection中调用实例方法的两种方法</h4>
+<h5 id="第一种：使用execute">第一种：使用execute</h5>
+<p><code>android heap execute &lt;Hashcode&gt; &lt;methodname&gt;</code></p>
+<p>这里的实例方法指的是<strong>没有参数的实例方法</strong>。下面演示一下使用<code>Hashcode</code>值为<code>31598268</code>所对应的实例来执行<code>File</code>的<code>getPath</code>方法。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323221934874.png" alt="image-20250323221934874"></p>
+<p>使用<code>execute</code>执行带参函数会报错，如下图：</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323222724278.png" alt="image-20250323222724278"></p>
+<h5 id="第二种：使用evaluate">第二种：使用evaluate</h5>
+<p>如果要执行带参数的函数，则需要先执行以下命令：</p>
+<p><code>android heap evaluate &lt;Hashcode&gt;</code></p>
+<p>在进入一个迷你编辑器环境后，输入想要执行的脚本内容,确认编辑完成，然后按Esc键退出编辑器，最后按回车键，即会开始执行这行脚本并输出结果。这里的脚本内容和在编辑器中直接编写的脚本内容是一样的（使用<code>File</code>类的<code>canWrite()</code>函数和<code>setWritable()</code>函数进  行测试）。</p>
+<p>具体实现的代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(clazz.<span class="title function_">canWrite</span>())</span><br><span class="line">clazz.<span class="title function_">setWritable</span>(<span class="literal">false</span>)</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(clazz.<span class="title function_">canWrite</span>())</span><br></pre></td></tr></table></figure>
+<p>在这个脚本中 , <code>Objection</code> 设定<code>clazz</code>用于代表<code>Hashcode</code>值为<code>31598268</code>所对应的实例，同时函数<code>canWrite()</code>用于返回这个实例所打  开的文件是否可写。<code>setWritable()</code>函数用于修改对应文件是否可写的属性。脚本的编辑页面和最终的执行效果如下图。其中的<code>True</code>和<code>False</code>属于输出的结果。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323223947608.png" alt="image-20250323223947608"></p>
+<p><code>heap evaluate</code>既可以执行有参函数，也可以执行无参函数，这里不再演示，留待读者自行研究。</p>
+<h3 id="六、Frida开发思想🌟">六、Frida开发思想🌟</h3>
+<p>在介绍完<code>Frida</code>和<code>Objection</code>后，将在这一节中提出一个在逆向过程中常用的工作思路，通常将之称为“<code>Frida</code>三板斧”。</p>
+<h4 id="1、定位：Objection辅助定位">1、定位：Objection辅助定位</h4>
+<p>经过前面的学习，我们发现<code>Objection</code>在逆向过程中最强大的功能其实是从海量的代码中<strong>快速定位关键的程序逻辑</strong>。<code>Frida</code> 需要每次手动编写代码去<code>Hook</code>从静态分析到的函数，进而观察其参数和返回值是否与需求相符，<code>Objection</code>将常用的一些功能集成在一 起，使得逆向开发和分析人员在分析过程中不需要浪费精力在编写代码上。</p>
+<p>下面以样例程序<code>Junior.apk</code>为例（样本来自于《 Android  Studio开发实战:从零基础到App上线(第2版)》一书中的<code>Junior</code>样例，源代码在这里<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，<code>apk</code>文件在这里<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>。</p>
+<p>使用<code>adb install -t junior.apk</code>命令将<code>Junior.apk</code>安装并启动后，首先使用<code>Objection</code>遍历一下<code>App</code>的所有<code>activity</code>(活动),  如下图所示。</p>
+<p><code>android hooking list activities</code></p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323231643853.png" alt="image-20250323231643853"></p>
+<p>在安装和遍历<code>App</code>的所有<code>activity</code>后，我们会发现整个<code>App</code>总共有  17个<code>activity</code>，为了方便讲解，这里选择分析的目标<code>activity</code>为计算器的相关活动<code>com.example.junior.CalculatorActivity</code> ，并尝试使用如下命令去启动这个活动。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">com.example.junior <span class="title function_">on</span> <span class="params">(google: <span class="number">13</span>)</span> [usb] # android intent launch_activity com.example.junio</span><br><span class="line">r.CalculatorActivity</span><br><span class="line">(agent) Starting activity com.example.junior.CalculatorActivity...</span><br><span class="line">(agent) Activity successfully asked to start.</span><br></pre></td></tr></table></figure>
+<p>观察手机页面，会发现<code>activity</code>被成功启动了，最终手机显示计算器的页面。</p>
+<p>这里选取减法作为我们的分析目标,在计算器成功启动后,从源  码地址下载对应<code>android2</code>源码并直接查看这个<code>activity</code>的源码:切换  到 <code>android2</code>工程下 , 打开对应的<code>junior/src/main/java/com/example/junior/CalculatorActivity.java</code>文件，从这个文件中的<code>onCreate()</code>函数可以  看到整个活动注册了很多控件的点击事件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// onCreate函数</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Bundle savedInstanceState)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_calculator);</span><br><span class="line">        <span class="comment">// 从布局文件中获取名叫tv_result的文本视图</span></span><br><span class="line">        tv_result = findViewById(R.id.tv_result);</span><br><span class="line">        <span class="comment">// 设置tv_result内部文本的移动方式为滚动形式</span></span><br><span class="line">        tv_result.setMovementMethod(<span class="keyword">new</span> <span class="title class_">ScrollingMovementMethod</span>());</span><br><span class="line">        <span class="comment">// 下面给每个按钮控件都注册了点击监听器</span></span><br><span class="line">        findViewById(R.id.btn_cancel).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “取消”按钮</span></span><br><span class="line">        findViewById(R.id.btn_divide).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “除法”按钮</span></span><br><span class="line">        findViewById(R.id.btn_multiply).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “乘法”按钮</span></span><br><span class="line">        findViewById(R.id.btn_clear).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “清除”按钮</span></span><br><span class="line">        findViewById(R.id.btn_seven).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字7</span></span><br><span class="line">        findViewById(R.id.btn_eight).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字8</span></span><br><span class="line">        findViewById(R.id.btn_nine).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字9</span></span><br><span class="line">        findViewById(R.id.btn_plus).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “加法”按钮</span></span><br><span class="line">        findViewById(R.id.btn_four).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字4</span></span><br><span class="line">        findViewById(R.id.btn_five).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字5</span></span><br><span class="line">        findViewById(R.id.btn_six).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字6</span></span><br><span class="line">        findViewById(R.id.btn_minus).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “减法”按钮</span></span><br><span class="line">        findViewById(R.id.btn_one).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字1</span></span><br><span class="line">        findViewById(R.id.btn_two).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字2</span></span><br><span class="line">        findViewById(R.id.btn_three).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字3</span></span><br><span class="line">        findViewById(R.id.btn_zero).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// 数字0</span></span><br><span class="line">        findViewById(R.id.btn_dot).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “小数点”按钮</span></span><br><span class="line">        findViewById(R.id.btn_equal).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “等号”按钮</span></span><br><span class="line">        findViewById(R.id.ib_sqrt).setOnClickListener(<span class="built_in">this</span>); <span class="comment">// “开平方”按钮</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>随便测试这个计算器之后会发现,每次按“等号”按钮后计算结果都会被打印出来。根据这一现象，找到对应“等号”按钮的<code>id</code>为<code>btn_equal</code>，并根据这个<code>id</code>找到对应的点击响应函数<code>onClick</code>函数中属于“等号”按钮的源码部分，最终的源码如下所示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//onClick函数</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onClick</span><span class="params">(View v)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">resid</span> <span class="operator">=</span> v.getId(); <span class="comment">// 获得当前按钮的编号</span></span><br><span class="line">        ...</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (resid == R.id.btn_equal) &#123; <span class="comment">// 点击了等号按钮</span></span><br><span class="line">            <span class="keyword">if</span> (operator.length() == <span class="number">0</span> || operator.equals(<span class="string">&quot;＝&quot;</span>)) &#123;</span><br><span class="line">                Toast.makeText(<span class="built_in">this</span>, <span class="string">&quot;请输入运算符&quot;</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextNum.length() &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                Toast.makeText(<span class="built_in">this</span>, <span class="string">&quot;请输入数字&quot;</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (caculate()) &#123; <span class="comment">// 计算成功，则显示计算结果</span></span><br><span class="line">                operator = inputText;</span><br><span class="line">                showText = showText + <span class="string">&quot;=&quot;</span> + result;</span><br><span class="line">                tv_result.setText(showText);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 计算失败，则直接返回</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">				...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>从<code>onClick</code>函数中可以发现最终真实的点击“等号”按钮后的主要代码在<code>caculate()</code>函数中。接下来就是验证我们想法的时候了：为了防止源码和真实运行代码不同，先使用以下命令验证是否存在<code>caculate()</code>函数。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">com.example.junior <span class="title function_">on</span> <span class="params">(google: <span class="number">13</span>)</span> [usb] # android hooking list class_methods com.example.j</span><br><span class="line">unior.CalculatorActivity</span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> com.example.junior.CalculatorActivity.caculate()</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> com.example.junior.CalculatorActivity.clear(java.lang.String)</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> com.example.junior.CalculatorActivity.onCreate(android.os.Bundle)</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> com.example.junior.CalculatorActivity.onClick(android.view.View)</span><br><span class="line"></span><br><span class="line">Found <span class="number">4</span> method(s)</span><br></pre></td></tr></table></figure>
+<p>上面的执行结果说明<code>caculate()</code>函数确实是存在的。</p>
+<p>接下来就很明显了，使用如下命令<code>Hook</code>这个函数来确认在点击  “等号”按钮后这个函数被调用了。在<code>Hook</code>上后，任意输入一个表达式并点击“等号”按钮，会发现这个函数在点击“等号”按钮后被调用，<code>Hook</code>结果如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">com.example.junior <span class="title function_">on</span> <span class="params">(google: <span class="number">13</span>)</span> [usb] # android hooking watch class_method com.example</span><br><span class="line">.junior.CalculatorActivity.caculate --dump-args --dump-backtrace --dump-<span class="keyword">return</span></span><br><span class="line">(agent) Attempting to watch <span class="keyword">class</span> <span class="title class_">com</span>.example.junior.CalculatorActivity and method caculate.</span><br><span class="line">(agent) Hooking com.example.junior.CalculatorActivity.caculate()</span><br><span class="line">(agent) Registering job <span class="number">658110.</span> Type: watch-method <span class="keyword">for</span>: com.example.junior.CalculatorActivity.caculate</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324145106214.png" alt="image-20250324145106214"></p>
+<p>查找代码，找到了其中的的<code>caculate()</code>函数。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 开始加减乘除四则运算，计算成功则返回true，计算失败则返回false</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">caculate</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (operator.equals(<span class="string">&quot;＋&quot;</span>)) &#123; <span class="comment">// 当前是相加运算</span></span><br><span class="line">        result = String.valueOf(Arith.add(firstNum, nextNum));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (operator.equals(<span class="string">&quot;－&quot;</span>)) &#123; <span class="comment">// 当前是相减运算</span></span><br><span class="line">        result = String.valueOf(Arith.sub(firstNum, nextNum));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (operator.equals(<span class="string">&quot;×&quot;</span>)) &#123; <span class="comment">// 当前是相乘运算</span></span><br><span class="line">        result = String.valueOf(Arith.mul(firstNum, nextNum));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (operator.equals(<span class="string">&quot;÷&quot;</span>)) &#123; <span class="comment">// 当前是相除运算</span></span><br><span class="line">        <span class="keyword">if</span> (Double.parseDouble(nextNum) == <span class="number">0</span>) &#123; <span class="comment">// 发现除数是0</span></span><br><span class="line">            <span class="comment">// 除数为0，要弹窗提示用户</span></span><br><span class="line">            Toast.makeText(<span class="built_in">this</span>, <span class="string">&quot;除数不能为零&quot;</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">            <span class="comment">// 返回false表示运算失败</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 除数非0，则进行正常的除法运算</span></span><br><span class="line">            result = String.valueOf(Arith.div(firstNum, nextNum));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 把运算结果打印到日志中</span></span><br><span class="line">    Log.d(TAG, <span class="string">&quot;result=&quot;</span> + result);</span><br><span class="line">    firstNum = result;</span><br><span class="line">    nextNum = <span class="string">&quot;&quot;</span>;</span><br><span class="line">    <span class="comment">// 返回true表示运算成功</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个函数中，对减法的处理是通过调用<code>Arith</code>类中的<code>sub()</code>函数来实现的。为了验证<code>Arith</code>类在内存中是真实存在的，我们通常使用以下<code>Objection</code>命令来获取一个应用在内存中的所有类。</p>
+<p><code># android hooking list classes</code></p>
+<p>通常，在运行这行命令后会列出很多类，甚至会超过整个<code>Terminal</code>缓存空间，这时会出现一些类被缓存冲刷掉的情况，如果只是简单地在终端窗口里查找，那么不一定能找到。其实<code>Objection</code>本身有一个<code>log</code>文件，用于记录<code>objection</code>运行时产生的所有数据。这个日志数据存放在<code>~/.objection</code>目录下的<code>objection.log</code>文件中。</p>
+<p><strong>解决方法</strong>：在运行<code>objection</code>注入<code>App</code>之前，首先切换到<code>~/.objection</code>目录下，将之前的<code>objection.log</code>文件删除或者改名。如下所示：</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324150259874.png" alt="image-20250324150259874"></p>
+<p>在删除这个<code>log</code>文件后重新注入<code>App</code>，并重新遍历应用在内存中的所有类，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">注入应用</span></span><br><span class="line">objection -g junior explore</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">进入到objection的命令窗口，遍历内存中的所有类</span></span><br><span class="line">android hooking list classes</span><br></pre></td></tr></table></figure>
+<p>在遍历完成后退出<code>Objection</code>注入模式以确保<code>log</code>文件刷新成功,  并重新通过<code>cat</code>命令查看这个<code>objection.log</code>文件，由于<code>log</code>文件过大，因此还需要配合<code>grep</code>命令过滤文本，从而通过观察结果是否有输出来判定内存中是否存在目标类<code>Arith</code>，如下图所示。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324151645694.png" alt="image-20250324151645694"></p>
+<p>在判定内存中确实存在<code>Arith</code>类后，我们进一步通过<code>Objection</code>命令判断<code>Arith</code>类是否存在<code>sub()</code>函数。如下图所示。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324152011009.png" alt="image-20250324152011009"></p>
+<p>在内存中确定这个函数存在后，便可以使用如下命令对这个函数进行<code>Hook</code>了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android hooking watch class_method com.example.junior.util.Arith.sub --dump-args --dump-backtrace --dump-return</span><br></pre></td></tr></table></figure>
+<p>最终确认这个简单计算器的减法是通过<code>sub(java.lang.String,  java.lang.String)</code>实现的。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324233129462.png" alt="image-20250324233129462"></p>
+<p>这里我使用了计算器的减法时，发现没能触发<code>hook</code>，这里<code>hook</code>失败了。</p>
+<p>然后我使用同样的方法尝试了其它的<code>App</code><sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>，成功<code>hook</code>，可能是我下载的<code>junior</code>来源有点问题。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android hooking watch class_method com.zj.wuaipojie.Demo.a --dump-args --dump-backtrace --dump-return</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324234444822.png" alt="image-20250324234444822"></p>
+<h4 id="2、利用：Frida脚本修改参数">2、利用：Frida脚本修改参数</h4>
+<p>前面我们确认了<code>Arith</code>类的函数<code>sub(java.lang.String, java.lang.String)</code>是最终计算器减法的真实执行函数。这里尝试使用<code>frida</code>的脚本去进行<code>hook</code>这个<code>sub</code>函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">main</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">Arith</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&#x27;com.example.junior.util.Arith&#x27;</span>);</span><br><span class="line">        <span class="comment">// Hook Arith.sub() 方法</span></span><br><span class="line">        <span class="title class_">Arith</span>.<span class="property">sub</span>.<span class="title function_">overload</span>(<span class="string">&#x27;java.lang.String&#x27;</span>, <span class="string">&#x27;java.lang.String&#x27;</span>).<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params">str1, str2</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> result = <span class="variable language_">this</span>.<span class="title function_">sub</span>(str1, str2);</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;str1,str2,result =&gt;&#x27;</span>,str1,str2,result);</span><br><span class="line">            <span class="comment">//打印Java调用栈</span></span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;android.util.Log&quot;</span>).<span class="title function_">getStackTraceString</span>(<span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.lang.Exception&quot;</span>).$new()));</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;);    </span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">setImmediate</span>(main)</span><br></pre></td></tr></table></figure>
+<p>仍然是<code>hook</code>失败的，进行减法操作无任何反应。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324235914989.png" alt="image-20250324235914989"></p>
+<p>我们知道，<code>Frida</code>脚本中<code>Java</code>函数的主动调用(区分静态函数和实例函数)。如果是静态函数，只需要获取类对象即可直接完成函数的主动调用；如果是实例函数，只需要优先获取到类的实例对象即可完成函数的主动调用。</p>
+<p>主动调用的代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">main</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">Arith</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&#x27;com.example.junior.util.Arith&#x27;</span>)</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">JavaString</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&#x27;java.lang.String&#x27;</span>);</span><br><span class="line">        <span class="keyword">var</span> reuslt = <span class="title class_">Arith</span>.<span class="title function_">sub</span>(<span class="title class_">JavaString</span>.$new(<span class="string">&#x27;123&#x27;</span>),<span class="title class_">JavaString</span>.$new(<span class="string">&#x27;112&#x27;</span>));</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(reuslt);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">setImmediate</span>(main)</span><br></pre></td></tr></table></figure>
+<p>成功调用。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325000255731.png" alt="image-20250325000255731"></p>
+<p>主动调用可以，但是被动调用就不行，这里可能是<code>App</code>的问题。</p>
+<p>深入到<code>Arith.java</code>代码<sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>中，发现<code>sub</code>函数的实现使用了<code>BigDecimal</code>函数。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325001453566.png" alt="image-20250325001453566"></p>
+<p>尝试去<code>hook</code>这个代码，发现成功<code>hook</code>，这里不清楚为什么。</p>
+<p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325001629404.png" alt="image-20250325001629404"></p>
+<p><code>hook</code>的代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">main</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="title class_">BigDecimal</span> = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;java.math.BigDecimal&quot;</span>);</span><br><span class="line">        <span class="comment">// 构造函数 hook（验证参数）</span></span><br><span class="line">        <span class="comment">// BigDecimal.$init.overloads.forEach(function(overload)&#123;</span></span><br><span class="line">        <span class="comment">//     overload.implementation = function()&#123;</span></span><br><span class="line">        <span class="comment">//         console.log(&quot;[Hooked BigDecimal constructor] called:&quot;, overload.toString());</span></span><br><span class="line">        <span class="comment">//         for(var i=0; i&lt;arguments.length; i++)&#123;</span></span><br><span class="line">        <span class="comment">//             console.log(&quot;  arg[&quot;+i+&quot;]: &quot; + arguments[i]);</span></span><br><span class="line">        <span class="comment">//         &#125;</span></span><br><span class="line">        <span class="comment">//         return overload.apply(this, arguments);</span></span><br><span class="line">        <span class="comment">//     &#125;;</span></span><br><span class="line">        <span class="comment">// &#125;);</span></span><br><span class="line">        <span class="comment">// subtract 方法 hook（捕捉核心运算）</span></span><br><span class="line">        <span class="title class_">BigDecimal</span>.<span class="property">subtract</span>.<span class="title function_">overload</span>(<span class="string">&quot;java.math.BigDecimal&quot;</span>).<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params">b2</span>)&#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;[Hooked BigDecimal.subtract] called&quot;</span>);</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;  self:&quot;</span>, <span class="variable language_">this</span>.<span class="title function_">toString</span>());</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;  arg :&quot;</span>, b2.<span class="title function_">toString</span>());</span><br><span class="line">            <span class="keyword">var</span> result = <span class="variable language_">this</span>.<span class="title function_">subtract</span>(b2);</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;  result:&quot;</span>, result.<span class="title function_">toString</span>());</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;);    </span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">setImmediate</span>(main);</span><br></pre></td></tr></table></figure>
+<h3 id="参考">参考</h3>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/aqi00/android2">https://github.com/aqi00/android2</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/x2nn/android_security/blob/main/junior.apk">https://github.com/x2nn/android_security/blob/main/junior.apk</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/x2nn/android_security/blob/main/woaipojie.apk">https://github.com/x2nn/android_security/blob/main/woaipojie.apk</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/aqi00/android2/blob/master/junior/src/main/java/com/example/junior/util/Arith.java#L3">https://github.com/aqi00/android2/blob/master/junior/src/main/java/com/example/junior/util/Arith.java#L3</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/tags/">Tag</a></li>
+        
+          <li><a href="/categories/">Category</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E8%AE%A4%E8%A6%81hook%E7%9A%84apk"><span class="toc-number">1.</span> <span class="toc-text">一、确认要hook的apk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">2.</span> <span class="toc-text">二、常用的命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81help%E5%91%BD%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">1、help命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81jobs%E5%91%BD%E4%BB%A4"><span class="toc-number">2.2.</span> <span class="toc-text">2、jobs命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%86%85%E5%AD%98%E6%BC%AB%E6%B8%B8%E7%9B%B8%E5%85%B3%E6%8C%87%E4%BB%A4"><span class="toc-number">2.3.</span> <span class="toc-text">3、内存漫游相关指令</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%88%97%E5%87%BA%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%89%80%E6%9C%89%E7%B1%BB"><span class="toc-number">2.3.1.</span> <span class="toc-text">（1）列出内存中的所有类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E6%89%80%E6%9C%89%E5%B7%B2%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%B1%BB%E4%B8%AD%E6%90%9C%E7%B4%A2%E5%8C%85%E5%90%AB%E7%89%B9%E5%AE%9A%E5%85%B3%E9%94%AE%E8%AF%8D%E7%9A%84%E7%B1%BB"><span class="toc-number">2.3.2.</span> <span class="toc-text">（2）在内存中所有已加载的类中搜索包含特定关键词的类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E4%BB%8E%E5%86%85%E5%AD%98%E4%B8%AD%E6%90%9C%E7%B4%A2%E6%89%80%E6%9C%89%E5%8C%85%E5%90%AB%E5%85%B3%E9%94%AE%E8%AF%8Dkey%E7%9A%84%E6%96%B9%E6%B3%95%E3%80%82"><span class="toc-number">2.3.3.</span> <span class="toc-text">（3）从内存中搜索所有包含关键词key的方法。</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E6%9F%A5%E7%9C%8B%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">2.3.4.</span> <span class="toc-text">（4）查看类的所有方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%8E%B7%E5%8F%96%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9"><span class="toc-number">3.</span> <span class="toc-text">三、获取四大组件相关内容</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84activity"><span class="toc-number">3.1.</span> <span class="toc-text">1、列出进程所有的activity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84service"><span class="toc-number">3.2.</span> <span class="toc-text">2、列出进程所有的service</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Hook%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">四、Hook相关命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%9A%84%E6%96%B9%E6%B3%95%E8%BF%9B%E8%A1%8CHook"><span class="toc-number">4.1.</span> <span class="toc-text">1、对指定的方法进行Hook</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%B1%BB%E4%B8%AD%E6%89%80%E6%9C%89%E5%87%BD%E6%95%B0%E7%9A%84Hook"><span class="toc-number">4.2.</span> <span class="toc-text">2、对指定类中所有函数的Hook</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81Objection%E7%9A%84%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">五、Objection的主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9E%E4%BE%8B%E6%90%9C%E7%B4%A2-%E5%9F%BA%E4%BA%8EJava-choose%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.1.</span> <span class="toc-text">1、实例搜索(基于Java.choose实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81Objection%E4%B8%AD%E8%B0%83%E7%94%A8%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.</span> <span class="toc-text">2、Objection中调用实例方法的两种方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8execute"><span class="toc-number">5.2.1.</span> <span class="toc-text">第一种：使用execute</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8evaluate"><span class="toc-number">5.2.2.</span> <span class="toc-text">第二种：使用evaluate</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81Frida%E5%BC%80%E5%8F%91%E6%80%9D%E6%83%B3%F0%9F%8C%9F"><span class="toc-number">6.</span> <span class="toc-text">六、Frida开发思想🌟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9A%E4%BD%8D%EF%BC%9AObjection%E8%BE%85%E5%8A%A9%E5%AE%9A%E4%BD%8D"><span class="toc-number">6.1.</span> <span class="toc-text">1、定位：Objection辅助定位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%A9%E7%94%A8%EF%BC%9AFrida%E8%84%9A%E6%9C%AC%E4%BF%AE%E6%94%B9%E5%8F%82%E6%95%B0"><span class="toc-number">6.2.</span> <span class="toc-text">2、利用：Frida脚本修改参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">7.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&text=Objection笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&is_video=false&description=Objection笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Objection笔记&body=Check out this article: https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&name=Objection笔记&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&t=Objection笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+      <div class="footer-left">
+        Copyright &copy;
+        
+        
+        2024-2025
+        💗
+      </div>
+      <div class="footer-right">
+        <nav>
+          <ul>
+            <!--
+          --><li><a href="/">Home</a></li><!--
+        --><!--
+          --><li><a href="/archives/">Writing</a></li><!--
+        --><!--
+          --><li><a href="/tags/">Tag</a></li><!--
+        --><!--
+          --><li><a href="/categories/">Category</a></li><!--
+        --><!--
+          --><li><a href="/search/">Search</a></li><!--
+        --><!--
+          --><li><a href="/about/">About</a></li><!--
+        -->
+          </ul>
+          <ul>
+            
+              <!-- 不蒜子统计 -->
+              <span id="busuanzi_container_site_pv">
+                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+              </span>
+              <span class="post-meta-divider">|</span>
+              <span id="busuanzi_container_site_uv" style='display:none'>
+                      本站访客数<span id="busuanzi_value_site_uv"></span>人
+              </span>
+            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            
+          </ul>
+        </nav>
+      </div>
+      
+</footer>
+
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

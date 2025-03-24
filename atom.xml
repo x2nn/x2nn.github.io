@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-03-16T01:23:58.391Z</updated>
+  <updated>2025-03-24T16:19:21.606Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Objection笔记</title>
+    <link href="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"/>
+    <id>https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/</id>
+    <published>2025-03-21T15:42:40.000Z</published>
+    <updated>2025-03-24T16:19:21.606Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3</summary>
+        
+      
+    
+    
+    
+    <category term="Tools" scheme="https://x2nn.github.io/categories/Tools/"/>
+    
+    
+    <category term="安卓逆向" scheme="https://x2nn.github.io/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/"/>
+    
+    <category term="Objection" scheme="https://x2nn.github.io/tags/Objection/"/>
+    
+  </entry>
   
   <entry>
     <title>Frida学习</title>
@@ -75,7 +102,7 @@
     <link href="https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/"/>
     <id>https://x2nn.github.io/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/</id>
     <published>2025-02-23T01:32:49.000Z</published>
-    <updated>2025-03-17T12:01:41.869Z</updated>
+    <updated>2025-03-17T13:28:30.287Z</updated>
     
     
       
