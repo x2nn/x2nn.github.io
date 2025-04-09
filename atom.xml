@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-03-24T16:24:06.854Z</updated>
+  <updated>2025-04-04T13:05:12.967Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,62 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>免杀基础知识</title>
+    <link href="https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
+    <id>https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</id>
+    <published>2025-04-04T08:43:25.000Z</published>
+    <updated>2025-04-04T13:05:12.967Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;基础知识&quot;&gt;基础知识&lt;/h2&gt;
+&lt;h3 id=&quot;1-什么是免杀&quot;&gt;1.</summary>
+        
+      
+    
+    
+    
+    <category term="免杀" scheme="https://x2nn.github.io/categories/%E5%85%8D%E6%9D%80/"/>
+    
+    
+    <category term="免杀" scheme="https://x2nn.github.io/tags/%E5%85%8D%E6%9D%80/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java代码漏洞审计点</title>
+    <link href="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/"/>
+    <id>https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/</id>
+    <published>2025-04-01T03:13:02.000Z</published>
+    <updated>2025-04-04T17:40:59.668Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;审计流程&quot;&gt;审计流程&lt;/h2&gt;
+&lt;h3 id=&quot;生命周期&quot;&gt;生命周期&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Servlet&lt;/code&gt;生命周期&lt;/p&gt;
+&lt;p&gt;&lt;img</summary>
+        
+      
+    
+    
+    
+    <category term="代码审计" scheme="https://x2nn.github.io/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
+    
+    
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    
+    <category term="代码审计" scheme="https://x2nn.github.io/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
+    
+  </entry>
   
   <entry>
     <title>Objection笔记</title>
