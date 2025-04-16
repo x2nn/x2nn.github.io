@@ -8,20 +8,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
     <meta name="description" content="审计流程 生命周期 Servlet生命周期  Servlet 找Controller文件，找mapping路由。 Springboot 找mapping SQL注入 Java中常见的连接数据库的方式：Mybatis、JDBC、Hibernate等。在Java中存在注入的参数类型要为字符型。 JDBC中的SQL注入 JDBC中常用的几个执行SQL语句的方式[1]，分别为：   Statement：用">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java代码漏洞审计点">
-<meta property="og:url" content="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/index.html">
+<meta property="og:title" content="Java代码审计漏洞点(基础)">
+<meta property="og:url" content="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/index.html">
 <meta property="og:site_name" content="X2n.">
 <meta property="og:description" content="审计流程 生命周期 Servlet生命周期  Servlet 找Controller文件，找mapping路由。 Springboot 找mapping SQL注入 Java中常见的连接数据库的方式：Mybatis、JDBC、Hibernate等。在Java中存在注入的参数类型要为字符型。 JDBC中的SQL注入 JDBC中常用的几个执行SQL语句的方式[1]，分别为：   Statement：用">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/image-20250401162609929.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/image-20250401162609929.png">
 <meta property="article:published_time" content="2025-04-01T03:13:02.000Z">
-<meta property="article:modified_time" content="2025-04-16T12:46:37.716Z">
+<meta property="article:modified_time" content="2025-04-16T12:50:54.206Z">
 <meta property="article:author" content="💗">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="代码审计">
 <meta property="article:tag" content="MyBatis">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/image-20250401162609929.png">
+<meta name="twitter:image" content="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/image-20250401162609929.png">
     
     
       
@@ -41,7 +41,7 @@
       
     
     <!-- title -->
-    <title>Java代码漏洞审计点</title>
+    <title>Java代码审计漏洞点(基础)</title>
     <!-- async scripts -->
     <!-- Google Analytics -->
 
@@ -117,17 +117,17 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&text=Java代码漏洞审计点"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&is_video=false&description=Java代码漏洞审计点"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Java代码漏洞审计点&body=Check out this article: https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&name=Java代码漏洞审计点&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&t=Java代码漏洞审计点"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&text=Java代码审计漏洞点(基础)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&is_video=false&description=Java代码审计漏洞点(基础)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java代码审计漏洞点(基础)&body=Check out this article: https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&name=Java代码审计漏洞点(基础)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&t=Java代码审计漏洞点(基础)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -147,7 +147,7 @@
   <header>
     
     <h1 class="posttitle p-name" itemprop="name headline">
-        Java代码漏洞审计点
+        Java代码审计漏洞点(基础)
     </h1>
 
 
@@ -187,7 +187,7 @@
     <h2 id="审计流程">审计流程</h2>
 <h3 id="生命周期">生命周期</h3>
 <p><code>Servlet</code>生命周期</p>
-<p><img src="/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/image-20250401162609929.png" alt="image-20250401162609929"></p>
+<p><img src="/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/image-20250401162609929.png" alt="image-20250401162609929"></p>
 <h3 id="Servlet">Servlet</h3>
 <p>找<code>Controller</code>文件，找<code>mapping</code>路由。</p>
 <h3 id="Springboot">Springboot</h3>
@@ -389,17 +389,17 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&text=Java代码漏洞审计点"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&is_video=false&description=Java代码漏洞审计点"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Java代码漏洞审计点&body=Check out this article: https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&title=Java代码漏洞审计点"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&name=Java代码漏洞审计点&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/&t=Java代码漏洞审计点"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&text=Java代码审计漏洞点(基础)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&is_video=false&description=Java代码审计漏洞点(基础)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java代码审计漏洞点(基础)&body=Check out this article: https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&title=Java代码审计漏洞点(基础)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&name=Java代码审计漏洞点(基础)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/&t=Java代码审计漏洞点(基础)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>

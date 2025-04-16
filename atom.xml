@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-04-04T13:05:12.967Z</updated>
+  <updated>2025-04-04T14:26:16.435Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
     <id>https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</id>
     <published>2025-04-04T08:43:25.000Z</published>
-    <updated>2025-04-04T13:05:12.967Z</updated>
+    <updated>2025-04-04T14:26:16.435Z</updated>
     
     
       
@@ -43,11 +43,11 @@
   </entry>
   
   <entry>
-    <title>Java代码漏洞审计点</title>
-    <link href="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/"/>
-    <id>https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1%E7%82%B9/</id>
+    <title>Java代码审计漏洞点(基础)</title>
+    <link href="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"/>
+    <id>https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/</id>
     <published>2025-04-01T03:13:02.000Z</published>
-    <updated>2025-04-16T12:46:37.716Z</updated>
+    <updated>2025-04-16T12:50:54.206Z</updated>
     
     
       
