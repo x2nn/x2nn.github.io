@@ -47,7 +47,7 @@
     <link href="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"/>
     <id>https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/</id>
     <published>2025-04-01T03:13:02.000Z</published>
-    <updated>2025-04-21T03:26:44.408Z</updated>
+    <updated>2025-04-22T02:45:22.804Z</updated>
     
     
       
@@ -55,8 +55,7 @@
         
         
     <summary type="html">&lt;h2 id=&quot;审计流程&quot;&gt;审计流程&lt;/h2&gt;
-&lt;h3 id=&quot;生命周期&quot;&gt;生命周期&lt;/h3&gt;
-&lt;p&gt;&lt;code&gt;Servlet&lt;/code&gt;生命周期&lt;/p&gt;
+&lt;h3 id=&quot;Servlet生命周期&quot;&gt;&lt;code&gt;Servlet&lt;/code&gt;生命周期&lt;/h3&gt;
 &lt;p&gt;&lt;img</summary>
         
       
