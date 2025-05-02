@@ -13,7 +13,7 @@
       
       <categories>
           
-          <category> 联邦学习 </category>
+          <category> AI相关 </category>
           
       </categories>
       
@@ -23,6 +23,8 @@
             <tag> 机器学习 </tag>
             
             <tag> 逻辑回归 </tag>
+            
+            <tag> 过拟合 </tag>
             
         </tags>
       
@@ -154,7 +156,7 @@
       
       <categories>
           
-          <category> 联邦学习 </category>
+          <category> AI相关 </category>
           
       </categories>
       
@@ -162,6 +164,10 @@
         <tags>
             
             <tag> 机器学习 </tag>
+            
+            <tag> 线性回归 </tag>
+            
+            <tag> 特征放缩 </tag>
             
         </tags>
       
