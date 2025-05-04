@@ -2,19 +2,45 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>X2n.</title>
   <icon>https://x2nn.github.io/icon.png</icon>
-  <subtitle>test1</subtitle>
+  
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-05-02T05:09:29.329Z</updated>
+  <updated>2025-05-02T10:17:14.293Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
-    <name>💗</name>
+    <name>X2n.</name>
     
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>神经网络笔记</title>
+    <link href="https://x2nn.github.io/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/"/>
+    <id>https://x2nn.github.io/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/</id>
+    <published>2025-05-02T05:11:51.000Z</published>
+    <updated>2025-05-02T10:17:14.293Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;神经网络-Neural-Networks&quot;&gt;神经网络(Neural Networks)&lt;/h2&gt;
+&lt;p&gt;神经网络（Neural</summary>
+        
+      
+    
+    
+    
+    <category term="AI相关" scheme="https://x2nn.github.io/categories/AI%E7%9B%B8%E5%85%B3/"/>
+    
+    
+    <category term="神经网络" scheme="https://x2nn.github.io/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"/>
+    
+  </entry>
   
   <entry>
     <title>机器学习中的分类</title>
@@ -38,9 +64,9 @@
     <category term="AI相关" scheme="https://x2nn.github.io/categories/AI%E7%9B%B8%E5%85%B3/"/>
     
     
-    <category term="机器学习" scheme="https://x2nn.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
     <category term="逻辑回归" scheme="https://x2nn.github.io/tags/%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92/"/>
+    
+    <category term="机器学习" scheme="https://x2nn.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
     <category term="过拟合" scheme="https://x2nn.github.io/tags/%E8%BF%87%E6%8B%9F%E5%90%88/"/>
     
@@ -51,7 +77,7 @@
     <link href="https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
     <id>https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</id>
     <published>2025-04-04T08:43:25.000Z</published>
-    <updated>2025-04-04T14:26:16.435Z</updated>
+    <updated>2025-05-01T03:59:12.598Z</updated>
     
     
       

@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>神经网络笔记</title>
+      <link href="/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/"/>
+      <url>/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/</url>
+      
+        <content type="html"><![CDATA[<h2 id="神经网络-Neural-Networks">神经网络(Neural Networks)</h2><p>神经网络（Neural Network）是一种模仿人类大脑神经元结构和工作方式的计算模型，广泛用于机器学习和人工智能中，尤其擅长处理图像识别、语音识别、自然语言处理等复杂任务。</p><p><strong>通俗理解：</strong></p><p>可以把神经网络看成是一种&quot;黑盒子&quot;系统，它通过输入一些数据，不断学习其中的规律，并给出相应的输出结果。就像人类通过经验不断学习和改进一样，神经网络也通过大量的数据训练自己。</p><h3 id="组成结构">组成结构</h3><p>神经网络通常由以下几个部分组成：</p><ol><li><strong>输入层（Input Layer）</strong>：接收原始数据，比如图片的像素值或文本的向量表示。</li><li><strong>隐藏层（Hidden Layers）</strong>：中间若干层神经元节点，每一层都会对数据进行处理和特征提取。</li><li><strong>输出层（Output Layer）</strong>：输出最终结果，比如分类标签或预测数值。</li></ol><p>每一层都包含多个“神经元”，它们通过**权重（weight）<strong>和</strong>偏置（bias）<strong>连接，并经过一个</strong>激活函数（activation function）**进行非线性变换。</p><p>举个简单的例子：</p><p>比如你要训练一个神经网络来识别猫和狗的图片：</p><ul><li>输入层：接收图片的像素数据。</li><li>隐藏层：提取特征，比如耳朵形状、毛发颜色、眼睛位置等。</li><li>输出层：给出结果，例如“这是一只猫”或“这是一只狗”。</li></ul><h3 id="训练过程">训练过程</h3><p>神经网络通过一个叫**反向传播（backpropagation）**的算法，不断调整权重和偏置，以最小化预测误差。这个过程就像人类在做错题后不断纠正自己。</p><h2 id="aaaa">aaaa</h2>]]></content>
+      
+      
+      <categories>
+          
+          <category> AI相关 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 神经网络 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>机器学习中的分类</title>
       <link href="/2025/05/01/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%88%86%E7%B1%BB/"/>
       <url>/2025/05/01/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%88%86%E7%B1%BB/</url>
@@ -20,9 +45,9 @@
       
         <tags>
             
-            <tag> 机器学习 </tag>
-            
             <tag> 逻辑回归 </tag>
+            
+            <tag> 机器学习 </tag>
             
             <tag> 过拟合 </tag>
             
