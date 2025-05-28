@@ -19,8 +19,10 @@
 <meta property="og:image" content="https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250526190631717.png">
 <meta property="og:image" content="https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250526193449206.png">
 <meta property="og:image" content="https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250526194338618.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250527134144981.png">
+<meta property="og:image" content="https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250527140306161.png">
 <meta property="article:published_time" content="2025-05-25T12:42:31.000Z">
-<meta property="article:modified_time" content="2025-05-26T12:20:03.626Z">
+<meta property="article:modified_time" content="2025-05-27T16:04:45.978Z">
 <meta property="article:author" content="X2n.">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="反射机制">
@@ -517,11 +519,120 @@
 <p>Method 提供关于类或接口上单独某个方法（以及如何访问该方法）的信息，所反映的方法可能是类方法或实例方法（包括抽象方法）。</p>
 </blockquote>
 <p>下面是Class类获取Method对象相关的方法：</p>
+<table>
+<thead>
+<tr>
+<th>方法返回</th>
+<th>方法名称</th>
+<th>方法说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Method</td>
+<td>getDeclaredMethod(String name, Class&lt;?&gt;… parameterTypes)</td>
+<td>返回一个指定参数的Method对象，该对象反映此 Class 对象所表示的类或接口的指定已声明方法。</td>
+</tr>
+<tr>
+<td>Method[]</td>
+<td>getDeclaredMethods()</td>
+<td>返回 Method 对象的一个数组，这些对象反映此 Class 对象表示的类或接口声明的所有方法，包括公共、保护、默认（包）访问和私有方法，但不包括继承的方法。</td>
+</tr>
+<tr>
+<td>Method</td>
+<td>getMethod(String name, Class&lt;?&gt;… parameterTypes)</td>
+<td>返回一个 Method 对象，它反映此 Class 对象所表示的类或接口的指定公共成员方法。</td>
+</tr>
+<tr>
+<td>Method[]</td>
+<td>getMethods()</td>
+<td>返回一个包含某些 Method 对象的数组，这些对象反映此 Class 对象所表示的类或接口（包括那些由该类或接口声明的以及从超类和超接口继承的那些的类或接口）的公共 member 方法。</td>
+</tr>
+</tbody>
+</table>
+<p>同样通过案例演示上述方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.x2n.reflection;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReflectMethod</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException, NoSuchMethodException &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;com.x2n.reflection.Circle&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//根据参数获取public的Method,包含继承自父类的方法</span></span><br><span class="line">        <span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> clazz.getMethod(<span class="string">&quot;draw&quot;</span>,<span class="type">int</span>.class,String.class);</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;method:&quot;</span>+method);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取所有public的方法:</span></span><br><span class="line">        Method[] methods =clazz.getMethods();</span><br><span class="line">        <span class="keyword">for</span> (Method m:methods)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;m::&quot;</span>+m);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;=========================================&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取当前类的方法包含private,该方法无法获取继承自父类的method</span></span><br><span class="line">        <span class="type">Method</span> <span class="variable">method1</span> <span class="operator">=</span> clazz.getDeclaredMethod(<span class="string">&quot;drawCircle&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;method1::&quot;</span>+method1);</span><br><span class="line">        <span class="comment">//获取当前类的所有方法包含private,该方法无法获取继承自父类的method</span></span><br><span class="line">        Method[] methods1=clazz.getDeclaredMethods();</span><br><span class="line">        <span class="keyword">for</span> (Method m:methods1)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;m1::&quot;</span>+m);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Shape</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">draw</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;draw&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">draw</span><span class="params">(<span class="type">int</span> count , String name)</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;draw &quot;</span>+ name +<span class="string">&quot;,count=&quot;</span>+count);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Circle</span> <span class="keyword">extends</span> <span class="title class_">Shape</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">drawCircle</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;drawCircle&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getAllCount</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">100</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出的结果如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">method:<span class="keyword">public</span> <span class="keyword">void</span> com.x2n.reflection.Shape.draw(<span class="type">int</span>,java.lang.String)</span><br><span class="line">m::<span class="keyword">public</span> <span class="type">int</span> com.x2n.reflection.Circle.getAllCount()</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">void</span> com.x2n.reflection.Shape.draw()</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">void</span> com.x2n.reflection.Shape.draw(<span class="type">int</span>,java.lang.String)</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> java.lang.Object.wait(<span class="type">long</span>,<span class="type">int</span>) <span class="keyword">throws</span> java.lang.InterruptedException</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> java.lang.Object.wait() <span class="keyword">throws</span> java.lang.InterruptedException</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> java.lang.Object.wait(<span class="type">long</span>) <span class="keyword">throws</span> java.lang.InterruptedException</span><br><span class="line">m::<span class="keyword">public</span> <span class="type">boolean</span> java.lang.Object.equals(java.lang.Object)</span><br><span class="line">m::<span class="keyword">public</span> java.lang.String java.lang.Object.toString()</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> java.lang.Object.hashCode()</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> java.lang.Class java.lang.Object.getClass()</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> java.lang.Object.notify()</span><br><span class="line">m::<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> java.lang.Object.notifyAll()</span><br><span class="line">=========================================</span><br><span class="line">method1::<span class="keyword">private</span> <span class="keyword">void</span> com.x2n.reflection.Circle.drawCircle()</span><br><span class="line">m1::<span class="keyword">private</span> <span class="keyword">void</span> com.x2n.reflection.Circle.drawCircle()</span><br><span class="line">m1::<span class="keyword">public</span> <span class="type">int</span> com.x2n.reflection.Circle.getAllCount()</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250527134144981.png" alt="image-20250527134144981"></p>
+<p>在通过getMethods方法获取Method对象时，会把父类的方法也获取到，如上的输出结果，把Object类的方法都打印出来了。而<code>getDeclaredMethod/getDeclaredMethods</code>方法都只能获取当前类的方法。我们在使用时根据情况选择即可。</p>
+<p>下面将演示通过Method对象调用指定类的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.x2n.reflection;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReflectMethod1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException &#123;</span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;com.x2n.reflection.Circle&quot;</span>);</span><br><span class="line">        <span class="comment">//创建对象</span></span><br><span class="line">        <span class="type">Circle</span> <span class="variable">circle</span> <span class="operator">=</span> (Circle) clazz.newInstance();</span><br><span class="line">        <span class="comment">//获取指定参数的方法对象Method</span></span><br><span class="line">        <span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> clazz.getMethod(<span class="string">&quot;draw&quot;</span>,<span class="type">int</span>.class,String.class);</span><br><span class="line">        <span class="comment">//通过Method对象的invoke(Object obj,Object... args)方法调用</span></span><br><span class="line">        method.invoke(circle,<span class="number">15</span>,<span class="string">&quot;圈圈&quot;</span>);</span><br><span class="line">        <span class="comment">//对私有无参方法的操作</span></span><br><span class="line">        <span class="type">Method</span> <span class="variable">method1</span> <span class="operator">=</span> clazz.getDeclaredMethod(<span class="string">&quot;drawCircle&quot;</span>);</span><br><span class="line">        <span class="comment">//修改私有方法的访问标识</span></span><br><span class="line">        method1.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        method1.invoke(circle);</span><br><span class="line">        <span class="comment">//对有返回值得方法操作</span></span><br><span class="line">        <span class="type">Method</span> <span class="variable">method2</span> <span class="operator">=</span>clazz.getDeclaredMethod(<span class="string">&quot;getAllCount&quot;</span>);</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">count</span> <span class="operator">=</span> (Integer) method2.invoke(circle);</span><br><span class="line">        System.out.println(<span class="string">&quot;count:&quot;</span>+count);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<p><img src="/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250527140306161.png" alt="image-20250527140306161"></p>
+<p>在上述代码中调用方法，使用了Method类的<code>invoke(Object obj,Object... args)</code>第一个参数代表<strong>调用的对象</strong>，第二个参数<strong>传递的调用方法的参数</strong>。这样就完成了类方法的动态调用。</p>
+<table>
+<thead>
+<tr>
+<th>方法返回值</th>
+<th>方法名称</th>
+<th>方法说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Object</td>
+<td>invoke(Object obj, Object… args)</td>
+<td>对带有指定参数的指定对象调用由此 Method 对象表示的底层方法。</td>
+</tr>
+<tr>
+<td>Class&lt;?&gt;</td>
+<td>getReturnType()</td>
+<td>返回一个 Class 对象，该对象描述了此 Method 对象所表示的方法的正式返回类型,即方法的返回类型</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>getGenericReturnType()</td>
+<td>返回表示由此 Method 对象所表示方法的正式返回类型的 Type 对象，也是方法的返回类型。</td>
+</tr>
+<tr>
+<td>Class&lt;?&gt;[]</td>
+<td>getParameterTypes()</td>
+<td>按照声明顺序返回 Class 对象的数组，这些对象描述了此 Method 对象所表示的方法的形参类型。即返回方法的参数类型组成的数组</td>
+</tr>
+<tr>
+<td>Type[]</td>
+<td>getGenericParameterTypes()</td>
+<td>按照声明顺序返回 Type 对象的数组，这些对象描述了此 Method 对象所表示的方法的形参类型的，也是返回方法的参数类型</td>
+</tr>
+<tr>
+<td>String</td>
+<td>getName()</td>
+<td>以 String 形式返回此 Method 对象表示的方法名称，即返回方法的名称</td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td>isVarArgs()</td>
+<td>判断方法是否带可变参数，如果将此方法声明为带有可变数量的参数，则返回 true；否则，返回 false。</td>
+</tr>
+<tr>
+<td>String</td>
+<td>toGenericString()</td>
+<td>返回描述此 Method 的字符串，包括类型参数。</td>
+</tr>
+</tbody>
+</table>
+<p><code>getReturnType方法/getGenericReturnType方法</code>都是获取Method对象表示的方法的返回类型，只不过前者返回的Class类型后者返回的Type(前面已分析过)，Type就是一个接口而已，在Java8中新增一个默认的方法实现，返回的就参数类型信息</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Type</span> &#123;</span><br><span class="line">    <span class="comment">//1.8新增</span></span><br><span class="line">    <span class="keyword">default</span> String <span class="title function_">getTypeName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而<code>getParameterTypes/getGenericParameterTypes</code>也是同样的道理，都是获取Method对象所表示的方法的参数类型，其他方法与前面的Field和Constructor是类似的。</p>
 <h2 id="反射机制执行的流程">反射机制执行的流程</h2>
+<p>这部分主要参考自大佬文章<sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>。</p>
+<p>先给出一个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
 <h3 id="反射获取类实例">反射获取类实例</h3>
 <h3 id="反射获取方法">反射获取方法</h3>
 <h3 id="调用method-invoke-方法">调用method.invoke()方法</h3>
 <h3 id="反射调用流程小节">反射调用流程小节</h3>
+<p>最后，用几句话总结反射的实现原理：</p>
+<ol>
+<li>反射类及反射方法的获取，都是通过从列表中搜寻查找匹配的方法，所以查找性能会随类的大小方法多少而变化；</li>
+<li>每个类都会有一个与之对应的Class实例，从而每个类都可以获取method反射方法，并作用到其他实例身上；</li>
+<li>反射也是考虑了线程安全的，放心使用；</li>
+<li>反射使用软引用relectionData缓存class信息，避免每次重新从jvm获取带来的开销；</li>
+<li>反射调用多次生成新代理Accessor, 而通过字节码生存的则考虑了卸载功能，所以会使用独立的类加载器；</li>
+<li>当找到需要的方法，都会copy一份出来，而不是使用原来的实例，从而保证数据隔离；</li>
+<li>调度反射方法，最终是由jvm执行invoke0()执行；</li>
+</ol>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
@@ -533,6 +644,8 @@
 <li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://pdai.tech/md/java/jvm/java-jvm-classload.html">https://pdai.tech/md/java/jvm/java-jvm-classload.html</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
 </li>
 <li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/mcryeasy/article/details/52344729">https://blog.csdn.net/mcryeasy/article/details/52344729</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yougewe/p/10125073.html">https://www.cnblogs.com/yougewe/p/10125073.html</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
 </li>
 </ol>
 </section>
