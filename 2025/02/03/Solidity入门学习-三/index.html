@@ -1,201 +1,203 @@
 <!DOCTYPE html>
-<html lang=en>
-<head>
-    <!-- so meta -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta name="description" content="重载 Solidity中允许函数进行重载（overloading），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，Solidity不允许修饰器（modifier）重载。 测试代码Overloading.sol，如下： 12345678910111213141516&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.8.2">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Solidity入门学习(三)">
-<meta property="og:url" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/index.html">
-<meta property="og:site_name" content="X2n.: Keep your passion for what you love !">
-<meta property="og:description" content="重载 Solidity中允许函数进行重载（overloading），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，Solidity不允许修饰器（modifier）重载。 测试代码Overloading.sol，如下： 12345678910111213141516&#x2F;&#x2F; SPDX-License-Identifier: MITpragma solidity ^0.8.2">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204032523893.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204035623180.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204041504259.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204160942747.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204161621064.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204164248838.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172302122.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172327987.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172500152.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172829438.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204165726035.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204165840188.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204170920553.png">
-<meta property="article:published_time" content="2025-02-02T18:20:13.000Z">
-<meta property="article:modified_time" content="2025-02-05T15:39:27.637Z">
-<meta property="article:author" content="X2n.">
-<meta property="article:tag" content="以太坊">
-<meta property="article:tag" content="solidity">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204032523893.png">
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n." />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
     
+      Solidity入门学习(三) 
+      
+      
+      |
     
-      
-        
-          <link rel="shortcut icon" href="/images/favicon.ico">
-        
-      
-      
-        
-          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
-        
-      
-      
-        
-          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-        
-      
+     X2n.: Keep your passion for what you love !
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
     
-    <!-- title -->
-    <title>Solidity入门学习(三)</title>
-    <!-- async scripts -->
-    <!-- Google Analytics -->
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
 
 
-    <!-- Umami Analytics -->
+  
 
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
 
-    <!-- styles -->
-    
-<link rel="stylesheet" href="/css/style.css">
-
-    <!-- persian styles -->
-    
-    <!-- rss -->
-    
-    
-	<!-- mathjax -->
-	
-		<script type="text/x-mathjax-config">
-		  MathJax.Hub.Config({
-			tex2jax: {
-			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-			  inlineMath: [['$','$']]
-			}
-		  });
-		</script>
-		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
-	
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
 <meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n.: Keep your passion for what you love !" type="application/atom+xml">
 </head>
 
-<body class="max-width mx-auto px3 ltr">
-    
-      <div id="header-post">
-  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
-  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
-  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
-  <span id="menu">
-    <span id="nav">
-      <ul>
-        <!--
-       --><li><a href="/">Home</a></li><!--
-     --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
-     --><!--
-       --><li><a href="/tags/">Tag</a></li><!--
-     --><!--
-       --><li><a href="/categories/">Category</a></li><!--
-     --><!--
-       --><li><a href="/search/">Search</a></li><!--
-     --><!--
-       --><li><a href="/about/">About</a></li><!--
-     -->
-      </ul>
-    </span>
-    <br/>
-    <span id="actions">
-      <ul>
-        
-        <li><a class="icon" aria-label="Previous post" href="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
-        
-        
-        <li><a class="icon" aria-label="Next post" href="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
-        
-        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
-        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
-      </ul>
-      <span id="i-prev" class="info" style="display:none;">Previous post</span>
-      <span id="i-next" class="info" style="display:none;">Next post</span>
-      <span id="i-top" class="info" style="display:none;">Back to top</span>
-      <span id="i-share" class="info" style="display:none;">Share post</span>
-    </span>
-    <br/>
-    <div id="share" style="display: none">
-      <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&text=Solidity入门学习(三)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&is_video=false&description=Solidity入门学习(三)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Solidity入门学习(三)&body=Check out this article: https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&name=Solidity入门学习(三)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&t=Solidity入门学习(三)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
-</ul>
 
-    </div>
-    
-    
-      <div id="toc">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E8%BD%BD"><span class="toc-number">1.</span> <span class="toc-text">重载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="toc-number">1.1.</span> <span class="toc-text">函数重载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%EF%BC%88Argument-Matching%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">参数匹配（Argument Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.</span> <span class="toc-text">库合约</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6-2"><span class="toc-number">2.1.</span> <span class="toc-text">库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Strings%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.2.</span> <span class="toc-text">Strings库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BA%93%E5%90%88%E7%BA%A6%EF%BC%9F"><span class="toc-number">2.3.</span> <span class="toc-text">如何使用库合约？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Import"><span class="toc-number">3.</span> <span class="toc-text">Import</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Import%E7%94%A8%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">Import用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AF%BC%E5%85%A5%E7%BB%93%E6%9E%9C"><span class="toc-number">3.2.</span> <span class="toc-text">测试导入结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.</span> <span class="toc-text">接收和发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH"><span class="toc-number">4.1.</span> <span class="toc-text">接收ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH%E5%87%BD%E6%95%B0receive"><span class="toc-number">4.1.1.</span> <span class="toc-text">接收ETH函数receive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9E%E9%80%80ETH%E5%87%BD%E6%95%B0fallback"><span class="toc-number">4.1.2.</span> <span class="toc-text">回退ETH函数fallback</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#receive%E5%92%8Cfallback%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">4.1.3.</span> <span class="toc-text">receive和fallback的区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="toc-number">4.1.4.</span> <span class="toc-text">测试代码演示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.2.</span> <span class="toc-text">发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH%E5%90%88%E7%BA%A6"><span class="toc-number">4.2.1.</span> <span class="toc-text">接收ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH%E5%90%88%E7%BA%A6"><span class="toc-number">4.2.2.</span> <span class="toc-text">发送ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Transfer%E7%94%A8%E6%B3%95-%E6%AC%A1%E4%BC%98"><span class="toc-number">4.2.3.</span> <span class="toc-text">Transfer用法(次优)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Send%E7%94%A8%E6%B3%95"><span class="toc-number">4.2.4.</span> <span class="toc-text">Send用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Call%E7%94%A8%E6%B3%95-%E6%8F%90%E5%80%A1%E4%BD%BF%E7%94%A8"><span class="toc-number">4.2.5.</span> <span class="toc-text">Call用法(提倡使用)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.2.6.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
-      </div>
-    
-  </span>
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">X2n.</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
 </div>
 
-    
-    <div class="content index py4 ">
-        
-        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
-  <header>
-    
-    <h1 class="posttitle p-name" itemprop="name headline">
-        Solidity入门学习(三)
-    </h1>
+
+<script src="/js/activeNav.js"></script>
 
 
 
-    <div class="meta">
-      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <span class="p-name" itemprop="name">X2n.</span>
-      </span>
-      
-    <div class="postdate">
-      
-        <time datetime="2025-02-02T18:20:13.000Z" class="dt-published" itemprop="datePublished">2025-02-03</time>
-        
-      
-    </div>
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
 
 
-      
-    <div class="article-category">
-        <i class="fa-solid fa-archive"></i>
-        <a class="category-link" href="/categories/Web3/">Web3</a>
-    </div>
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
 
 
-      
-    <div class="article-tag">
-        <i class="fa-solid fa-tag"></i>
-        <a class="p-category" href="/tags/solidity/" rel="tag">solidity</a>, <a class="p-category" href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" rel="tag">以太坊</a>
-    </div>
 
 
-    </div>
-  </header>
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
   
 
-  <div class="content e-content" itemprop="articleBody">
-    <h2 id="重载">重载</h2>
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Solidity入门学习(三)</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2025-02-05 23:39:27
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" title="以太坊">
+                    #以太坊
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/solidity/" title="solidity">
+                    #solidity
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web3/" title="Web3">
+                    <b>#</b> Web3
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="重载">重载</h2>
 <p><code>Solidity</code>中允许函数进行重载（<code>overloading</code>），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，<strong><code>Solidity</code>不允许修饰器（<code>modifier</code>）重载。</strong></p>
 <p>测试代码<code>Overloading.sol</code>，如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// SPDX-License-Identifier: MIT</span><br><span class="line">pragma solidity ^0.8.21;</span><br><span class="line">contract Overloading&#123;</span><br><span class="line">    function saySomething() public pure returns(string memory)&#123;</span><br><span class="line">        return (&quot;Nothing&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    function saySomething(string memory something) public pure returns (string memory) &#123;</span><br><span class="line">        return(something);</span><br><span class="line">    &#125;</span><br><span class="line">    function f(uint8 _in) public pure returns (uint8 out) &#123;</span><br><span class="line">        out = _in;</span><br><span class="line">    &#125;</span><br><span class="line">    function f(uint256 _in) public pure returns (uint256 out) &#123;</span><br><span class="line">        out = _in;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -377,166 +379,390 @@
 <p><a target="_blank" rel="noopener" href="https://www.wtf.academy/zh/course/solidity102/Fallback">https://www.wtf.academy/zh/course/solidity102/Fallback</a></p>
 <p><a target="_blank" rel="noopener" href="https://www.wtf.academy/zh/course/solidity102/SendETH">https://www.wtf.academy/zh/course/solidity102/SendETH</a></p>
 
-  </div>
-</article>
-
-
-
-        
-          <div id="footer-post-container">
-  <div id="footer-post">
-
-    <div id="nav-footer" style="display: none">
-      <ul>
-        
-          <li><a href="/">Home</a></li>
-        
-          <li><a href="/archives/">Writing</a></li>
-        
-          <li><a href="/tags/">Tag</a></li>
-        
-          <li><a href="/categories/">Category</a></li>
-        
-          <li><a href="/search/">Search</a></li>
-        
-          <li><a href="/about/">About</a></li>
-        
-      </ul>
-    </div>
-
-    
-    
-      <div id="toc-footer" style="display: none">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E8%BD%BD"><span class="toc-number">1.</span> <span class="toc-text">重载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="toc-number">1.1.</span> <span class="toc-text">函数重载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%EF%BC%88Argument-Matching%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">参数匹配（Argument Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.</span> <span class="toc-text">库合约</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6-2"><span class="toc-number">2.1.</span> <span class="toc-text">库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Strings%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-number">2.2.</span> <span class="toc-text">Strings库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BA%93%E5%90%88%E7%BA%A6%EF%BC%9F"><span class="toc-number">2.3.</span> <span class="toc-text">如何使用库合约？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Import"><span class="toc-number">3.</span> <span class="toc-text">Import</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Import%E7%94%A8%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">Import用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AF%BC%E5%85%A5%E7%BB%93%E6%9E%9C"><span class="toc-number">3.2.</span> <span class="toc-text">测试导入结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.</span> <span class="toc-text">接收和发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH"><span class="toc-number">4.1.</span> <span class="toc-text">接收ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH%E5%87%BD%E6%95%B0receive"><span class="toc-number">4.1.1.</span> <span class="toc-text">接收ETH函数receive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9E%E9%80%80ETH%E5%87%BD%E6%95%B0fallback"><span class="toc-number">4.1.2.</span> <span class="toc-text">回退ETH函数fallback</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#receive%E5%92%8Cfallback%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">4.1.3.</span> <span class="toc-text">receive和fallback的区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="toc-number">4.1.4.</span> <span class="toc-text">测试代码演示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH"><span class="toc-number">4.2.</span> <span class="toc-text">发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH%E5%90%88%E7%BA%A6"><span class="toc-number">4.2.1.</span> <span class="toc-text">接收ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH%E5%90%88%E7%BA%A6"><span class="toc-number">4.2.2.</span> <span class="toc-text">发送ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Transfer%E7%94%A8%E6%B3%95-%E6%AC%A1%E4%BC%98"><span class="toc-number">4.2.3.</span> <span class="toc-text">Transfer用法(次优)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Send%E7%94%A8%E6%B3%95"><span class="toc-number">4.2.4.</span> <span class="toc-text">Send用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Call%E7%94%A8%E6%B3%95-%E6%8F%90%E5%80%A1%E4%BD%BF%E7%94%A8"><span class="toc-number">4.2.5.</span> <span class="toc-text">Call用法(提倡使用)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.2.6.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
-      </div>
-    
-
-    <div id="share-footer" style="display: none">
-      <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&text=Solidity入门学习(三)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&is_video=false&description=Solidity入门学习(三)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Solidity入门学习(三)&body=Check out this article: https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&title=Solidity入门学习(三)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&name=Solidity入门学习(三)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/&t=Solidity入门学习(三)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
-</ul>
-
-    </div>
-
-    <div id="actions-footer">
-        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
-        
-          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
-        
-        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
-        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
-    </div>
-
-  </div>
-</div>
-
-        
-        <footer id="footer">
-      <div class="footer-left">
-        Copyright &copy;
-        
-        
-        2024-2025
-        X2n.
-      </div>
-      <div class="footer-right">
-        <nav>
-          <ul>
-            <!--
-          --><li><a href="/">Home</a></li><!--
-        --><!--
-          --><li><a href="/archives/">Writing</a></li><!--
-        --><!--
-          --><li><a href="/tags/">Tag</a></li><!--
-        --><!--
-          --><li><a href="/categories/">Category</a></li><!--
-        --><!--
-          --><li><a href="/search/">Search</a></li><!--
-        --><!--
-          --><li><a href="/about/">About</a></li><!--
-        -->
-          </ul>
-          <ul>
-            
-              <!-- 不蒜子统计 -->
-              <span id="busuanzi_container_site_pv">
-                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
-              </span>
-              <span class="post-meta-divider">|</span>
-              <span id="busuanzi_container_site_uv" style='display:none'>
-                      本站访客数<span id="busuanzi_value_site_uv"></span>人
-              </span>
-            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-            
-          </ul>
-        </nav>
       </div>
       
-</footer>
-
-
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2025-02-05 23:39:27
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" title="以太坊">
+                        #以太坊
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/solidity/" title="solidity">
+                        #solidity
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web3/" title="Web3">
+                        <b>#</b> Web3
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/" target="_self">
+                <span>Next</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
     </div>
-    <!-- styles -->
-
-
-
-  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
-
-
-    <!-- jquery -->
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
-
-
-
-
-<!-- clipboard -->
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E8%BD%BD"><span class="toc-text">重载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="toc-text">函数重载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%EF%BC%88Argument-Matching%EF%BC%89"><span class="toc-text">参数匹配（Argument Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-text">库合约</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6-2"><span class="toc-text">库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Strings%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-text">Strings库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BA%93%E5%90%88%E7%BA%A6%EF%BC%9F"><span class="toc-text">如何使用库合约？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Import"><span class="toc-text">Import</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Import%E7%94%A8%E6%B3%95"><span class="toc-text">Import用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AF%BC%E5%85%A5%E7%BB%93%E6%9E%9C"><span class="toc-text">测试导入结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81ETH"><span class="toc-text">接收和发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH"><span class="toc-text">接收ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH%E5%87%BD%E6%95%B0receive"><span class="toc-text">接收ETH函数receive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9E%E9%80%80ETH%E5%87%BD%E6%95%B0fallback"><span class="toc-text">回退ETH函数fallback</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#receive%E5%92%8Cfallback%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">receive和fallback的区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="toc-text">测试代码演示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH"><span class="toc-text">发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6ETH%E5%90%88%E7%BA%A6"><span class="toc-text">接收ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%91%E9%80%81ETH%E5%90%88%E7%BA%A6"><span class="toc-text">发送ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Transfer%E7%94%A8%E6%B3%95-%E6%AC%A1%E4%BC%98"><span class="toc-text">Transfer用法(次优)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Send%E7%94%A8%E6%B3%95"><span class="toc-text">Send用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Call%E7%94%A8%E6%B3%95-%E6%8F%90%E5%80%A1%E4%BD%BF%E7%94%A8"><span class="toc-text">Call用法(提倡使用)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
 
   
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
   
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">Copyright © 2025 Oranges</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">Theme by Oranges | Powered by Hexo</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+          本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
   <script type="text/javascript">
-  $(function() {
-    // copy-btn HTML
-    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
-    btn += '<i class="fa-regular fa-clone"></i>';
-    btn += '</span>';
-    // mount it!
-    $(".highlight table").before(btn);
-    var clip = new ClipboardJS('.btn-copy', {
-      text: function(trigger) {
-        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
       }
-    });
-    clip.on('success', function(e) {
-      e.trigger.setAttribute('aria-label', "Copied!");
-      e.clearSelection();
-    })
-  })
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
   </script>
 
 
-<script src="/js/main.js"></script>
 
-<!-- search -->
 
-<!-- Baidu Analytics -->
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
 
-<!-- Cloudflare Analytics -->
+  
+<script src="/js/colorscheme.js"></script>
 
-<!-- Disqus Comments -->
 
-<!-- utterances Comments -->
 
-</body>
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%89) + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F02%2F03%2FSolidity%25E5%2585%25A5%25E9%2597%25A8%25E5%25AD%25A6%25E4%25B9%25A0-%25E4%25B8%2589%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
 </html>

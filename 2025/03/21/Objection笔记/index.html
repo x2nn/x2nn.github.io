@@ -1,220 +1,203 @@
 <!DOCTYPE html>
-<html lang=en>
-<head>
-    <!-- so meta -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta name="description" content="一、确认要hook的apk 我使用的环境是真机环境，使用USB连接手机。安装的Objection的版本为1.11.0。这里注意，真机的frida-server的版本要和你电脑的frida版本一致，我是用的是15.2.2的frida。 使用frida-ps -U找到自己要查看的包名，可能是com.x2n.xxx的形式也可能是中文的名字。  找到自己的包，然后使用objection -g com.x2">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Objection笔记">
-<meta property="og:url" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="X2n.: Keep your passion for what you love !">
-<meta property="og:description" content="一、确认要hook的apk 我使用的环境是真机环境，使用USB连接手机。安装的Objection的版本为1.11.0。这里注意，真机的frida-server的版本要和你电脑的frida版本一致，我是用的是15.2.2的frida。 使用frida-ps -U找到自己要查看的包名，可能是com.x2n.xxx的形式也可能是中文的名字。  找到自己的包，然后使用objection -g com.x2">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235259345.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235804595.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250322000716481.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323165012672.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323173058671.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323173440288.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323174515328.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323181548491.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323182721262.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323182756596.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323192008745.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323192539602.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323193322876.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323195814075.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323201138858.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323201237383.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323203121588.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323215320587.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323221934874.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323222724278.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323223947608.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250323231643853.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324145106214.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324150259874.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324151645694.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324152011009.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324233129462.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324234444822.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250324235914989.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325000255731.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325001453566.png">
-<meta property="og:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250325001629404.png">
-<meta property="article:published_time" content="2025-03-21T15:42:40.000Z">
-<meta property="article:modified_time" content="2025-05-16T03:30:33.400Z">
-<meta property="article:author" content="X2n.">
-<meta property="article:tag" content="安卓逆向">
-<meta property="article:tag" content="Objection">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235259345.png">
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n." />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
     
+      Objection笔记 
+      
+      
+      |
     
-      
-        
-          <link rel="shortcut icon" href="/images/favicon.ico">
-        
-      
-      
-        
-          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
-        
-      
-      
-        
-          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-        
-      
+     X2n.: Keep your passion for what you love !
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
     
-    <!-- title -->
-    <title>Objection笔记</title>
-    <!-- async scripts -->
-    <!-- Google Analytics -->
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
 
 
-    <!-- Umami Analytics -->
+  
 
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
 
-    <!-- styles -->
-    
-<link rel="stylesheet" href="/css/style.css">
-
-    <!-- persian styles -->
-    
-    <!-- rss -->
-    
-    
-	<!-- mathjax -->
-	
-		<script type="text/x-mathjax-config">
-		  MathJax.Hub.Config({
-			tex2jax: {
-			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-			  inlineMath: [['$','$']]
-			}
-		  });
-		</script>
-		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
-	
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
 <meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n.: Keep your passion for what you love !" type="application/atom+xml">
 </head>
 
-<body class="max-width mx-auto px3 ltr">
-    
-      <div id="header-post">
-  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
-  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
-  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
-  <span id="menu">
-    <span id="nav">
-      <ul>
-        <!--
-       --><li><a href="/">Home</a></li><!--
-     --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
-     --><!--
-       --><li><a href="/tags/">Tag</a></li><!--
-     --><!--
-       --><li><a href="/categories/">Category</a></li><!--
-     --><!--
-       --><li><a href="/search/">Search</a></li><!--
-     --><!--
-       --><li><a href="/about/">About</a></li><!--
-     -->
-      </ul>
-    </span>
-    <br/>
-    <span id="actions">
-      <ul>
-        
-        <li><a class="icon" aria-label="Previous post" href="/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
-        
-        
-        <li><a class="icon" aria-label="Next post" href="/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
-        
-        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
-        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
-      </ul>
-      <span id="i-prev" class="info" style="display:none;">Previous post</span>
-      <span id="i-next" class="info" style="display:none;">Next post</span>
-      <span id="i-top" class="info" style="display:none;">Back to top</span>
-      <span id="i-share" class="info" style="display:none;">Share post</span>
-    </span>
-    <br/>
-    <div id="share" style="display: none">
-      <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&text=Objection笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&is_video=false&description=Objection笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Objection笔记&body=Check out this article: https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&name=Objection笔记&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&t=Objection笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
-</ul>
 
-    </div>
-    
-    
-      <div id="toc">
-        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E8%AE%A4%E8%A6%81hook%E7%9A%84apk"><span class="toc-number">1.</span> <span class="toc-text">一、确认要hook的apk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">2.</span> <span class="toc-text">二、常用的命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81help%E5%91%BD%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">1、help命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81jobs%E5%91%BD%E4%BB%A4"><span class="toc-number">2.2.</span> <span class="toc-text">2、jobs命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%86%85%E5%AD%98%E6%BC%AB%E6%B8%B8%E7%9B%B8%E5%85%B3%E6%8C%87%E4%BB%A4"><span class="toc-number">2.3.</span> <span class="toc-text">3、内存漫游相关指令</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%88%97%E5%87%BA%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%89%80%E6%9C%89%E7%B1%BB"><span class="toc-number">2.3.1.</span> <span class="toc-text">（1）列出内存中的所有类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E6%89%80%E6%9C%89%E5%B7%B2%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%B1%BB%E4%B8%AD%E6%90%9C%E7%B4%A2%E5%8C%85%E5%90%AB%E7%89%B9%E5%AE%9A%E5%85%B3%E9%94%AE%E8%AF%8D%E7%9A%84%E7%B1%BB"><span class="toc-number">2.3.2.</span> <span class="toc-text">（2）在内存中所有已加载的类中搜索包含特定关键词的类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E4%BB%8E%E5%86%85%E5%AD%98%E4%B8%AD%E6%90%9C%E7%B4%A2%E6%89%80%E6%9C%89%E5%8C%85%E5%90%AB%E5%85%B3%E9%94%AE%E8%AF%8Dkey%E7%9A%84%E6%96%B9%E6%B3%95%E3%80%82"><span class="toc-number">2.3.3.</span> <span class="toc-text">（3）从内存中搜索所有包含关键词key的方法。</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E6%9F%A5%E7%9C%8B%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">2.3.4.</span> <span class="toc-text">（4）查看类的所有方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%8E%B7%E5%8F%96%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9"><span class="toc-number">3.</span> <span class="toc-text">三、获取四大组件相关内容</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84activity"><span class="toc-number">3.1.</span> <span class="toc-text">1、列出进程所有的activity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84service"><span class="toc-number">3.2.</span> <span class="toc-text">2、列出进程所有的service</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Hook%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">四、Hook相关命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%9A%84%E6%96%B9%E6%B3%95%E8%BF%9B%E8%A1%8CHook"><span class="toc-number">4.1.</span> <span class="toc-text">1、对指定的方法进行Hook</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%B1%BB%E4%B8%AD%E6%89%80%E6%9C%89%E5%87%BD%E6%95%B0%E7%9A%84Hook"><span class="toc-number">4.2.</span> <span class="toc-text">2、对指定类中所有函数的Hook</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81Objection%E7%9A%84%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">五、Objection的主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9E%E4%BE%8B%E6%90%9C%E7%B4%A2-%E5%9F%BA%E4%BA%8EJava-choose%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.1.</span> <span class="toc-text">1、实例搜索(基于Java.choose实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81Objection%E4%B8%AD%E8%B0%83%E7%94%A8%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.</span> <span class="toc-text">2、Objection中调用实例方法的两种方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8execute"><span class="toc-number">5.2.1.</span> <span class="toc-text">第一种：使用execute</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8evaluate"><span class="toc-number">5.2.2.</span> <span class="toc-text">第二种：使用evaluate</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81Frida%E5%BC%80%E5%8F%91%E6%80%9D%E6%83%B3%F0%9F%8C%9F"><span class="toc-number">6.</span> <span class="toc-text">六、Frida开发思想🌟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9A%E4%BD%8D%EF%BC%9AObjection%E8%BE%85%E5%8A%A9%E5%AE%9A%E4%BD%8D"><span class="toc-number">6.1.</span> <span class="toc-text">1、定位：Objection辅助定位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%A9%E7%94%A8%EF%BC%9AFrida%E8%84%9A%E6%9C%AC%E4%BF%AE%E6%94%B9%E5%8F%82%E6%95%B0"><span class="toc-number">6.2.</span> <span class="toc-text">2、利用：Frida脚本修改参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">7.</span> <span class="toc-text">参考</span></a></li></ol>
-      </div>
-    
-  </span>
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">X2n.</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
 </div>
 
-    
-    <div class="content index py4 ">
-        
-        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
-  <header>
-    
-    <h1 class="posttitle p-name" itemprop="name headline">
-        Objection笔记
-    </h1>
+
+<script src="/js/activeNav.js"></script>
 
 
 
-    <div class="meta">
-      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <span class="p-name" itemprop="name">X2n.</span>
-      </span>
-      
-    <div class="postdate">
-      
-        <time datetime="2025-03-21T15:42:40.000Z" class="dt-published" itemprop="datePublished">2025-03-21</time>
-        
-      
-    </div>
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
 
 
-      
-    <div class="article-category">
-        <i class="fa-solid fa-archive"></i>
-        <a class="category-link" href="/categories/Tools/">Tools</a>
-    </div>
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
 
 
-      
-    <div class="article-tag">
-        <i class="fa-solid fa-tag"></i>
-        <a class="p-category" href="/tags/Objection/" rel="tag">Objection</a>, <a class="p-category" href="/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/" rel="tag">安卓逆向</a>
-    </div>
 
 
-    </div>
-  </header>
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
   
 
-  <div class="content e-content" itemprop="articleBody">
-    <h3 id="一、确认要hook的apk">一、确认要hook的apk</h3>
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Objection笔记</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2025-05-16 11:30:33
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/" title="安卓逆向">
+                    #安卓逆向
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Objection/" title="Objection">
+                    #Objection
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Tools/" title="Tools">
+                    <b>#</b> Tools
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h3 id="一、确认要hook的apk">一、确认要hook的apk</h3>
 <p>我使用的环境是真机环境，使用<code>USB</code>连接手机。安装的<code>Objection</code>的版本为<code>1.11.0</code>。这里注意，真机的<code>frida-server</code>的版本要和你电脑的<code>frida</code>版本一致，我是用的是<code>15.2.2</code>的<code>frida</code>。</p>
 <p>使用<code>frida-ps -U</code>找到自己要查看的包名，可能是<code>com.x2n.xxx</code>的形式也可能是中文的名字。</p>
 <p><img src="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/image-20250321235259345.png" alt="image-20250321235259345"></p>
@@ -386,166 +369,390 @@
 </ol>
 </section>
 
-  </div>
-</article>
-
-
-
-        
-          <div id="footer-post-container">
-  <div id="footer-post">
-
-    <div id="nav-footer" style="display: none">
-      <ul>
-        
-          <li><a href="/">Home</a></li>
-        
-          <li><a href="/archives/">Writing</a></li>
-        
-          <li><a href="/tags/">Tag</a></li>
-        
-          <li><a href="/categories/">Category</a></li>
-        
-          <li><a href="/search/">Search</a></li>
-        
-          <li><a href="/about/">About</a></li>
-        
-      </ul>
-    </div>
-
-    
-    
-      <div id="toc-footer" style="display: none">
-        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E8%AE%A4%E8%A6%81hook%E7%9A%84apk"><span class="toc-number">1.</span> <span class="toc-text">一、确认要hook的apk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">2.</span> <span class="toc-text">二、常用的命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81help%E5%91%BD%E4%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">1、help命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81jobs%E5%91%BD%E4%BB%A4"><span class="toc-number">2.2.</span> <span class="toc-text">2、jobs命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%86%85%E5%AD%98%E6%BC%AB%E6%B8%B8%E7%9B%B8%E5%85%B3%E6%8C%87%E4%BB%A4"><span class="toc-number">2.3.</span> <span class="toc-text">3、内存漫游相关指令</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%88%97%E5%87%BA%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%89%80%E6%9C%89%E7%B1%BB"><span class="toc-number">2.3.1.</span> <span class="toc-text">（1）列出内存中的所有类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E6%89%80%E6%9C%89%E5%B7%B2%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%B1%BB%E4%B8%AD%E6%90%9C%E7%B4%A2%E5%8C%85%E5%90%AB%E7%89%B9%E5%AE%9A%E5%85%B3%E9%94%AE%E8%AF%8D%E7%9A%84%E7%B1%BB"><span class="toc-number">2.3.2.</span> <span class="toc-text">（2）在内存中所有已加载的类中搜索包含特定关键词的类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E4%BB%8E%E5%86%85%E5%AD%98%E4%B8%AD%E6%90%9C%E7%B4%A2%E6%89%80%E6%9C%89%E5%8C%85%E5%90%AB%E5%85%B3%E9%94%AE%E8%AF%8Dkey%E7%9A%84%E6%96%B9%E6%B3%95%E3%80%82"><span class="toc-number">2.3.3.</span> <span class="toc-text">（3）从内存中搜索所有包含关键词key的方法。</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E6%9F%A5%E7%9C%8B%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-number">2.3.4.</span> <span class="toc-text">（4）查看类的所有方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%8E%B7%E5%8F%96%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9"><span class="toc-number">3.</span> <span class="toc-text">三、获取四大组件相关内容</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84activity"><span class="toc-number">3.1.</span> <span class="toc-text">1、列出进程所有的activity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84service"><span class="toc-number">3.2.</span> <span class="toc-text">2、列出进程所有的service</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Hook%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">四、Hook相关命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%9A%84%E6%96%B9%E6%B3%95%E8%BF%9B%E8%A1%8CHook"><span class="toc-number">4.1.</span> <span class="toc-text">1、对指定的方法进行Hook</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%B1%BB%E4%B8%AD%E6%89%80%E6%9C%89%E5%87%BD%E6%95%B0%E7%9A%84Hook"><span class="toc-number">4.2.</span> <span class="toc-text">2、对指定类中所有函数的Hook</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81Objection%E7%9A%84%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">五、Objection的主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9E%E4%BE%8B%E6%90%9C%E7%B4%A2-%E5%9F%BA%E4%BA%8EJava-choose%E5%AE%9E%E7%8E%B0"><span class="toc-number">5.1.</span> <span class="toc-text">1、实例搜索(基于Java.choose实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81Objection%E4%B8%AD%E8%B0%83%E7%94%A8%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.</span> <span class="toc-text">2、Objection中调用实例方法的两种方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8execute"><span class="toc-number">5.2.1.</span> <span class="toc-text">第一种：使用execute</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8evaluate"><span class="toc-number">5.2.2.</span> <span class="toc-text">第二种：使用evaluate</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81Frida%E5%BC%80%E5%8F%91%E6%80%9D%E6%83%B3%F0%9F%8C%9F"><span class="toc-number">6.</span> <span class="toc-text">六、Frida开发思想🌟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9A%E4%BD%8D%EF%BC%9AObjection%E8%BE%85%E5%8A%A9%E5%AE%9A%E4%BD%8D"><span class="toc-number">6.1.</span> <span class="toc-text">1、定位：Objection辅助定位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%A9%E7%94%A8%EF%BC%9AFrida%E8%84%9A%E6%9C%AC%E4%BF%AE%E6%94%B9%E5%8F%82%E6%95%B0"><span class="toc-number">6.2.</span> <span class="toc-text">2、利用：Frida脚本修改参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">7.</span> <span class="toc-text">参考</span></a></li></ol>
-      </div>
-    
-
-    <div id="share-footer" style="display: none">
-      <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&text=Objection笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&is_video=false&description=Objection笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Objection笔记&body=Check out this article: https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&title=Objection笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&name=Objection笔记&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/&t=Objection笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
-</ul>
-
-    </div>
-
-    <div id="actions-footer">
-        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
-        
-          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
-        
-        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
-        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
-    </div>
-
-  </div>
-</div>
-
-        
-        <footer id="footer">
-      <div class="footer-left">
-        Copyright &copy;
-        
-        
-        2024-2025
-        X2n.
-      </div>
-      <div class="footer-right">
-        <nav>
-          <ul>
-            <!--
-          --><li><a href="/">Home</a></li><!--
-        --><!--
-          --><li><a href="/archives/">Writing</a></li><!--
-        --><!--
-          --><li><a href="/tags/">Tag</a></li><!--
-        --><!--
-          --><li><a href="/categories/">Category</a></li><!--
-        --><!--
-          --><li><a href="/search/">Search</a></li><!--
-        --><!--
-          --><li><a href="/about/">About</a></li><!--
-        -->
-          </ul>
-          <ul>
-            
-              <!-- 不蒜子统计 -->
-              <span id="busuanzi_container_site_pv">
-                  本站总访问量<span id="busuanzi_value_site_pv"></span>次
-              </span>
-              <span class="post-meta-divider">|</span>
-              <span id="busuanzi_container_site_uv" style='display:none'>
-                      本站访客数<span id="busuanzi_value_site_uv"></span>人
-              </span>
-            <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-            
-          </ul>
-        </nav>
       </div>
       
-</footer>
-
-
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2025-05-16 11:30:33
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91/" title="安卓逆向">
+                        #安卓逆向
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Objection/" title="Objection">
+                        #Objection
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Tools/" title="Tools">
+                        <b>#</b> Tools
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/" target="_self">
+                <span>Next</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
     </div>
-    <!-- styles -->
-
-
-
-  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
-
-
-    <!-- jquery -->
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
-
-
-
-
-<!-- clipboard -->
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E8%AE%A4%E8%A6%81hook%E7%9A%84apk"><span class="toc-text">一、确认要hook的apk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-text">二、常用的命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81help%E5%91%BD%E4%BB%A4"><span class="toc-text">1、help命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81jobs%E5%91%BD%E4%BB%A4"><span class="toc-text">2、jobs命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%86%85%E5%AD%98%E6%BC%AB%E6%B8%B8%E7%9B%B8%E5%85%B3%E6%8C%87%E4%BB%A4"><span class="toc-text">3、内存漫游相关指令</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%88%97%E5%87%BA%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%89%80%E6%9C%89%E7%B1%BB"><span class="toc-text">（1）列出内存中的所有类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E6%89%80%E6%9C%89%E5%B7%B2%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%B1%BB%E4%B8%AD%E6%90%9C%E7%B4%A2%E5%8C%85%E5%90%AB%E7%89%B9%E5%AE%9A%E5%85%B3%E9%94%AE%E8%AF%8D%E7%9A%84%E7%B1%BB"><span class="toc-text">（2）在内存中所有已加载的类中搜索包含特定关键词的类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E4%BB%8E%E5%86%85%E5%AD%98%E4%B8%AD%E6%90%9C%E7%B4%A2%E6%89%80%E6%9C%89%E5%8C%85%E5%90%AB%E5%85%B3%E9%94%AE%E8%AF%8Dkey%E7%9A%84%E6%96%B9%E6%B3%95%E3%80%82"><span class="toc-text">（3）从内存中搜索所有包含关键词key的方法。</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E6%9F%A5%E7%9C%8B%E7%B1%BB%E7%9A%84%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-text">（4）查看类的所有方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%8E%B7%E5%8F%96%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9"><span class="toc-text">三、获取四大组件相关内容</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84activity"><span class="toc-text">1、列出进程所有的activity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%97%E5%87%BA%E8%BF%9B%E7%A8%8B%E6%89%80%E6%9C%89%E7%9A%84service"><span class="toc-text">2、列出进程所有的service</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Hook%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-text">四、Hook相关命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%9A%84%E6%96%B9%E6%B3%95%E8%BF%9B%E8%A1%8CHook"><span class="toc-text">1、对指定的方法进行Hook</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AF%B9%E6%8C%87%E5%AE%9A%E7%B1%BB%E4%B8%AD%E6%89%80%E6%9C%89%E5%87%BD%E6%95%B0%E7%9A%84Hook"><span class="toc-text">2、对指定类中所有函数的Hook</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81Objection%E7%9A%84%E4%B8%BB%E5%8A%A8%E8%B0%83%E7%94%A8"><span class="toc-text">五、Objection的主动调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9E%E4%BE%8B%E6%90%9C%E7%B4%A2-%E5%9F%BA%E4%BA%8EJava-choose%E5%AE%9E%E7%8E%B0"><span class="toc-text">1、实例搜索(基于Java.choose实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81Objection%E4%B8%AD%E8%B0%83%E7%94%A8%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-text">2、Objection中调用实例方法的两种方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8execute"><span class="toc-text">第一种：使用execute</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%EF%BC%9A%E4%BD%BF%E7%94%A8evaluate"><span class="toc-text">第二种：使用evaluate</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81Frida%E5%BC%80%E5%8F%91%E6%80%9D%E6%83%B3%F0%9F%8C%9F"><span class="toc-text">六、Frida开发思想🌟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%9A%E4%BD%8D%EF%BC%9AObjection%E8%BE%85%E5%8A%A9%E5%AE%9A%E4%BD%8D"><span class="toc-text">1、定位：Objection辅助定位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%88%A9%E7%94%A8%EF%BC%9AFrida%E8%84%9A%E6%9C%AC%E4%BF%AE%E6%94%B9%E5%8F%82%E6%95%B0"><span class="toc-text">2、利用：Frida脚本修改参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
 
   
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
   
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">Copyright © 2025 Oranges</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">Theme by Oranges | Powered by Hexo</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+          本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
   <script type="text/javascript">
-  $(function() {
-    // copy-btn HTML
-    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
-    btn += '<i class="fa-regular fa-clone"></i>';
-    btn += '</span>';
-    // mount it!
-    $(".highlight table").before(btn);
-    var clip = new ClipboardJS('.btn-copy', {
-      text: function(trigger) {
-        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
       }
-    });
-    clip.on('success', function(e) {
-      e.trigger.setAttribute('aria-label', "Copied!");
-      e.clearSelection();
-    })
-  })
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
   </script>
 
 
-<script src="/js/main.js"></script>
 
-<!-- search -->
 
-<!-- Baidu Analytics -->
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
 
-<!-- Cloudflare Analytics -->
+  
+<script src="/js/colorscheme.js"></script>
 
-<!-- Disqus Comments -->
 
-<!-- utterances Comments -->
 
-</body>
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Objection%E7%AC%94%E8%AE%B0 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F03%2F21%2FObjection%25E7%25AC%2594%25E8%25AE%25B0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/03/21/Objection%E7%AC%94%E8%AE%B0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
 </html>
