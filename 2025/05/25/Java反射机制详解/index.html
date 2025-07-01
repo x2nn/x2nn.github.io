@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-06-30 21:52:02
+          2025-07-01 10:00:24
         </span>
         
               <span class="post-tags">
@@ -626,10 +626,13 @@
 <p>而<code>getParameterTypes/getGenericParameterTypes</code>也是同样的道理，都是获取Method对象所表示的方法的参数类型，其他方法与前面的Field和Constructor是类似的。</p>
 <h2 id="反射获取对象实例并执行其方法">反射获取对象实例并执行其方法</h2>
 <p>这里给出了一个实际的案例，使用反射的方法去调用<code>Usertest</code>类的私有<code>at</code>方法，并执行这个<code>at</code>方法。</p>
+<h3 id="获取Class类">获取Class类</h3>
 <p>首先是获取<code>Usertest</code>的<code>class</code>类。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class&lt;Usertest&gt; clazz = Usertest.class;</span><br></pre></td></tr></table></figure>
+<h3 id="创建实例">创建实例</h3>
 <p>创建类的一个实例。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Usertest</span> <span class="variable">usertest</span> <span class="operator">=</span> clazz.newInstance();</span><br></pre></td></tr></table></figure>
+<h3 id="获取私有方法">获取私有方法</h3>
 <p>获取名为 <code>&quot;at&quot;</code> 的方法，该方法接受一个 <code>String</code> 类型参数。</p>
 <p>这里的<code>getDeclaredMethod</code> 可以获取所有访问权限的方法（包括 <code>private</code>、<code>protected</code> 和默认包私有），但<strong>不会查找继承的方法。</strong></p>
 <p>如果方法是 <code>public</code> 的，也可以使用 <code>getMethod()</code>。</p>
@@ -639,7 +642,9 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at.setAccessible(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
 <p>若此属性不设置为<code>true</code>，代码会报错如下：</p>
 <p><img src="/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/image-20250630214539632.png" alt="image-20250630214539632"></p>
+<h3 id="方法的实现">方法的实现</h3>
 <p>最后，就是方法的实现。</p>
+<p>注意⚠️，调用静态方法是不需要实例对象的。 即，如果<code>Usertest</code>是一个<code>static</code>修饰的类，则<code>method.invoke(null)</code>，即可。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at.invoke(usertest,<span class="string">&quot;hello&quot;</span>);</span><br></pre></td></tr></table></figure>
 <p>注意⚠️，这里的<code>usertest</code>是一个实例，不是一个<code>class</code>类型。</p>
 <p>运行代码结果如下：</p>
@@ -782,7 +787,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-06-30 21:52:02
+              2025-07-01 10:00:24
             </span>
             
                   <span class="post-tags">
@@ -833,7 +838,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E5%9F%BA%E7%A1%80"><span class="toc-text">反射基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Class%E7%B1%BB"><span class="toc-text">Class类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD"><span class="toc-text">类加载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">反射的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Class%E7%B1%BB%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%8E%B7%E5%8F%96"><span class="toc-text">Class类对象的获取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Constructor%E7%B1%BB%E5%8F%8A%E5%85%B6%E7%94%A8%E6%B3%95"><span class="toc-text">Constructor类及其用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Field%E7%B1%BB%E5%8F%8A%E5%85%B6%E7%94%A8%E6%B3%95"><span class="toc-text">Field类及其用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Method%E7%B1%BB%E5%8F%8A%E5%85%B6%E7%94%A8%E6%B3%95"><span class="toc-text">Method类及其用法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%8E%B7%E5%8F%96%E5%AF%B9%E8%B1%A1%E5%AE%9E%E4%BE%8B%E5%B9%B6%E6%89%A7%E8%A1%8C%E5%85%B6%E6%96%B9%E6%B3%95"><span class="toc-text">反射获取对象实例并执行其方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E6%89%A7%E8%A1%8C%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">反射机制执行的流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%8E%B7%E5%8F%96%E7%B1%BB%E5%AE%9E%E4%BE%8B"><span class="toc-text">反射获取类实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%8E%B7%E5%8F%96%E6%96%B9%E6%B3%95"><span class="toc-text">反射获取方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E7%94%A8method-invoke-%E6%96%B9%E6%B3%95"><span class="toc-text">调用method.invoke()方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B%E5%B0%8F%E8%8A%82"><span class="toc-text">反射调用流程小节</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E5%9F%BA%E7%A1%80"><span class="toc-text">反射基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Class%E7%B1%BB"><span class="toc-text">Class类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD"><span class="toc-text">类加载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">反射的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Class%E7%B1%BB%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%8E%B7%E5%8F%96"><span class="toc-text">Class类对象的获取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Constructor%E7%B1%BB%E5%8F%8A%E5%85%B6%E7%94%A8%E6%B3%95"><span class="toc-text">Constructor类及其用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Field%E7%B1%BB%E5%8F%8A%E5%85%B6%E7%94%A8%E6%B3%95"><span class="toc-text">Field类及其用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Method%E7%B1%BB%E5%8F%8A%E5%85%B6%E7%94%A8%E6%B3%95"><span class="toc-text">Method类及其用法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%8E%B7%E5%8F%96%E5%AF%B9%E8%B1%A1%E5%AE%9E%E4%BE%8B%E5%B9%B6%E6%89%A7%E8%A1%8C%E5%85%B6%E6%96%B9%E6%B3%95"><span class="toc-text">反射获取对象实例并执行其方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96Class%E7%B1%BB"><span class="toc-text">获取Class类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%AE%9E%E4%BE%8B"><span class="toc-text">创建实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%A7%81%E6%9C%89%E6%96%B9%E6%B3%95"><span class="toc-text">获取私有方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">方法的实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E6%89%A7%E8%A1%8C%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">反射机制执行的流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%8E%B7%E5%8F%96%E7%B1%BB%E5%AE%9E%E4%BE%8B"><span class="toc-text">反射获取类实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%8E%B7%E5%8F%96%E6%96%B9%E6%B3%95"><span class="toc-text">反射获取方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E7%94%A8method-invoke-%E6%96%B9%E6%B3%95"><span class="toc-text">调用method.invoke()方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B%E5%B0%8F%E8%8A%82"><span class="toc-text">反射调用流程小节</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
       
     </div>
   </div>
