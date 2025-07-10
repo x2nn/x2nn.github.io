@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-04-30 21:35:58
+          2025-07-10 15:47:50
         </span>
         
               <span class="post-tags">
@@ -199,7 +199,7 @@
       <div class="markdown-body">
         <h2 id="生成数据库">生成数据库</h2>
 <p>以下为各种语言创建数据库的命令。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">java</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/java-code&quot; --language=java --command=&quot;mvn clean install -file pom.xml&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Go</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/java-code&quot; --language=go</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Python</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/databases/code-database&quot; --language=python</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">JavaScript</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/databases/code-database&quot; --language=javascript</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">java</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/java-code&quot; --language=java --command=&quot;mvn clean install -file pom.xml&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Go</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/go-code&quot; --language=go</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Python</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/python-code&quot; --language=python</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">JavaScript</span></span><br><span class="line">codeql database create &quot;~/CodeQL/databases/code-database&quot; --source-root=&quot;~/CodeQL/projects/javascript-code&quot; --language=javascript</span><br></pre></td></tr></table></figure>
 <p><code>CodeQL</code>不支持<code>PHP</code>，支持的编程语言类型，参考官网<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>。对于<code>Java</code>代码有些不同，需要进行代码的编译后<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，才能生成相关的数据库。</p>
 <p>编译过程中，若出现环境问题可使用<code>--verbose</code>输出详细的错误，进行错误的定位。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codeql database create webgoat-qldb -language= java --command &quot;./mvnw clean package -DskipTests&quot; --verbose</span><br></pre></td></tr></table></figure>
@@ -562,7 +562,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-04-30 21:35:58
+              2025-07-10 15:47:50
             </span>
             
                   <span class="post-tags">
