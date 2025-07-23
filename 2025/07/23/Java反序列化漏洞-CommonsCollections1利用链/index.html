@@ -13,7 +13,7 @@
   
   <title>
     
-      archive_a: 2024 
+      Java反序列化漏洞-CommonsCollections1利用链 
       
       
       |
@@ -115,255 +115,208 @@
 
 
       <div class="flex-container">
-        <!-- 归档页，展示本站所有文章，按照年份降序归类，url形式：https://yoursite/archives/ -->
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
 
-<!-- last: 按年份把文章分组，当前遍历到的年份 -->
-<!-- now: 当前遍历到的文章的发布年份 -->
 
-<div class="container archives">
-  <div class="post-list">
-    
-        <!-- 后续文章的发布年份呈现 -->
-        <div class="content-title">
-          <h2>
-            <span>2025</span>
-          </h2>
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Java反序列化漏洞-CommonsCollections1利用链</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2025-07-23 22:11:14
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Java/" title="Java">
+                    #Java
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="反序列化">
+                    #反序列化
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/CommonsCollections%E5%88%A9%E7%94%A8%E9%93%BE/" title="CommonsCollections利用链">
+                    #CommonsCollections利用链
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                    <b>#</b> Web安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="前言">前言</h2>
+<p>之前学习反序列化漏洞，全是参考网上的乱七八糟的文章，然后我觉得反序列化漏洞是非常难的一部分内容。今天我看了phith0n师傅写的文章<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，我觉得写的非常棒。文章里面的一些感想，这里给大家分享一下。</p>
+<p><strong>学习方式的探索⭐️⭐️⭐️</strong></p>
+<blockquote>
+<p>有时候想要学习⼀个东⻄，网上搜索⼀下，发现有教程，于是跟着做⼀遍。这样⼀来，你会发现网上大部分Java反序列化”教程”、“⼊门”通常上来先了解Java反序列化是什么，然后很快开始讲<code>CommonsCollections</code> ，就好像刚知道C语⾔言语法的同学⽴立⻢马继续学习Linux内核，我是⼗十分不不建议这样做的，除⾮你有非常强的理理解能⼒力力。</p>
+<p>学习需要聪明⼀一点，并独⽴立思考问题。我很少参照别⼈人的⽂文章来学习，这样你学的东⻄西是⼆二⼿手的，有时</p>
+<p>候连⼆二⼿手都不不是，⽂文章原作者也可能是参考另⼀一篇⽂文章写的。我的建议是从⽂文档和源码开始学，实在有压⼒力力可以参考⼀一些⻛风评较好的书籍或技术博客。</p>
+<p>当然，有时候你并不不知道怎样是对的怎样是错的。⽐比如你作为⼀一个Java反序列列化漏漏洞洞的初学者，你并不不</p>
+<p>知道应该先学习 URLDNS 还是 CommonsCollections ，也许你连 URLDNS 的名字都没听过，⽽而你看到⽹网</p>
+<p>上⼤大部分⽂文章都是介绍 CommonsCollections 的，⾃自然也就去学习这个了了。</p>
+<p>所以有些弯路路确实是避免不不了了的，不不过如果你在学习的道路路上更更加富有探索精神，看到ysoserial这种项</p>
+<p>⽬目时多问问⾃自⼰己“其他的Gadget是做什什么的”，对于未知的事物原理理充满好奇喜欢翻翻源码，或者碰巧加</p>
+<p>⼊入了了我们代码审计知识星球（开玩笑），应该是可以少⾛走⼀一些弯路路的。</p>
+</blockquote>
+<h2 id="参考">参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://wx.zsxq.com/group/2212251881/topic/548242484442524">https://wx.zsxq.com/group/2212251881/topic/548242484442524</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2025-07-23 22:11:14
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Java/" title="Java">
+                        #Java
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="反序列化">
+                        #反序列化
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/CommonsCollections%E5%88%A9%E7%94%A8%E9%93%BE/" title="CommonsCollections利用链">
+                        #CommonsCollections利用链
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                        <b>#</b> Web安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
         </div>
       
-      <div class="post-item" title="Java反序列化漏洞-CommonsCollections1利用链">
-        <div class="time-m-d">07-23</div>
-        <div class="title">
-          <a href="/2025/07/23/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections1%E5%88%A9%E7%94%A8%E9%93%BE/">
-            <span>Java反序列化漏洞-CommonsCollections1利用链</span>
-          </a>
-        </div>
-      </div>
+    </div>
     
-      <div class="post-item" title="Java反序列化和URLDNS链">
-        <div class="time-m-d">07-03</div>
-        <div class="title">
-          <a href="/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/">
-            <span>Java反序列化和URLDNS链</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Codeql原理分析">
-        <div class="time-m-d">06-09</div>
-        <div class="title">
-          <a href="/2025/06/09/Codeql%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
-            <span>Codeql原理分析</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Java反射机制详解">
-        <div class="time-m-d">05-25</div>
-        <div class="title">
-          <a href="/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/">
-            <span>Java反射机制详解</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Google Chrome 跨源数据泄露漏洞(CVE-2025-4664)复现">
-        <div class="time-m-d">05-15</div>
-        <div class="title">
-          <a href="/2025/05/15/Google-Chrome-%E8%B7%A8%E6%BA%90%E6%95%B0%E6%8D%AE%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E-CVE-2025-4664-%E5%A4%8D%E7%8E%B0/">
-            <span>Google Chrome 跨源数据泄露漏洞(CVE-2025-4664)复现</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="暗月项目六内网域渗透笔记">
-        <div class="time-m-d">05-11</div>
-        <div class="title">
-          <a href="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/">
-            <span>暗月项目六内网域渗透笔记</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="数据包referrer头中敏感信息的窃取">
-        <div class="time-m-d">05-06</div>
-        <div class="title">
-          <a href="/2025/05/06/%E6%95%B0%E6%8D%AE%E5%8C%85referer%E5%A4%B4%E4%B8%AD%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E7%9A%84%E7%AA%83%E5%8F%96/">
-            <span>数据包referrer头中敏感信息的窃取</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="神经网络笔记">
-        <div class="time-m-d">05-02</div>
-        <div class="title">
-          <a href="/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/">
-            <span>神经网络笔记</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="机器学习中的分类">
-        <div class="time-m-d">05-01</div>
-        <div class="title">
-          <a href="/2025/05/01/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E5%88%86%E7%B1%BB/">
-            <span>机器学习中的分类</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="免杀基础知识">
-        <div class="time-m-d">04-04</div>
-        <div class="title">
-          <a href="/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
-            <span>免杀基础知识</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Java代码审计漏洞点(基础)">
-        <div class="time-m-d">04-01</div>
-        <div class="title">
-          <a href="/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/">
-            <span>Java代码审计漏洞点(基础)</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Objection笔记">
-        <div class="time-m-d">03-21</div>
-        <div class="title">
-          <a href="/2025/03/21/Objection%E7%AC%94%E8%AE%B0/">
-            <span>Objection笔记</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Frida学习">
-        <div class="time-m-d">03-13</div>
-        <div class="title">
-          <a href="/2025/03/13/Frida%E5%AD%A6%E4%B9%A0/">
-            <span>Frida学习</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="机器学习笔记">
-        <div class="time-m-d">02-24</div>
-        <div class="title">
-          <a href="/2025/02/24/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-            <span>机器学习笔记</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Codeql查询语法笔记">
-        <div class="time-m-d">02-23</div>
-        <div class="title">
-          <a href="/2025/02/23/Codeql%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95%E7%AC%94%E8%AE%B0/">
-            <span>Codeql查询语法笔记</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="做个像Pump.fun一样的Memecoin启动台">
-        <div class="time-m-d">02-06</div>
-        <div class="title">
-          <a href="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/">
-            <span>做个像Pump.fun一样的Memecoin启动台</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Solidity入门学习(三)">
-        <div class="time-m-d">02-03</div>
-        <div class="title">
-          <a href="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/">
-            <span>Solidity入门学习(三)</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Solidity入门学习(二)">
-        <div class="time-m-d">01-26</div>
-        <div class="title">
-          <a href="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">
-            <span>Solidity入门学习(二)</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="Solidity入门学习(一)">
-        <div class="time-m-d">01-22</div>
-        <div class="title">
-          <a href="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%80/">
-            <span>Solidity入门学习(一)</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="mac搭建hardhat以太坊开发环境">
-        <div class="time-m-d">01-13</div>
-        <div class="title">
-          <a href="/2025/01/13/mac%E6%90%AD%E5%BB%BAhardhat%E4%BB%A5%E5%A4%AA%E5%9D%8A%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">
-            <span>mac搭建hardhat以太坊开发环境</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="GeoServer代码执行漏洞(CVE-2024-36401)">
-        <div class="time-m-d">01-09</div>
-        <div class="title">
-          <a href="/2025/01/09/GeoServer%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E(CVE-2024-36401)/">
-            <span>GeoServer代码执行漏洞(CVE-2024-36401)</span>
-          </a>
-        </div>
-      </div>
-    
-        <!-- 后续文章的发布年份呈现 -->
-        <div class="content-title">
-          <h2>
-            <span>2024</span>
-          </h2>
-        </div>
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
       
-      <div class="post-item" title="SSRF漏洞篇">
-        <div class="time-m-d">07-25</div>
-        <div class="title">
-          <a href="/2024/07/25/SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87/">
-            <span>SSRF漏洞篇</span>
-          </a>
-        </div>
-      </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
     
-      <div class="post-item" title="xsshunter-express搭建">
-        <div class="time-m-d">07-22</div>
-        <div class="title">
-          <a href="/2024/07/22/xsshunter-express%E6%90%AD%E5%BB%BA/">
-            <span>xsshunter-express搭建</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="搭建Burp Collaborator">
-        <div class="time-m-d">07-21</div>
-        <div class="title">
-          <a href="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/">
-            <span>搭建Burp Collaborator</span>
-          </a>
-        </div>
-      </div>
-    
-      <div class="post-item" title="CTF做题记录">
-        <div class="time-m-d">07-14</div>
-        <div class="title">
-          <a href="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/">
-            <span>CTF做题记录</span>
-          </a>
-        </div>
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
       </div>
     
   </div>
-</div>
+
 
         
 <div class="footer">
@@ -626,6 +579,24 @@
 
 
         
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections1%E5%88%A9%E7%94%A8%E9%93%BE + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F07%2F23%2FJava%25E5%258F%258D%25E5%25BA%258F%25E5%2588%2597%25E5%258C%2596%25E6%25BC%258F%25E6%25B4%259E-CommonsCollections1%25E5%2588%25A9%25E7%2594%25A8%25E9%2593%25BE%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/07/23/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections1%E5%88%A9%E7%94%A8%E9%93%BE/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
   
   
 <script src="/js/shares.js"></script>

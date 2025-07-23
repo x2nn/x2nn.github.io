@@ -4,6 +4,35 @@
   
     
     <entry>
+      <title>Java反序列化漏洞-CommonsCollections1利用链</title>
+      <link href="/2025/07/23/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections1%E5%88%A9%E7%94%A8%E9%93%BE/"/>
+      <url>/2025/07/23/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections1%E5%88%A9%E7%94%A8%E9%93%BE/</url>
+      
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2><p>之前学习反序列化漏洞，全是参考网上的乱七八糟的文章，然后我觉得反序列化漏洞是非常难的一部分内容。今天我看了phith0n师傅写的文章<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，我觉得写的非常棒。文章里面的一些感想，这里给大家分享一下。</p><p><strong>学习方式的探索⭐️⭐️⭐️</strong></p><blockquote><p>有时候想要学习⼀个东⻄，网上搜索⼀下，发现有教程，于是跟着做⼀遍。这样⼀来，你会发现网上大部分Java反序列化”教程”、“⼊门”通常上来先了解Java反序列化是什么，然后很快开始讲<code>CommonsCollections</code> ，就好像刚知道C语⾔言语法的同学⽴立⻢马继续学习Linux内核，我是⼗十分不不建议这样做的，除⾮你有非常强的理理解能⼒力力。</p><p>学习需要聪明⼀一点，并独⽴立思考问题。我很少参照别⼈人的⽂文章来学习，这样你学的东⻄西是⼆二⼿手的，有时</p><p>候连⼆二⼿手都不不是，⽂文章原作者也可能是参考另⼀一篇⽂文章写的。我的建议是从⽂文档和源码开始学，实在有压⼒力力可以参考⼀一些⻛风评较好的书籍或技术博客。</p><p>当然，有时候你并不不知道怎样是对的怎样是错的。⽐比如你作为⼀一个Java反序列列化漏漏洞洞的初学者，你并不不</p><p>知道应该先学习 URLDNS 还是 CommonsCollections ，也许你连 URLDNS 的名字都没听过，⽽而你看到⽹网</p><p>上⼤大部分⽂文章都是介绍 CommonsCollections 的，⾃自然也就去学习这个了了。</p><p>所以有些弯路路确实是避免不不了了的，不不过如果你在学习的道路路上更更加富有探索精神，看到ysoserial这种项</p><p>⽬目时多问问⾃自⼰己“其他的Gadget是做什什么的”，对于未知的事物原理理充满好奇喜欢翻翻源码，或者碰巧加</p><p>⼊入了了我们代码审计知识星球（开玩笑），应该是可以少⾛走⼀一些弯路路的。</p></blockquote><h2 id="参考">参考</h2><hr class="footnotes-sep"><section class="footnotes"><ol class="footnotes-list"><li id="fn1" class="footnote-item"><p><a href="https://wx.zsxq.com/group/2212251881/topic/548242484442524">https://wx.zsxq.com/group/2212251881/topic/548242484442524</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p></li></ol></section>]]></content>
+      
+      
+      <categories>
+          
+          <category> Web安全 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Java </tag>
+            
+            <tag> 反序列化 </tag>
+            
+            <tag> CommonsCollections利用链 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Java反序列化和URLDNS链</title>
       <link href="/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/"/>
       <url>/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/</url>
@@ -207,9 +236,9 @@
       
         <tags>
             
-            <tag> 机器学习 </tag>
-            
             <tag> 逻辑回归 </tag>
+            
+            <tag> 机器学习 </tag>
             
             <tag> 过拟合 </tag>
             
@@ -350,9 +379,9 @@
       
         <tags>
             
-            <tag> 线性回归 </tag>
-            
             <tag> 机器学习 </tag>
+            
+            <tag> 线性回归 </tag>
             
             <tag> 特征放缩 </tag>
             
