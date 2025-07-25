@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-07-24 22:19:45
+          2025-07-25 10:03:47
         </span>
         
               <span class="post-tags">
@@ -286,8 +286,8 @@
 <p>上一小节我们构造了一个<code>AnnotationInvocationHandler</code>对象，它就是我们反序列化利用链的起点了。我</p>
 <p>们通过如下代码将这个对象生成序列化流：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">oos.writeObject(obj);</span><br><span class="line">oos.close();</span><br></pre></td></tr></table></figure>
-<p>我将这几段代码拼接到demo代码的后面，组成一个完整的POC。我们试着运行这个POC，看看能否生</p>
-<p>成序列化数据流：</p>
+<p>我将这几段代码拼接到demo代码的后面，组成一个完整的POC。</p>
+<p>我们试着运行这个POC，看看能否生成序列化数据流：</p>
 <p><img src="/2025/07/23/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections1%E5%88%A9%E7%94%A8%E9%93%BE/image-20250724183454073.png" alt="image-20250724183454073"></p>
 <p>运行代码发现报错了，在writeObject的时候出现异常了：<code> java.io.NotSerializableException: java.lang.Runtime</code>。</p>
 <p>原因是，Java中不是所有对象都支持序列化，<strong>待序列化的对象和所有它使用的内部属性对象，必须都实现了 <code>java.io.Serializable</code>接口</strong>。而我们最早传给<code>ConstantTransformer</code>的是<code>Runtime.getRuntime()</code>,<code>Runtime</code>类是没有实现<code>java.io.Serializable</code>接口的，所以不允许被序列化。</p>
@@ -356,7 +356,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-07-24 22:19:45
+              2025-07-25 10:03:47
             </span>
             
                   <span class="post-tags">
