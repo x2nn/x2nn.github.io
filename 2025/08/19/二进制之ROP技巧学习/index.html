@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-08-27 16:35:50
+          2025-08-27 19:09:03
         </span>
         
               <span class="post-tags">
@@ -368,6 +368,8 @@
 <p>找对应的寄存器中的值，即<code>0、0、/bin/sh</code>。</p>
 <p>使用IDA Pro进行反编译，找打<code>/bin/sh</code>字符串对应的地址为：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.rodata:080BE408 aBinSh          db &#x27;/bin/sh&#x27;,0          ; DATA XREF: .data:shell↓o</span><br></pre></td></tr></table></figure>
+<p>或者使用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROPgadget --binary ret2syscall --string &quot;/bin/sh&quot;</span><br></pre></td></tr></table></figure>
 <h4 id="第3个gadget">第3个gadget</h4>
 <p>最后一个要<code>int 0x80</code>，进行系统的调用。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x08049421 : int 0x80</span><br></pre></td></tr></table></figure>
@@ -406,7 +408,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-08-27 16:35:50
+              2025-08-27 19:09:03
             </span>
             
                   <span class="post-tags">
