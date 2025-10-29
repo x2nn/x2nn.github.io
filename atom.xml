@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-09-07T14:35:16.309Z</updated>
+  <updated>2025-10-29T05:03:35.770Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,62 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>FastJson不出网的利用</title>
+    <link href="https://x2nn.github.io/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/"/>
+    <id>https://x2nn.github.io/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/</id>
+    <published>2025-10-26T04:34:24.000Z</published>
+    <updated>2025-10-29T05:03:35.770Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;简介&quot;&gt;简介&lt;/h2&gt;
+&lt;p&gt;现实环境中可能会遇到fastjson不出网的情况，下面打两个不出网的靶场&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn1&quot; id=&quot;fnref1&quot;&gt;[1]&lt;/a&gt;&lt;/sup&gt;。&lt;/p&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    
+    
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    
+    <category term="FastJson" scheme="https://x2nn.github.io/tags/FastJson/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>FastJson漏洞学习</title>
+    <link href="https://x2nn.github.io/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/"/>
+    <id>https://x2nn.github.io/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/</id>
+    <published>2025-10-24T05:09:11.000Z</published>
+    <updated>2025-10-28T01:39:27.152Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Web漏洞复现" scheme="https://x2nn.github.io/categories/Web%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"/>
+    
+    
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    
+    <category term="FastJson" scheme="https://x2nn.github.io/tags/FastJson/"/>
+    
+  </entry>
   
   <entry>
     <title>Electron中preload中的安全问题</title>
@@ -308,7 +364,7 @@
     <link href="https://x2nn.github.io/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/"/>
     <id>https://x2nn.github.io/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/</id>
     <published>2025-07-03T12:29:57.000Z</published>
-    <updated>2025-07-19T12:48:37.201Z</updated>
+    <updated>2025-10-28T14:20:30.969Z</updated>
     
     
       
@@ -527,69 +583,6 @@
     <category term="机器学习" scheme="https://x2nn.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
     <category term="过拟合" scheme="https://x2nn.github.io/tags/%E8%BF%87%E6%8B%9F%E5%90%88/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>免杀基础知识</title>
-    <link href="https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"/>
-    <id>https://x2nn.github.io/2025/04/04/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</id>
-    <published>2025-04-04T08:43:25.000Z</published>
-    <updated>2025-05-01T03:59:12.598Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;基础知识&quot;&gt;基础知识&lt;/h2&gt;
-&lt;h3 id=&quot;1-什么是免杀&quot;&gt;1.</summary>
-        
-      
-    
-    
-    
-    <category term="免杀" scheme="https://x2nn.github.io/categories/%E5%85%8D%E6%9D%80/"/>
-    
-    
-    <category term="免杀" scheme="https://x2nn.github.io/tags/%E5%85%8D%E6%9D%80/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Java代码审计漏洞点(基础)</title>
-    <link href="https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/"/>
-    <id>https://x2nn.github.io/2025/04/01/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E6%BC%8F%E6%B4%9E%E7%82%B9(%E5%9F%BA%E7%A1%80)/</id>
-    <published>2025-04-01T03:13:02.000Z</published>
-    <updated>2025-06-10T02:34:09.524Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;审计流程&quot;&gt;审计流程&lt;/h2&gt;
-&lt;h3 id=&quot;Servlet生命周期&quot;&gt;&lt;code&gt;Servlet&lt;/code&gt;生命周期&lt;/h3&gt;
-&lt;p&gt;&lt;img</summary>
-        
-      
-    
-    
-    
-    <category term="代码审计" scheme="https://x2nn.github.io/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    
-    
-    <category term="SQL注入" scheme="https://x2nn.github.io/tags/SQL%E6%B3%A8%E5%85%A5/"/>
-    
-    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
-    
-    <category term="代码审计" scheme="https://x2nn.github.io/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    
-    <category term="XXE" scheme="https://x2nn.github.io/tags/XXE/"/>
-    
-    <category term="SSRF" scheme="https://x2nn.github.io/tags/SSRF/"/>
-    
-    <category term="MyBatis" scheme="https://x2nn.github.io/tags/MyBatis/"/>
     
   </entry>
   

