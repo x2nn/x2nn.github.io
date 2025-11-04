@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>X2n.: Keep your passion for what you love !</title>
+  <title>Keep your passion for what you love !</title>
   <icon>https://x2nn.github.io/icon.png</icon>
   
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
@@ -10,7 +10,7 @@
   <id>https://x2nn.github.io/</id>
   
   <author>
-    <name>X2n.</name>
+    <name>Keep your passion for what you love !</name>
     
   </author>
   
