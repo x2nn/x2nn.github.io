@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2025-11-23T07:05:11.601Z</updated>
+  <updated>2025-11-28T11:26:54.575Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>把心放宽，把事看远，活得舒坦</title>
+    <link href="https://x2nn.github.io/2025/11/28/%E6%8A%8A%E5%BF%83%E6%94%BE%E5%AE%BD%EF%BC%8C%E6%8A%8A%E4%BA%8B%E7%9C%8B%E8%BF%9C%EF%BC%8C%E6%B4%BB%E5%BE%97%E8%88%92%E5%9D%A6/"/>
+    <id>https://x2nn.github.io/2025/11/28/%E6%8A%8A%E5%BF%83%E6%94%BE%E5%AE%BD%EF%BC%8C%E6%8A%8A%E4%BA%8B%E7%9C%8B%E8%BF%9C%EF%BC%8C%E6%B4%BB%E5%BE%97%E8%88%92%E5%9D%A6/</id>
+    <published>2025-11-28T11:24:01.000Z</published>
+    <updated>2025-11-28T11:26:54.575Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;把心放宽，把事看远，活得舒坦&quot;&gt;把心放宽，把事看远，活得舒坦&lt;/h2&gt;
+&lt;h3</summary>
+        
+      
+    
+    
+    
+    <category term="鸡汤" scheme="https://x2nn.github.io/categories/%E9%B8%A1%E6%B1%A4/"/>
+    
+    
+    <category term="鸡汤" scheme="https://x2nn.github.io/tags/%E9%B8%A1%E6%B1%A4/"/>
+    
+  </entry>
   
   <entry>
     <title>NTLM协议和Kerberos协议</title>
@@ -560,32 +586,6 @@
     <category term="信息泄露" scheme="https://x2nn.github.io/tags/%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2/"/>
     
     <category term="Referer-Policy" scheme="https://x2nn.github.io/tags/Referer-Policy/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>神经网络笔记</title>
-    <link href="https://x2nn.github.io/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/"/>
-    <id>https://x2nn.github.io/2025/05/02/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/</id>
-    <published>2025-05-02T05:11:51.000Z</published>
-    <updated>2025-11-02T05:00:17.309Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;1-什么是神经网络？&quot;&gt;1. 什么是神经网络？&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;神经网络&lt;/strong&gt;（Neural</summary>
-        
-      
-    
-    
-    
-    <category term="AI相关" scheme="https://x2nn.github.io/categories/AI%E7%9B%B8%E5%85%B3/"/>
-    
-    
-    <category term="神经网络" scheme="https://x2nn.github.io/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"/>
     
   </entry>
   
