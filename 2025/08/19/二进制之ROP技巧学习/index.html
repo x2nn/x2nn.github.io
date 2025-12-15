@@ -101,10 +101,6 @@
           <a href="/categories/">Category</a>
         </li>
       
-        <li class="nav-item" data-path="/friends/">
-          <a href="/friends/">Friends</a>
-        </li>
-      
         <li class="nav-item" data-path="/about/">
           <a href="/about/">About</a>
         </li>
@@ -168,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-08-27 19:09:03
+          2025-12-14 01:15:33
         </span>
         
               <span class="post-tags">
@@ -235,7 +231,7 @@
 <li><strong>间接寻址 (Indirect Addressing):</strong> 对于外部符号（如共享库中的函数或全局变量），PIE通过全局偏移表（GOT, Global Offset Table）和过程链接表（PLT, Procedure Linkage Table）等数据结构进行间接寻址。代码首先通过相对地址访问GOT/PLT中的条目，然后动态链接器（dynamic linker）在程序加载时负责将这些条目填充为外部符号的真实绝对地址。</li>
 </ul>
 <p><strong>功能与目的：</strong></p>
-<p>PIE的主要功能是**使能地址空间布局随机化（ASLR）**对可执行文件本身的应用。标准的ASLR可以随机化栈、堆和共享库的基地址，但对于一个非PIE编译的主程序，其自身的代码段（<code>.text</code>）和数据段（<code>.data</code>）通常会被加载到一个固定的、在链接时就已决定的基地址。PIE则消除了这个限制，允许操作系统加载器将整个可执行文件的内存映像放置在每次运行时都不同的随机基地址上。</p>
+<p>PIE的主要功能是<strong>启用地址空间布局随机化（ASLR）对可执行文件本身的支持</strong>。标准的 ASLR 能够随机化栈、堆和共享库的基地址，但对于未以 PIE 方式编译的主程序，其代码段（.text）和数据段（.data）通常会被加载到链接时确定的固定基地址上。PIE 消除了这一限制，允许操作系统加载器在每次运行时将整个可执行文件的内存映像加载到一个随机的基地址，从而增强程序的安全性。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译为PIE程序</span></span><br><span class="line">gcc -pie -fPIE -o program program.c</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译为非PIE程序</span>  </span><br><span class="line">gcc -no-pie -o program program.c</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看程序类型</span></span><br><span class="line">readelf -h program | grep Type</span><br></pre></td></tr></table></figure>
 <p><strong>实际效果演示：</strong></p>
 <p>非PIE + ASLR关闭：</p>
@@ -412,7 +408,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-08-27 19:09:03
+              2025-12-14 01:15:33
             </span>
             
                   <span class="post-tags">
