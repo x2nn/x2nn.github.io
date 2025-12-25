@@ -66,7 +66,7 @@
       document.documentElement.setAttribute('color-mode', colorMode)
     }
   </script>
-<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Keep your passion for what you love !" type="application/atom+xml">
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="Keep your passion for what you love !" type="application/atom+xml">
 </head>
 
 
@@ -171,12 +171,6 @@
                 <i class="iconfont icon-tags mr-10" title="Tags"></i>
                 
                 <span class="span--tag mr-8">
-                  <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" title="SQL注入">
-                    #SQL注入
-                  </a>
-                </span>
-                
-                <span class="span--tag mr-8">
                   <a href="/tags/Java/" title="Java">
                     #Java
                   </a>
@@ -185,6 +179,12 @@
                 <span class="span--tag mr-8">
                   <a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" title="代码审计">
                     #代码审计
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" title="SQL注入">
+                    #SQL注入
                   </a>
                 </span>
                 
@@ -337,11 +337,11 @@
 <p>Java 主程序 <code>Main.java</code></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.ibatis.session.SqlSession;</span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.session.SqlSessionFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.session.SqlSessionFactoryBuilder;</span><br><span class="line"></span><br><span class="line">publicclassMain&#123;</span><br><span class="line">    publicstaticvoidmain(String[] args)&#123;</span><br><span class="line">        SqlSessionFactorysqlSessionFactory= newSqlSessionFactoryBuilder().build(Resources.getResourceAsStream(<span class="string">&quot;mybatis-config.xml&quot;</span>));</span><br><span class="line">        <span class="keyword">try</span>(SqlSessionsession= sqlSessionFactory.openSession())&#123;</span><br><span class="line">            UserMapperuserMapper= session.getMapper(UserMapper.class);</span><br><span class="line">            Useruser= userMapper.getUserById(<span class="number">1</span>);</span><br><span class="line">            System.out.println(user);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4 id="MyBatis中-和-区别"><code>MyBatis</code>中#{}和${}区别</h4>
-<p>在<code>Mybatis</code>中拼接<code>SQL</code>语句有两种方式：一种是占位符 <code>#&#123;&#125;</code> ，另一种是拼接符<code>$&#123;&#125;</code> 。</p>
-<h5 id="对于-：">对于<code>#&#123;&#125;</code>：</h5>
-<p><code>#&#123;&#125;</code> 占位符用于<strong>预编译参数绑定</strong>，<code>MyBatis</code>会把 <code>#&#123;&#125;</code> 中的值<strong>作为参数</strong>传递给数据库查询或更新语句，在执行 <code>SQL</code>时由数据库驱动进行处理。这样做的好处是，<strong>参数会被视为数据，进行转义和预编译</strong>，不会直接拼接到<code>SQL</code>语句中，防止了<code>SQL</code>注入攻击。</p>
+<p>在<code>Mybatis</code>中拼接<code>SQL</code>语句有两种方式：一种是占位符 <code>#{}</code> ，另一种是拼接符<code>${}</code> 。</p>
+<h5 id="对于-：">对于<code>#{}</code>：</h5>
+<p><code>#{}</code> 占位符用于<strong>预编译参数绑定</strong>，<code>MyBatis</code>会把 <code>#{}</code> 中的值<strong>作为参数</strong>传递给数据库查询或更新语句，在执行 <code>SQL</code>时由数据库驱动进行处理。这样做的好处是，<strong>参数会被视为数据，进行转义和预编译</strong>，不会直接拼接到<code>SQL</code>语句中，防止了<code>SQL</code>注入攻击。</p>
 <ul>
-<li><strong>使用场景：</strong> <code>#&#123;&#125;</code> 适用于所有情况，尤其是对于动态条件、查询参数等。比如查询条件、更新值等。</li>
+<li><strong>使用场景：</strong> <code>#{}</code> 适用于所有情况，尤其是对于动态条件、查询参数等。比如查询条件、更新值等。</li>
 </ul>
 <p>示例：</p>
 <p>查询的<code>xml</code></p>
@@ -352,23 +352,23 @@
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> ?</span><br></pre></td></tr></table></figure>
 <p>如果传入的数值为1，那么最终会被解析成</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> &quot;1&quot;</span><br></pre></td></tr></table></figure>
-<h5 id="对于">对于<code>$&#123;&#125;</code>:</h5>
-<p><code>$&#123;&#125;</code> 用于<strong>直接拼接字符串</strong>。<code>MyBatis</code> 在解析 <code>SQL</code> 时，<code>$&#123;&#125;</code> 不会对传入的参数不做处理，而是直接拼接，<code>MyBatis</code>会把 <code>$&#123;&#125;</code> 中的内容直接替换为对应的参数值，而<strong>不进行任何转义或预处理</strong>，进而会造成<code>SQL</code>注入漏洞。</p>
+<h5 id="对于">对于<code>${}</code>:</h5>
+<p><code>${}</code> 用于<strong>直接拼接字符串</strong>。<code>MyBatis</code> 在解析 <code>SQL</code> 时，<code>${}</code> 不会对传入的参数不做处理，而是直接拼接，<code>MyBatis</code>会把 <code>${}</code> 中的内容直接替换为对应的参数值，而<strong>不进行任何转义或预处理</strong>，进而会造成<code>SQL</code>注入漏洞。</p>
 <ul>
-<li><strong>使用场景</strong>：<code>$&#123;&#125;</code> 一般用于动态表名、列名、排序字段等场景，通常情况下不应将用户输入的参数直接传入 <code>$&#123;&#125;</code> 中，以防止<code>SQL</code>注入。</li>
+<li><strong>使用场景</strong>：<code>${}</code> 一般用于动态表名、列名、排序字段等场景，通常情况下不应将用户输入的参数直接传入 <code>${}</code> 中，以防止<code>SQL</code>注入。</li>
 </ul>
-<h4 id="存在SQL注入漏洞的">存在<code>SQL</code>注入漏洞的<code>$&#123;&#125;</code></h4>
-<p>假设我们允许用户通过输入标名查询数据，并且直接用<code>$&#123;&#125;</code>来拼接<code>SQL</code>：</p>
+<h4 id="存在SQL注入漏洞的">存在<code>SQL</code>注入漏洞的<code>${}</code></h4>
+<p>假设我们允许用户通过输入标名查询数据，并且直接用<code>${}</code>来拼接<code>SQL</code>：</p>
 <p><code>Mapper XML</code>文件：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;findByTable&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;com.example.User&quot;</span>&gt;</span></span><br><span class="line">    SELECT * FROM $&#123;tableName&#125; WHERE id = #&#123;id&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>这里的<code>tableName</code>为<code>SQL</code>语句的一部分，直接拼接可导致<code>SQL</code>注入问题。假设注入的数据为<code>users;select database();-- -</code>，查询数据库的名称。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users;<span class="keyword">select</span> database();<span class="comment">-- -where id = ?</span></span><br></pre></td></tr></table></figure>
-<p><strong>不存在<code>SQL</code>注入的<code>$&#123;&#125;</code>用法</strong></p>
+<p><strong>不存在<code>SQL</code>注入的<code>${}</code>用法</strong></p>
 <p><code>Mapper XML</code>文件</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;findByColumn&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;com.example.User&quot;</span>&gt;</span></span><br><span class="line">    SELECT * FROM users WHERE $&#123;column&#125; = #&#123;value&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>对应的<code>Java</code>代码</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">column</span> <span class="operator">=</span> <span class="string">&quot;age&quot;</span>; <span class="comment">//用户不可控</span></span><br><span class="line"><span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">25</span>; <span class="comment">//用户可控</span></span><br><span class="line">List&lt;User&gt; users = userMapper.findByColumn(column, value);</span><br></pre></td></tr></table></figure>
-<p>最后在执行时，<code>MyBatis</code> 会将 <code>$&#123;column&#125;</code> 替换成 <code>age</code>，而 <code>#&#123;value&#125;</code> 仍然会用 <code>25</code> 作为参数绑定。最终生成的 SQL 语句为：</p>
+<p>最后在执行时，<code>MyBatis</code> 会将 <code>${column}</code> 替换成 <code>age</code>，而 <code>#{value}</code> 仍然会用 <code>25</code> 作为参数绑定。最终生成的 SQL 语句为：</p>
  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> age <span class="operator">=</span> ?</span><br></pre></td></tr></table></figure>
 <p>总之，防止<code>SQL</code>注入的关键点是，作为<code>SQL</code>语句中的**字段部分(为SQL语句的一部分,不使用预编译)**不是用户可以任意控制的，这样就可以有效的防止<code>SQL</code>注入了。例如，上述的案例中<code>age</code>是写死的或者写一个白名单数组，只允许传入白名单数组内的内容，这样用户不可任意控制了也就防止了<code>SQL</code>注入。</p>
 <h3 id="ORDER-BY注入"><code>ORDER BY</code>注入</h3>
@@ -385,18 +385,18 @@
 <p><code>IN</code>语句：常用于<code>where</code>表达式中，其作用是查询某个范围内的数据。</p>
 <p>比如：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">where</span> field <span class="keyword">in</span> (value1,value2,value3,…); </span><br></pre></td></tr></table></figure>
-<p>如上所示，<code>IN</code>在查询某个范围数据是会用到多个参数，在<code>Mybtis</code>中如果直接使用占位符 <code>#&#123;&#125;</code>进行查询会将这些参数看做一个整体，<strong>查询会报错</strong>。 因此很多开发人员可能会使用拼接符<code>$&#123;&#125;</code>对参数进行查询，从而造成了SQL注入漏洞。</p>
+<p>如上所示，<code>IN</code>在查询某个范围数据是会用到多个参数，在<code>Mybtis</code>中如果直接使用占位符 <code>#{}</code>进行查询会将这些参数看做一个整体，<strong>查询会报错</strong>。 因此很多开发人员可能会使用拼接符<code>${}</code>对参数进行查询，从而造成了SQL注入漏洞。</p>
 <p>例如：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> users <span class="keyword">where</span> id <span class="keyword">in</span> ($&#123;params&#125;) </span><br></pre></td></tr></table></figure>
-<p>正确的做法是需要使用<code>foreach</code>配合占位符 <code>#&#123;&#125;</code> 实现<code>IN</code>查询。比如：</p>
+<p>正确的做法是需要使用<code>foreach</code>配合占位符 <code>#{}</code> 实现<code>IN</code>查询。比如：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- where in 查询场景 --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;findUsers&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;User&quot;</span>&gt;</span></span><br><span class="line">    SELECT * FROM users WHERE id IN </span><br><span class="line">    <span class="tag">&lt;<span class="name">foreach</span> <span class="attr">item</span>=<span class="string">&quot;id&quot;</span> <span class="attr">collection</span>=<span class="string">&quot;ids&quot;</span> <span class="attr">open</span>=<span class="string">&quot;(&quot;</span> <span class="attr">separator</span>=<span class="string">&quot;,&quot;</span> <span class="attr">close</span>=<span class="string">&quot;)&quot;</span>&gt;</span></span><br><span class="line">        #&#123;id&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">foreach</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>存在<code>SQL</code>注入漏洞的代码。</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;findUsers&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;User&quot;</span>&gt;</span></span><br><span class="line">    SELECT * FROM users WHERE id IN ($&#123;ids&#125;)</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>对应的<code>Java</code>代码如下：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping(&quot;/mybatis/injection&quot;)</span></span><br><span class="line">publicList&lt;User&gt;INuser(<span class="meta">@RequestParam(&quot;id&quot;)</span> String id)&#123;</span><br><span class="line">  <span class="keyword">return</span> userMapper.INuser(id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="LIKE注入"><code>LIKE</code>注入</h3>
-<p><code>LIKE</code> 子句用于在<code> SQL</code> 查询中进行模糊匹配。当使用用户输入的内容作为 <code>LIKE</code> 条件时，应该非常小心，因为恶意输入可能导致<code>SQL</code>注入。使用<code>LIKE</code>语句进行查询时如果使用占位符<code>#&#123;&#125;</code>查询时程序会报错。</p>
-<p>因此经验不足的开发人员可能会直接使用拼接符 <code>$&#123;&#125; </code>对参数进行查询，从而造成了SQL注入漏洞。</p>
+<p><code>LIKE</code> 子句用于在<code> SQL</code> 查询中进行模糊匹配。当使用用户输入的内容作为 <code>LIKE</code> 条件时，应该非常小心，因为恶意输入可能导致<code>SQL</code>注入。使用<code>LIKE</code>语句进行查询时如果使用占位符<code>#{}</code>查询时程序会报错。</p>
+<p>因此经验不足的开发人员可能会直接使用拼接符 <code>${} </code>对参数进行查询，从而造成了SQL注入漏洞。</p>
 <p>这里<code>username</code>任意可控，存在<code>SQL</code>注入的代码。</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;like2&quot;</span> <span class="attr">parameterType</span>=<span class="string">&quot;String&quot;</span> <span class="attr">resultMap</span>=<span class="string">&quot;User&quot;</span>&gt;</span></span><br><span class="line">        select * from users where username like &#x27;%$&#123;username&#125;%&#x27;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>正确的用法，不存在<code>SQL</code>注入漏洞。</p>
@@ -523,12 +523,6 @@
                     <i class="iconfont icon-tags mr-10" title="Tags"></i>
                     
                     <span class="span--tag mr-8">
-                      <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" title="SQL注入">
-                        #SQL注入
-                      </a>
-                    </span>
-                    
-                    <span class="span--tag mr-8">
                       <a href="/tags/Java/" title="Java">
                         #Java
                       </a>
@@ -537,6 +531,12 @@
                     <span class="span--tag mr-8">
                       <a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" title="代码审计">
                         #代码审计
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" title="SQL注入">
+                        #SQL注入
                       </a>
                     </span>
                     

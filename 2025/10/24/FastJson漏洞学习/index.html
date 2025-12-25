@@ -66,7 +66,7 @@
       document.documentElement.setAttribute('color-mode', colorMode)
     }
   </script>
-<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Keep your passion for what you love !" type="application/atom+xml">
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="Keep your passion for what you love !" type="application/atom+xml">
 </head>
 
 
@@ -202,7 +202,7 @@
 <h3 id="探测fastjsn的环境信息">探测fastjsn的环境信息</h3>
 <p>测试fastjson漏洞的第一步是要先测试环境的情况，要确定fastjson的版本、后端使用的依赖、使用的jdk版本等信息，综合这些信息，确定要使用哪种方法去利用漏洞。这篇文章中<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，有多种利用方法，可供参考学习。</p>
 <h4 id="判断是否是使用fastjson">判断是否是使用fastjson</h4>
-<p><strong>通过报错</strong>，缺失一个<code>&#125;</code>，查看返回包，是否有<code>fastjson</code>关键字。</p>
+<p><strong>通过报错</strong>，缺失一个<code>}</code>，查看返回包，是否有<code>fastjson</code>关键字。</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;name&quot;</span><span class="punctuation">:</span><span class="string">&quot;hello&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;age&quot;</span><span class="punctuation">:</span><span class="number">2</span></span><br><span class="line"><span class="punctuation">&#123;</span><span class="string">&quot;name&quot;</span><span class="string">&quot;:&quot;</span>hello<span class="string">&quot;, &quot;</span>age<span class="string">&quot;:2&#125;</span></span><br></pre></td></tr></table></figure>
 <p><strong>根据解析变化</strong></p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;a&quot;</span><span class="punctuation">:</span>new a(<span class="number">1</span>)<span class="punctuation">,</span><span class="attr">&quot;b&quot;</span><span class="punctuation">:</span>x&#x27;<span class="number">11</span>&#x27;<span class="punctuation">,</span><span class="comment">/*\*\/&quot;c&quot;:Set[&#123;&#125;&#123;&#125;],&quot;d&quot;:&quot;\u0000\x00&quot;&#125; &#123;&quot;ext&quot;:&quot;blue&quot;,&quot;name&quot;:&#123;&quot;$ref&quot;:&quot;$.ext&quot;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
@@ -264,7 +264,7 @@
 <p><img src="/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20251025142239016.png" alt="image-20251025142239016"></p>
 <p>成了。</p>
 <h4 id="fastjson1-2-47的jndi利用，编码绕黑名单限制">fastjson1.2.47的jndi利用，编码绕黑名单限制</h4>
-<p>抓包看数据包，构造非法的json数据，少输入一个<code>&#125;</code>或多输入一个<code>&quot;</code>，发现返回的结果报错<code>syntax error, position at 0, name password</code>和，这说明后端解析了json，但是解析失败了。</p>
+<p>抓包看数据包，构造非法的json数据，少输入一个<code>}</code>或多输入一个<code>&quot;</code>，发现返回的结果报错<code>syntax error, position at 0, name password</code>和，这说明后端解析了json，但是解析失败了。</p>
 <p><img src="/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20251025123024088.png" alt="image-20251025123024088"></p>
 <p><img src="/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20251025123305987.png" alt="image-20251025123305987"></p>
 <p>探测fastjson的精确版本可以通过<strong>报错和dnslog</strong>，在本文最后面我会总结一下判断fastjson版本的方法。</p>
