@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-12-26 00:41:36
+          2025-12-26 09:56:21
         </span>
         
               <span class="post-tags">
@@ -307,7 +307,7 @@
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251225233402659.png" alt="image-20251225233402659"></p>
 <p>查看偏移，0x88个字节的偏移。</p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251225235155928.png" alt="image-20251225235155928"></p>
-<p>程序是32位的，偏移0x88，136个字节，要再覆盖一个<code>ebp</code>指令，所以要覆盖136+4 = 140字节的垃圾数据，才能使填充system函数的返回地址。又因为system函数的汇编代码的第一个是<code>push ebp</code>，system函数要间隔两个字去找参数值<code>/bin/sh</code>，<code>push ebp</code>算一个字了，又因为32位，再填充4个字节，又算一个字，然后再去填充`/bin/sh字符串的地址。</p>
+<p>程序是32位的，偏移0x88，136个字节，要再覆盖一个<code>ebp</code>指令，所以要覆盖136+4 = 140字节的垃圾数据，然后再填充system函数的返回地址。又因为system函数的汇编代码的第一个是<code>push ebp</code>，system函数要间隔两个字去找参数值<code>/bin/sh</code>，<code>push ebp</code>算一个字了，又因为32位，再填充4个字节，又算一个字，然后再去填充`/bin/sh字符串的地址。</p>
 <p>所以完整的payload为：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = flat([<span class="string">b&#x27;A&#x27;</span> *(<span class="number">136</span> + <span class="number">4</span>),systemaddr, <span class="string">b&#x27;B&#x27;</span> * <span class="number">4</span>, binshaddr])</span><br></pre></td></tr></table></figure>
 <p>完整的poc为：</p>
@@ -342,7 +342,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-12-26 00:41:36
+              2025-12-26 09:56:21
             </span>
             
                   <span class="post-tags">
