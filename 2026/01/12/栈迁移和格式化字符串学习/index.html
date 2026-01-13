@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-12 23:19:50
+          2026-01-14 00:37:50
         </span>
         
               <span class="post-tags">
@@ -292,7 +292,123 @@
 </ol>
 <h3 id="总结">总结</h3>
 <p>栈迁移的本质是<strong>利用 <code>leave</code> 指令对 esp 和 ebp 的操作，将 esp 强行修改为我们想要的值</strong>。</p>
-<h2 id="格式化字符串介绍">格式化字符串介绍</h2>
+<h2 id="格式化字符串漏洞介绍">格式化字符串漏洞介绍</h2>
+<h3 id="1-核心概念">1.核心概念</h3>
+<p><strong>定义</strong>：当程序将用户的输入直接作为格式化函数（如 <code>printf</code>）的<strong>第一个参数</strong>（即格式化字符串本身）时，发生的漏洞。</p>
+<p><strong>本质</strong>：函数对参数数量的<strong>盲目信任</strong>。函数仅根据字符串中的 <code>%</code> 符号数量去栈/寄存器取值，而不检查实际传入了多少参数。</p>
+<h3 id="2-漏洞代码特征">2. 漏洞代码特征</h3>
+<p>有漏洞：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> buf[<span class="number">100</span>];</span><br><span class="line">read(<span class="number">0</span>, buf, <span class="number">100</span>);</span><br><span class="line"><span class="built_in">printf</span>(buf);  <span class="comment">// &lt;-- 用户输入直接控制了格式化字符串</span></span><br></pre></td></tr></table></figure>
+<p>安全写法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>, buf); <span class="comment">// &lt;-- 格式已固定，buf 仅作为数据参数</span></span><br></pre></td></tr></table></figure>
+<p>可以简单的理解，对于<code>%s</code>对应于一个buf，直接从内存中拿buf的值。这个buf是参数值，对于32位是存放在栈中，对于64位是存放在寄存器中，但当buf这个不存在的时候，printf还是会去同样的位置去拿数据，这时候就会造成栈（或寄存器）的信息泄露。</p>
+<p>对于有漏洞的例子<code>printf(buf)</code> ，这里如果<code>buf</code>中被输入了<code>%s</code>，那么<code>printf</code>会去同样的位置去找数据，然后输出造成信息泄露。</p>
+<h3 id="3-原理解释">3. 原理解释</h3>
+<p>理解核心：格式化字符串 vs 参数栈的不匹配。</p>
+<p>正常情况：<code>printf(&quot;%x&quot;, var)</code> -&gt; <code>printf</code> 从栈/寄存器取出一个值打印。</p>
+<p>攻击情况：用户输入<code>AAAA %x</code> -&gt;</p>
+<p>（1）<code>printf</code>打印<code>AAAA</code></p>
+<p>（2）遇到<code>%x</code>，<code>printf</code>认为栈上肯定有个参数等着它。</p>
+<p>（3）<code>printf</code>函数去栈上（或寄存器，64位参数值存在寄存器上）获取对应位置的数据并打印。</p>
+<p>（4）结果：泄露了栈上的敏感数据。</p>
+<h3 id="4-利用速查表（Cheat-Sheet）">4. 利用速查表（Cheat Sheet）</h3>
+<p>常用格式说明符（Specifiers）</p>
+<table>
+<thead>
+<tr>
+<th><strong>符号</strong></th>
+<th><strong>作用</strong></th>
+<th><strong>攻击用途</strong></th>
+<th><strong>备注</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>%s</code></td>
+<td>输出指针指向的字符串</td>
+<td><strong>任意地址读</strong></td>
+<td>试图读取该地址指向的内容，若地址非法会 Crash</td>
+</tr>
+<tr>
+<td><code>%p</code> / <code>%x</code></td>
+<td>输出参数的值(十六进制)</td>
+<td><strong>栈数据泄露</strong></td>
+<td>泄露 Canary、Libc 基址、栈地址</td>
+</tr>
+<tr>
+<td><code>%d</code> / <code>%i</code></td>
+<td>输出有符号整数</td>
+<td>数据泄露</td>
+<td>较少用，通常用 <code>%p</code></td>
+</tr>
+<tr>
+<td><code>%n</code></td>
+<td><strong>不输出</strong>，写入已打印字符数</td>
+<td><strong>任意地址写</strong></td>
+<td><strong>最危险的符号</strong>，用于修改内存</td>
+</tr>
+<tr>
+<td><code>%c</code></td>
+<td>输出单个字符</td>
+<td>填充计数</td>
+<td>配合 <code>%n</code> 控制写入的数值大小</td>
+</tr>
+</tbody>
+</table>
+<p>关键修饰符</p>
+<p>（1）直接访问（Direct Access<code>$</code>）</p>
+<ul>
+<li><code>%10$p</code>：直接打印栈上第10个参数的值。</li>
+<li><code>%10$n</code>：将数值写入栈上第10个参数指向的地址。</li>
+</ul>
+<p>用途：避免输入几十个<code>%p</code>来够到深处的偏移。</p>
+<p>（2）长度修饰（Length Fields）</p>
+<ul>
+<li><code>%hhn</code>：写入 1 byte</li>
+<li><code>%hn</code>：写入 2 bytes（short）</li>
+</ul>
+<p>用途：分次写入大数值（如地址），避免一次打印过多字符导致超时。</p>
+<h3 id="5-攻击能力（Capabilities）">5. 攻击能力（Capabilities）</h3>
+<p>A. 任意地址读 (Arbitrary Read)</p>
+<ul>
+<li><strong>目的</strong>：绕过 ASLR (泄露 Libc 地址)，读取 Flag，读取 Canary。</li>
+<li><strong>方法</strong>：
+<ol>
+<li>确定输入字符串在栈上的偏移（Offset），例如是第 6 个参数。</li>
+<li>构造 Payload：<strong><code>[目标地址] + %6$s</code></strong>。</li>
+<li><code>printf</code> 会解析 <code>%6$s</code>，去第 6 个参数位置拿值（即我们填入的目标地址），然后打印该地址指向的内容。</li>
+</ol>
+</li>
+</ul>
+<p>B. 任意地址写 (Arbitrary Write)</p>
+<ul>
+<li><strong>目的</strong>：修改 GOT 表（劫持控制流），修改返回地址，修改变量值。</li>
+<li><strong>原理</strong>：利用 <code>%n</code> 将“<strong>前面打印出的字符总数</strong>”写入指定地址。</li>
+<li><strong>公式</strong>： <strong><code>[填充字符] + [Payload构造] + [%k$n]</code></strong> ，如果想写入值 <code>100，</code>确保在 <code>%n</code> 之前总共打印了 100 个字符。</li>
+</ul>
+<h3 id="6-利用流程（Exploit-Workflow）">6. 利用流程（Exploit Workflow）</h3>
+<p>（1）<strong>确定偏移 (Fuzzing)</strong>： 输入 <code>AAAA %p %p %p...</code>，观察 <code>0x41414141</code> (<code>AAAA</code>) 出现在第几个位置。<strong>记为 offset</strong>。</p>
+<p>（2）<strong>信息收集 (Leak)</strong>： 利用 <code>%offset$p</code> 泄露栈上的 <code>__libc_start_main</code> 或其他地址，计算基址 <code>libc_base</code>。</p>
+<p>（3） <strong>构造写利用 (Overwrite)</strong>：</p>
+<ul>
+<li><strong>目标</strong>：<code>printf_got</code> (或其他函数 GOT)。</li>
+<li><strong>值</strong>：<code>system_addr</code>。</li>
+<li><strong>工具</strong>：使用 <code>pwntools</code> 自动生成。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># payload = fmtstr_payload(offset, &#123;target_addr: value_to_write&#125;)</span></span><br><span class="line">payload = fmtstr_payload(<span class="number">6</span>, &#123;elf.got[<span class="string">&#x27;printf&#x27;</span>]: libc.symbols[<span class="string">&#x27;system&#x27;</span>]&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="7-防御与绕过（Mitigation）">7. 防御与绕过（Mitigation）</h3>
+<ul>
+<li>防御</li>
+</ul>
+<p>（1）<strong>GCC 编译选项</strong>：<code>-Wformat -Wformat-security</code> (编译警告)。</p>
+<p>（2）<strong>FORTIFY_SOURCE</strong>：<code>-D_FORTIFY_SOURCE=2</code>。如果格式化字符串在可写段且含 <code>%n</code>，直接 Crash。</p>
+<p>（3）<strong>代码规范</strong>：严禁 <code>printf(variable)</code>，必须用 <code>printf(&quot;%s&quot;, variable)</code>。</p>
+<ul>
+<li>限制</li>
+</ul>
+<p>（1）<strong>\x00 截断</strong>：<code>printf</code> 遇到空字节停止，构造 Payload 时需将地址放在 Payload 的最后，或者利用栈上已有的指针对其进行修改。</p>
+<p>（2）<strong>缓冲区大小</strong>：如果 buf 太小，可能无法容纳复杂的 Payload。</p>
+<h2 id="格式化字符串漏洞练习">格式化字符串漏洞练习</h2>
 
       </div>
       
@@ -308,7 +424,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-12 23:19:50
+              2026-01-14 00:37:50
             </span>
             
                   <span class="post-tags">
@@ -354,7 +470,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%BF%81%E7%A7%BB%E4%BB%8B%E7%BB%8D"><span class="toc-text">栈迁移介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90"><span class="toc-text">技术原理解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1.核心应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%EF%BC%9Aleave-ret"><span class="toc-text">2.核心指令：leave; ret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A532%E4%B8%BA%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">3.攻击原理详解（以32为为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Payload%E6%9E%84%E9%80%A0%E7%A4%BA%E4%BE%8B"><span class="toc-text">4. Payload构造示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-64%E4%BD%8D%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">5. 64位系统的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%B8%B8%E8%A7%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">6. 常见注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%BB%8B%E7%BB%8D"><span class="toc-text">格式化字符串介绍</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%BF%81%E7%A7%BB%E4%BB%8B%E7%BB%8D"><span class="toc-text">栈迁移介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90"><span class="toc-text">技术原理解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1.核心应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%EF%BC%9Aleave-ret"><span class="toc-text">2.核心指令：leave; ret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A532%E4%B8%BA%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">3.攻击原理详解（以32为为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Payload%E6%9E%84%E9%80%A0%E7%A4%BA%E4%BE%8B"><span class="toc-text">4. Payload构造示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-64%E4%BD%8D%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">5. 64位系统的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%B8%B8%E8%A7%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">6. 常见注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-text">格式化字符串漏洞介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-text">1.核心概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%BC%8F%E6%B4%9E%E4%BB%A3%E7%A0%81%E7%89%B9%E5%BE%81"><span class="toc-text">2. 漏洞代码特征</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%8E%9F%E7%90%86%E8%A7%A3%E9%87%8A"><span class="toc-text">3. 原理解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%88%A9%E7%94%A8%E9%80%9F%E6%9F%A5%E8%A1%A8%EF%BC%88Cheat-Sheet%EF%BC%89"><span class="toc-text">4. 利用速查表（Cheat Sheet）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%94%BB%E5%87%BB%E8%83%BD%E5%8A%9B%EF%BC%88Capabilities%EF%BC%89"><span class="toc-text">5. 攻击能力（Capabilities）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B%EF%BC%88Exploit-Workflow%EF%BC%89"><span class="toc-text">6. 利用流程（Exploit Workflow）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E9%98%B2%E5%BE%A1%E4%B8%8E%E7%BB%95%E8%BF%87%EF%BC%88Mitigation%EF%BC%89"><span class="toc-text">7. 防御与绕过（Mitigation）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0"><span class="toc-text">格式化字符串漏洞练习</span></a></li></ol>
       
     </div>
   </div>
