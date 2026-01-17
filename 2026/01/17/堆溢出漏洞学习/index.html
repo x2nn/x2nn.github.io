@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="Keep your passion for what you love !" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      堆溢出漏洞学习 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"><link rel="alternate" href="/atom.xml" title="Keep your passion for what you love !" type="application/atom+xml">
+</head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">堆溢出漏洞学习</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2026-01-17 17:39:36
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Heap-Overflow/" title="Heap Overflow">
+                    #Heap Overflow
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="Categories"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                    <b>#</b> 二进制安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="什么是堆溢出？">什么是堆溢出？</h2>
+<p><strong>堆溢出 (Heap Overflow)</strong> 是指程序向堆内存（Heap）中的缓冲区写入数据时，超出了该缓冲区原本申请的大小，导致数据覆盖了**相邻堆块（Chunk）**的内容。</p>
+<p>与栈溢出（Stack Overflow）不同，堆溢出的破坏力不仅在于覆盖数据，更在于破坏了堆分配器（如 glibc 的 ptmalloc）维护的<strong>管理结构（Metadata）</strong>。</p>
+<blockquote>
+<p><strong>💡 核心逻辑：</strong> 在堆内存中，<strong>用户数据</strong>和<strong>管理数据</strong>是混在一起的。一旦溢出，攻击者就能通过篡改管理数据，欺骗分配器在进行 <code>malloc</code> 或 <code>free</code> 操作时，执行攻击者预期的内存读写操作。</p>
+</blockquote>
+<h2 id="堆块（Chunk）的结构">堆块（Chunk）的结构</h2>
+<p>在 Linux (glibc) 环境下，堆内存是以 <strong>Chunk</strong> 为单位进行管理的。理解 Chunk 的结构是利用漏洞的前提。</p>
+<p>一个 allocated（已分配）或 free（空闲）的 chunk 在内存中的布局大致如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line">  <span class="comment">/* Request size + metadata overhead */</span></span><br><span class="line">  INTERNAL_SIZE_T      prev_size;  <span class="comment">/* 前一个空闲块的大小 (如果前一个块是free的) */</span></span><br><span class="line">  INTERNAL_SIZE_T      size;       <span class="comment">/* 当前块的大小 (低3位作为标志位: AMP) */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* User data starts here (malloc返回的指针) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>         <span class="comment">/* Forward pointer (仅限空闲块) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span>         <span class="comment">/* Backward pointer (仅限空闲块) */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong><code>prev_size</code></strong>: 如果物理相邻的前一个 chunk 是空闲的，这里记录它的大小（用于合并）。</p>
+</li>
+<li>
+<p><strong><code>size</code></strong>: 当前 chunk 的大小。因为堆块大小通常 8/16 字节对齐，低 3 位被用来存储状态标志（如 <code>PREV_INUSE</code> 表示前一个块是否在使用）。</p>
+</li>
+<li>
+<p><strong><code>fd</code> / <code>bk</code></strong>: 双向链表指针。<strong>只有当 Chunk 被释放（Free）后</strong>，这两个位置才会被填入数据，用于指向链表中的前后节点。</p>
+</li>
+</ul>
+<h2 id="堆溢出漏洞的成因">堆溢出漏洞的成因</h2>
+<p>堆溢出通常源于对用户输入长度的检查缺失。</p>
+<p>例如代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">vulnerable_function</span><span class="params">(<span class="type">char</span> *input)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 申请两个相邻的堆块</span></span><br><span class="line">    <span class="type">char</span> *chunk_A = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">16</span>); </span><br><span class="line">    <span class="type">char</span> *chunk_B = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">16</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 危险操作：strcpy 没有检查 input 的长度</span></span><br><span class="line">    <span class="comment">// 如果 input &gt; 16 字节，多余的数据将“流”入 chunk_B</span></span><br><span class="line">    <span class="built_in">strcpy</span>(chunk_A, input); </span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(chunk_A);</span><br><span class="line">    <span class="built_in">free</span>(chunk_B);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>内存发生了什么？</strong></p>
+<p>当 <code>input</code> 长度过长时，数据会越过 <code>chunk_A</code> 的边界，直接覆盖 <code>chunk_B</code> 的头部（<code>prev_size</code> 和 <code>size</code>），甚至覆盖 <code>chunk_B</code> 的 <code>fd/bk</code> 指针。</p>
+<h2 id="利用原理：从覆盖到劫持（Exploitation）">利用原理：从覆盖到劫持（Exploitation）</h2>
+<p>攻击者的最终目标通常是实现 <strong>任意地址写 (Write-What-Where Primitive)</strong>。</p>
+<h3 id="破坏数据（Data-Corruption）">破坏数据（Data Corruption）</h3>
+<p>这是最直接的利用方式。如果相邻块 <code>chunk_B</code> 中存储了关键变量（如认证标志 <code>is_admin</code>、函数指针 <code>func_ptr</code>），直接覆盖它们即可改变程序逻辑。</p>
+<h3 id="劫持控制流（Unlink-Attack）">劫持控制流（Unlink Attack）</h3>
+<p>这是堆利用的精髓。通过篡改空闲块的 <code>fd</code> 和 <code>bk</code> 指针，利用 <code>free()</code> 函数中的脱链（Unlink）操作来修改内存。</p>
+<p>Unlink宏的简化逻辑：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* P 是正在被 Unlink 的块 */</span></span><br><span class="line">FD = P-&gt;fd;</span><br><span class="line">BK = P-&gt;bk;</span><br><span class="line"></span><br><span class="line">FD-&gt;bk = BK; <span class="comment">// 相当于: *(FD + 24) = BK</span></span><br><span class="line">BK-&gt;fd = FD; <span class="comment">// 相当于: *(BK + 16) = FD</span></span><br></pre></td></tr></table></figure>
+<p>攻击步骤：</p>
+<ol>
+<li>伪造指针：利用溢出，将 <code>chunk_B</code> 的 <code>fd</code> 改为 <code>target_addr - 24</code>，<code>bk</code> 改为 <code>expected_value</code>。</li>
+<li>触发Free：当程序调用 <code>free()</code> 并触发合并操作时，执行 Unlink。</li>
+<li>效果：程序会将 <code>expected_value</code> 写入 <code>target_addr</code>。</li>
+</ol>
+<p>实际场景：修改 GOT 表，将 <code>free</code> 或 <code>puts</code> 的地址改为 <code>system</code> 函数的地址。</p>
+<p><strong>下面就是对于逻辑的详细解释：</strong></p>
+<h4 id="1-场景还原">1. 场景还原</h4>
+<p>想象有三个空闲的堆块连在一起：<code>BK</code>&lt;——&gt;<code>P</code>&lt;——&gt;<code>FD</code></p>
+<p><code>BK</code> (Backward): 后继堆块。</p>
+<p><code>P</code> (Current): 当前堆块。</p>
+<p><code>FD</code> (Forward): 前驱堆块。</p>
+<p>**Unlink的目的：**把 <code>P</code> 从链表中拿走，让 <code>BK</code> 和 <code>FD</code> 直接连接在一起。</p>
+<h4 id="2-代码逐行深度解析"><strong>2. 代码逐行深度解析</strong></h4>
+<p>在 64 位系统中，一个 <code>malloc_chunk</code> 结构体的前两个字段 <code>prev_size</code> 和 <code>size</code> 各占 8 字节。</p>
+<ul>
+<li><code>fd</code> 指针位于偏移 <strong>0x10 (16)</strong> 处。</li>
+<li><code>bk</code> 指针位于偏移 <strong>0x18 (24)</strong> 处。</li>
+</ul>
+<p>我们详细的一行一行来看：</p>
+<p><strong>第1&amp;2行：获取邻居</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FD = P-&gt;fd; <span class="comment">// 读取 P 的偏移 +16 处的值，赋给 FD</span></span><br><span class="line">BK = P-&gt;bk; <span class="comment">// 读取 P 的偏移 +24 处的值，赋给 BK</span></span><br></pre></td></tr></table></figure>
+<p><strong>正常情况下</strong>：<code>FD</code> 指向前驱堆块的起始地址，<code>BK</code> 指向后驱堆块的起始地址。</p>
+<p><strong>攻击视角</strong>：如果你通过<strong>堆溢出</strong>覆盖了 <code>P</code> 的头部，你可以把 <code>P-&gt;fd</code> 和 <code>P-&gt;bk</code> 改成<strong>任意数值</strong>（任意地址）。</p>
+<p><strong>第3行：修改前驱（The Write）</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FD-&gt;bk = BK;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>实际意思</strong>：找到指针 <code>FD</code> 指向的地址，加上 <code>bk</code> 字段的偏移（24），向这个位置写入 <code>BK</code> 的值。</li>
+<li><strong>实际的计算操作</strong>：<code>*(FD + 24) = BK</code></li>
+<li><strong>攻击利用：</strong>
+<ul>
+<li>假设你想向内存地址 <code>Target_Addr</code> 写入数据。</li>
+<li>你可以控制 <code>FD</code> 的值为 <code>Target_Addr - 24</code>。</li>
+<li>那么 <code>FD + 24</code> 就变成了 <code>Target_Addr - 24 + 24</code> = <strong><code>Target_Addr</code></strong>。</li>
+<li>程序就会把 <code>BK</code> 的值写到 <code>Target_Addr</code> 里。</li>
+</ul>
+</li>
+</ul>
+<p><strong>第4行：修改后继（The Side Effect）</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BK-&gt;fd = FD;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong>实际意思</strong>：找到指针 <code>BK</code> 指向的地址，加上 <code>fd</code> 字段的偏移（16），向这个位置写入 <code>FD</code> 的值。</p>
+</li>
+<li>
+<p><strong>实际的计算操作</strong>：<code>*(BK + 16) = FD</code></p>
+</li>
+<li>
+<p><strong>注意</strong>：这是一个“副作用”，程序会崩溃。在早期的 Unlink 攻击中，这会破坏 <code>Target_Addr</code> 附近的数据，或者需要我们构造一个可写的区域来承载这个写入，防止程序崩溃。</p>
+</li>
+</ul>
+<h5 id="漏洞利用存在的矛盾点！">漏洞利用存在的矛盾点！</h5>
+<p>这里解释一下前面这个副作用！</p>
+<p><strong>作为攻击者</strong>：我们通常把 <code>BK</code> 视为一个 <strong>“值”</strong>（比如我想把 <code>is_admin</code> 改成 <code>1</code>，那 <code>BK</code> 就是 <code>1</code>；或者我想把 GOT 表改成 shellcode 地址，那 <code>BK</code> 就是 shellcode 的起始地址）。</p>
+<p><strong>作为程序逻辑</strong>：Unlink 宏把 <code>BK</code> 视为一个 <strong>“合法的堆块指针”</strong>。它必须是一个指向<strong>可写内存</strong>的地址。</p>
+<p>场景一：直接 Crash (Segmentation Fault)</p>
+<p>假设你想把内存中某个变量 <code>target</code> 的值改成 <code>1</code>。</p>
+<ul>
+<li>你构造 <code>FD = &amp;target - 24</code>。</li>
+<li>你构造 <code>BK = 0x00000001</code>。</li>
+</ul>
+<p><strong>执行过程：</strong></p>
+<ol>
+<li><strong>第一步（攻击成功）</strong>：<code>FD-&gt;bk = BK</code>。
+<ul>
+<li><code>target</code> 变成了 <code>1</code>。到这里很完美。</li>
+</ul>
+</li>
+<li><strong>第二步（副作用爆发）</strong>：<code>BK-&gt;fd = FD</code>。
+<ul>
+<li>程序试图执行：<code>*(0x00000001 + 16) = FD</code>。</li>
+<li>程序试图往内存地址 <code>0x00000011</code> 写入数据。</li>
+<li><strong>崩溃！</strong> 操作系统会报段错误（Segfault），因为 <code>0x11</code> 不是一个合法的用户可写内存地址。</li>
+</ul>
+</li>
+</ol>
+<p><strong>结论：</strong> 简单的改小数值（如置 1，置 0）在 Unlink 攻击中很难实现，因为小数值加 16 依然是无效地址。</p>
+<p>场景二：破坏数据 (Data Corruption)</p>
+<p>假设你想劫持 GOT 表，把 <code>free</code> 函数的地址改成你的 <strong>Shellcode 地址</strong>（假设 Shellcode 在堆上，地址是 <code>0xHeapAddr</code>）。</p>
+<ul>
+<li>你构造 <code>FD = &amp;GOT_free - 24</code>。</li>
+<li>你构造 <code>BK = 0xHeapAddr</code>。</li>
+</ul>
+<p><strong>执行过程：</strong></p>
+<ol>
+<li><strong>第一步（攻击成功）</strong>：<code>FD-&gt;bk = BK</code>。
+<ul>
+<li><code>GOT_free</code> 变成了 <code>0xHeapAddr</code>。下次调用 <code>free</code> 就会跳到 shellcode。</li>
+</ul>
+</li>
+<li><strong>第二步（副作用爆发）</strong>：<code>BK-&gt;fd = FD</code>。
+<ul>
+<li>程序执行：<code>*(0xHeapAddr + 16) = FD</code>。</li>
+<li>程序把 <code>FD</code> 的值（也就是 <code>&amp;GOT_free - 24</code> 这个巨大的指针数值）写进了你的 Shellcode 的第 16 到 24 字节的位置。</li>
+</ul>
+</li>
+</ol>
+<p><strong>后果：</strong> 你的 Shellcode 本来写得好好的机器码，中间突然被“脏数据”覆盖了 8 个字节。当 CPU 执行到这里时，指令错乱，程序崩溃。</p>
+<h5 id="攻击者如何去解决这个矛盾点呢？">攻击者如何去解决这个矛盾点呢？</h5>
+<p>为了应对崩溃的情况，攻击者必须精心构造<code>BK</code>，满足两个条件：</p>
+<p>（1）<strong><code>BK</code> 指向的区域必须是“可写”的</strong>（防止 Segfault）。</p>
+<p>（2）<strong>被破坏的那 8 个字节不能影响后续执行</strong>。</p>
+<p><strong>解决方案A：使用”跳板“指令（Short Jump）</strong></p>
+<p>这是针对 Shellcode 被破坏的经典解法。</p>
+<p>既然我们知道 <strong>Shellcode 的第 16-24 字节会被覆盖掉</strong>，那我们就不要在那儿放重要的代码。</p>
+<p>构造 Shellcode 的布局：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Offset 0:   JMP Offset 30  &lt;-- 第一条指令就是“跳”！</span><br><span class="line">Offset 2:   [垃圾填充]</span><br><span class="line">...</span><br><span class="line">Offset 16:  [这里会被副作用覆盖，变成脏数据] &lt;-- 没关系，CPU不会执行这里</span><br><span class="line">...</span><br><span class="line">Offset 30:  REAL SHELLCODE START &lt;-- 真正的恶意代码从这里开始</span><br></pre></td></tr></table></figure>
+<p><strong>原理：</strong> 当程序跳转到 Shellcode (BK) 时，第一条指令直接跳过了“被污染区域”，完美避开了副作用造成的破坏。</p>
+<p>解决方案B：指向无用数据的可写段**</p>
+<p>如果我们不是为了执行 Shellcode，只是为了修改某个函数指针（比如指向 libc 中的 system 函数），而 <code>system</code> 函数的地址我们没法改（它是代码段，不可写）。这时候怎么办？</p>
+<p>这在传统 Unlink 中很难办到（因为 <code>BK</code> 必须指向可写内存）。所以传统的 Unlink 更多用于：</p>
+<p><strong>（1）堆上的 Shellcode 执行</strong>（堆本身可写）。</p>
+<p><strong>（2）修改指向堆内的指针</strong>。</p>
+<p>如果必须指向不可写区域（如代码段），攻击者通常不会使用 Unlink，而是转向其他利用方式（如 Fastbin Attack 或 Tcache Poisoning，因为它们对反向指针的检查没那么严格）。</p>
+<p><strong>总结</strong></p>
+<p>所谓“构造一个可写的区域来承载这个写入”，意思就是：</p>
+<blockquote>
+<p>我知道你要往 <code>BK + 16</code> 这个地方写脏数据，所以我特意把 <code>BK</code> 设置在一个允许你写脏数据的地方（可写内存），而且我保证我不去执行脏数据那里的代码。</p>
+</blockquote>
+<h4 id="3-攻击复盘：如何实现”任意地址写“？">3.攻击复盘：如何实现”任意地址写“？</h4>
+<p>假设我们想把变量 <code>Global_Var</code> 的值修改为 <code>0xDEADBEEF</code>。</p>
+<p>（1）<strong>溢出</strong>：我们通过溢出，控制了堆块 <code>P</code>。</p>
+<p>（2）<strong>伪造 <code>P-&gt;fd</code></strong>：我们将 <code>P-&gt;fd</code> 设置为 <code>&amp;Global_Var - 24</code>。</p>
+<p>（3）<strong>伪造 <code>P-&gt;bk</code></strong>：我们将 <code>P-&gt;bk</code> 设置为 <code>0xDEADBEEF</code> (把它伪装成一个地址)。</p>
+<p>（4）<strong>触发 Unlink</strong>：当 <code>free(P)</code> 发生时，执行逻辑：</p>
+<ul>
+<li><code>FD = &amp;Global_Var - 24</code></li>
+<li><code>BK = 0xDEADBEEF</code></li>
+<li><code>FD-&gt;bk = BK</code>  -&gt;  <code>*(&amp;Global_Var - 24 + 24) = 0xDEADBEEF</code></li>
+<li><strong>结果</strong>： <code>Global_Var = 0xDEADBEEF</code>。</li>
+</ul>
+<p><strong>攻击成功！</strong></p>
+<h4 id="4-现代防御：Safe-Unlink-glibc-2-23">4. 现代防御：Safe Unlink (glibc 2.23+)</h4>
+<p>glibc后来加上了一个非常简单的效验：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) &#123;</span><br><span class="line">    malloc_printerr(<span class="string">&quot;corrupted double-linked list&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>逻辑是：</strong> 既然 <code>P</code> 说 <code>FD</code> 是它的前驱，那么 <code>FD</code> 的后继（<code>FD-&gt;bk</code>）<strong>必须</strong>指向 <code>P</code>。如果不是，说明有人在撒谎（篡改了指针），程序直接崩溃。</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2026-01-17 17:39:36
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Heap-Overflow/" title="Heap Overflow">
+                        #Heap Overflow
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="Categories"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                        <b>#</b> 二进制安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="toc-text">什么是堆溢出？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%EF%BC%88Chunk%EF%BC%89%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">堆块（Chunk）的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%88%90%E5%9B%A0"><span class="toc-text">堆溢出漏洞的成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E8%A6%86%E7%9B%96%E5%88%B0%E5%8A%AB%E6%8C%81%EF%BC%88Exploitation%EF%BC%89"><span class="toc-text">利用原理：从覆盖到劫持（Exploitation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%B4%E5%9D%8F%E6%95%B0%E6%8D%AE%EF%BC%88Data-Corruption%EF%BC%89"><span class="toc-text">破坏数据（Data Corruption）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81%E6%8E%A7%E5%88%B6%E6%B5%81%EF%BC%88Unlink-Attack%EF%BC%89"><span class="toc-text">劫持控制流（Unlink Attack）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%BA%E6%99%AF%E8%BF%98%E5%8E%9F"><span class="toc-text">1. 场景还原</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E9%80%90%E8%A1%8C%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-text">2. 代码逐行深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE%E7%82%B9%EF%BC%81"><span class="toc-text">漏洞利用存在的矛盾点！</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E8%80%85%E5%A6%82%E4%BD%95%E5%8E%BB%E8%A7%A3%E5%86%B3%E8%BF%99%E4%B8%AA%E7%9F%9B%E7%9B%BE%E7%82%B9%E5%91%A2%EF%BC%9F"><span class="toc-text">攻击者如何去解决这个矛盾点呢？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E2%80%9D%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E2%80%9C%EF%BC%9F"><span class="toc-text">3.攻击复盘：如何实现”任意地址写“？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%8E%B0%E4%BB%A3%E9%98%B2%E5%BE%A1%EF%BC%9ASafe-Unlink-glibc-2-23"><span class="toc-text">4. 现代防御：Safe Unlink (glibc 2.23+)</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+          本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F01%2F17%2F%25E5%25A0%2586%25E6%25BA%25A2%25E5%2587%25BA%25E6%25BC%258F%25E6%25B4%259E%25E5%25AD%25A6%25E4%25B9%25A0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
