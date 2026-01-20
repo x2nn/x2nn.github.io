@@ -48,15 +48,16 @@
     <link href="https://x2nn.github.io/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/"/>
     <id>https://x2nn.github.io/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/</id>
     <published>2026-01-16T18:23:40.000Z</published>
-    <updated>2026-01-17T16:57:27.467Z</updated>
+    <updated>2026-01-20T14:03:53.022Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;h2 id=&quot;什么是堆溢出？&quot;&gt;什么是堆溢出？&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;堆溢出 (Heap Overflow)&lt;/strong&gt;</summary>
+    <summary type="html">&lt;h2 id=&quot;什么是堆（heap）？&quot;&gt;什么是堆（heap）？&lt;/h2&gt;
+&lt;p&gt;从操作系统和虚拟内存管理的视角来看，堆是一个&lt;strong&gt;被动的内存资源&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3</summary>
         
       
     
@@ -440,33 +441,6 @@
   </entry>
   
   <entry>
-    <title>Self-XSS变XSS的方法</title>
-    <link href="https://x2nn.github.io/2025/08/07/Self-XSS%E5%8F%98XSS%E7%9A%84%E6%96%B9%E6%B3%95/"/>
-    <id>https://x2nn.github.io/2025/08/07/Self-XSS%E5%8F%98XSS%E7%9A%84%E6%96%B9%E6%B3%95/</id>
-    <published>2025-08-07T03:06:05.000Z</published>
-    <updated>2025-08-19T08:27:02.082Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2</summary>
-        
-      
-    
-    
-    
-    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
-    
-    
-    <category term="XSS" scheme="https://x2nn.github.io/tags/XSS/"/>
-    
-    <category term="Self-XSS" scheme="https://x2nn.github.io/tags/Self-XSS/"/>
-    
-  </entry>
-  
-  <entry>
     <title>Java反序列化漏洞-CommonsCollections6利用链</title>
     <link href="https://x2nn.github.io/2025/07/27/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections6%E5%88%A9%E7%94%A8%E9%93%BE/"/>
     <id>https://x2nn.github.io/2025/07/27/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-CommonsCollections6%E5%88%A9%E7%94%A8%E9%93%BE/</id>
@@ -582,6 +556,34 @@
     <category term="CodeQL" scheme="https://x2nn.github.io/tags/CodeQL/"/>
     
     <category term="污点分析" scheme="https://x2nn.github.io/tags/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java反射机制详解</title>
+    <link href="https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/"/>
+    <id>https://x2nn.github.io/2025/05/25/Java%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/</id>
+    <published>2025-05-25T12:42:31.000Z</published>
+    <updated>2025-07-01T02:00:24.569Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;反射基础&quot;&gt;反射基础&lt;/h2&gt;
+&lt;p&gt;个人觉得pdai大佬写的非常不错，本文章内容基本都来自原文&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn1&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    
+    
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    
+    <category term="反射机制" scheme="https://x2nn.github.io/tags/%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6/"/>
     
   </entry>
   

@@ -164,7 +164,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-18 00:57:27
+          2026-01-20 22:03:53
         </span>
         
               <span class="post-tags">
@@ -191,7 +191,76 @@
           
       </div>
       <div class="markdown-body">
-        <h2 id="什么是堆溢出？">什么是堆溢出？</h2>
+        <h2 id="什么是堆（heap）？">什么是堆（heap）？</h2>
+<p>从操作系统和虚拟内存管理的视角来看，堆是一个<strong>被动的内存资源</strong>。</p>
+<h3 id="定义与位置">定义与位置</h3>
+<ul>
+<li><strong>物理形态：<strong>进程虚拟地址空间 (Virtual Address Space) 中的一个特定</strong>段 (Segment)</strong>。</li>
+<li><strong>内存布局：</strong> 通常位于 <strong>Data Segment (.bss)</strong> 的末端之后，<strong>Stack Segment</strong> 之前（低地址在前，高地址在后）。</li>
+<li><strong>生长方向：</strong> <strong>向上生长 (Upward Growth)</strong>，即从低地址向高地址扩展。</li>
+</ul>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260120211128506.png" alt="image-20260120211128506"></p>
+<h3 id="边界控制">边界控制</h3>
+<p>堆的大小并非固定，而是由内核维护的边界指针控制：</p>
+<ul>
+<li><strong>Program Break (<code>brk</code>):</strong> 定义了堆段的当前顶部（End of Heap）。</li>
+<li><strong>扩展机制：</strong> 进程通过 <code>brk()</code> 或 <code>sbrk()</code> 系统调用提升 Program Break 的位置，从而向内核申请更多的物理页映射到该虚拟地址范围。</li>
+<li><strong>Mmap 区域：</strong> 对于超大块内存（大于阈值 <code>M_MMAP_THRESHOLD</code>），通常不使用 <code>brk</code> 扩展的主堆，而是使用 <code>mmap()</code> 在堆栈中间的文件映射区分配独立段。</li>
+</ul>
+<h2 id="什么是堆管理器（The-Heap-Manager）">什么是堆管理器（The Heap Manager）?</h2>
+<p>堆管理器是一个<strong>主动的软件算法</strong>，属于用户态运行时库（User-space Runtime Library，如 Linux 下的 <strong>glibc ptmalloc</strong>）的一部分。</p>
+<p>各种堆管理器：</p>
+<ul>
+<li>
+<p>dlmalloc：General purpose allocator</p>
+</li>
+<li>
+<p>ptmalloc2：glibc</p>
+</li>
+<li>
+<p>jemalloc：free BSD and Firefox</p>
+</li>
+<li>
+<p>tcmalloc：Google</p>
+</li>
+<li>
+<p>libumem：Solaris</p>
+</li>
+</ul>
+<h3 id="核心职责">核心职责</h3>
+<p>它是应用程序与操作系统内核之间的<strong>中间层 (Abstraction Layer)</strong>。</p>
+<ul>
+<li><strong>对下 (Kernel):</strong> 通过 <code>brk/mmap</code> 系统调用，以“页 (Page, 4KB)”为单位向内核批发大块内存。</li>
+<li><strong>对上 (Application):</strong> 提供 <code>malloc/free</code> 标准接口，实现“任意字节大小”的精细化分配与回收。</li>
+</ul>
+<h3 id="内部数据结构-以-glibc-为例">内部数据结构 (以 glibc 为例)</h3>
+<p>堆管理器不视内存为连续的字节流，而是将其格式化为特定的数据结构：</p>
+<ul>
+<li><strong>Chunk (堆块):</strong> 内存管理的最小单元。
+<ul>
+<li>包含 <strong>Metadata (元数据)</strong>：<code>size</code>, <code>prev_size</code>, <code>flags (AMP)</code>, <code>fd/bk</code> 指针。</li>
+<li>包含 <strong>User Data (用户数据)</strong>：<code>malloc</code> 返回的实际载荷。</li>
+</ul>
+</li>
+<li><strong>Bins (空闲链表):</strong> 用于索引 Free Chunks 的指针数组（Fastbin, Smallbin, Largebin, Unsorted Bin）。</li>
+<li><strong>Arena (分配区):</strong> 用于多线程并发控制的独立内存池，每个 Arena 维护自己的一套 Bins 和 Top Chunk。</li>
+</ul>
+<h2 id="交互流程">交互流程</h2>
+<p>1、<strong>初始化：</strong> 程序启动，堆管理器初始化数据结构（Arena/Bins）。</p>
+<p>2、<strong>申请 (Malloc):</strong></p>
+<ul>
+<li>用户请求 <code>malloc(size)</code>。</li>
+<li><strong>堆管理器</strong> 检索 Bins 寻找合适的 Free Chunk。</li>
+<li>若无，<strong>堆管理器</strong> 切割 Top Chunk。</li>
+<li>若 Top Chunk 不足，<strong>堆管理器</strong> 调用系统调用 (<code>sbrk</code>) 扩展 <strong>堆</strong> 的边界。</li>
+</ul>
+<p>3、<strong>释放 (Free):</strong></p>
+<ul>
+<li>用户请求 <code>free(ptr)</code>。</li>
+<li><strong>堆管理器</strong> 并不立即将内存归还给操作系统（不缩小 <strong>堆</strong> 的 <code>brk</code>）。</li>
+<li><strong>堆管理器</strong> 将该 Chunk 标记为空闲，合并相邻空闲块，并将其挂入 Bins，留作后用（缓存复用）。</li>
+</ul>
+<h2 id="什么是堆溢出？">什么是堆溢出？</h2>
 <p><strong>堆溢出 (Heap Overflow)</strong> 是指程序向堆内存（Heap）中的缓冲区写入数据时，超出了该缓冲区原本申请的大小，导致数据覆盖了**相邻堆块（Chunk）**的内容。</p>
 <p>与栈溢出（Stack Overflow）不同，堆溢出的破坏力不仅在于覆盖数据，更在于破坏了堆分配器（如 glibc 的 ptmalloc）维护的<strong>管理结构（Metadata）</strong>。</p>
 <blockquote>
@@ -378,7 +447,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-18 00:57:27
+              2026-01-20 22:03:53
             </span>
             
                   <span class="post-tags">
@@ -423,7 +492,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="toc-text">什么是堆溢出？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%EF%BC%88Chunk%EF%BC%89%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">堆块（Chunk）的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%88%90%E5%9B%A0"><span class="toc-text">堆溢出漏洞的成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E8%A6%86%E7%9B%96%E5%88%B0%E5%8A%AB%E6%8C%81%EF%BC%88Exploitation%EF%BC%89"><span class="toc-text">利用原理：从覆盖到劫持（Exploitation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%B4%E5%9D%8F%E6%95%B0%E6%8D%AE%EF%BC%88Data-Corruption%EF%BC%89"><span class="toc-text">破坏数据（Data Corruption）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81%E6%8E%A7%E5%88%B6%E6%B5%81%EF%BC%88Unlink-Attack%EF%BC%89"><span class="toc-text">劫持控制流（Unlink Attack）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%BA%E6%99%AF%E8%BF%98%E5%8E%9F"><span class="toc-text">1. 场景还原</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E9%80%90%E8%A1%8C%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-text">2. 代码逐行深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE%E7%82%B9%EF%BC%81"><span class="toc-text">漏洞利用存在的矛盾点！</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E8%80%85%E5%A6%82%E4%BD%95%E5%8E%BB%E8%A7%A3%E5%86%B3%E8%BF%99%E4%B8%AA%E7%9F%9B%E7%9B%BE%E7%82%B9%E5%91%A2%EF%BC%9F"><span class="toc-text">攻击者如何去解决这个矛盾点呢？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E2%80%9D%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E2%80%9C%EF%BC%9F"><span class="toc-text">3.攻击复盘：如何实现”任意地址写“？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%8E%B0%E4%BB%A3%E9%98%B2%E5%BE%A1%EF%BC%9ASafe-Unlink-glibc-2-23"><span class="toc-text">4. 现代防御：Safe Unlink (glibc 2.23+)</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%EF%BC%88heap%EF%BC%89%EF%BC%9F"><span class="toc-text">什么是堆（heap）？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E4%B8%8E%E4%BD%8D%E7%BD%AE"><span class="toc-text">定义与位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%8E%A7%E5%88%B6"><span class="toc-text">边界控制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%88The-Heap-Manager%EF%BC%89"><span class="toc-text">什么是堆管理器（The Heap Manager）?</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%81%8C%E8%B4%A3"><span class="toc-text">核心职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%BB%A5-glibc-%E4%B8%BA%E4%BE%8B"><span class="toc-text">内部数据结构 (以 glibc 为例)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"><span class="toc-text">交互流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="toc-text">什么是堆溢出？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%EF%BC%88Chunk%EF%BC%89%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">堆块（Chunk）的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%88%90%E5%9B%A0"><span class="toc-text">堆溢出漏洞的成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E8%A6%86%E7%9B%96%E5%88%B0%E5%8A%AB%E6%8C%81%EF%BC%88Exploitation%EF%BC%89"><span class="toc-text">利用原理：从覆盖到劫持（Exploitation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%B4%E5%9D%8F%E6%95%B0%E6%8D%AE%EF%BC%88Data-Corruption%EF%BC%89"><span class="toc-text">破坏数据（Data Corruption）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81%E6%8E%A7%E5%88%B6%E6%B5%81%EF%BC%88Unlink-Attack%EF%BC%89"><span class="toc-text">劫持控制流（Unlink Attack）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%BA%E6%99%AF%E8%BF%98%E5%8E%9F"><span class="toc-text">1. 场景还原</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E9%80%90%E8%A1%8C%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-text">2. 代码逐行深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE%E7%82%B9%EF%BC%81"><span class="toc-text">漏洞利用存在的矛盾点！</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E8%80%85%E5%A6%82%E4%BD%95%E5%8E%BB%E8%A7%A3%E5%86%B3%E8%BF%99%E4%B8%AA%E7%9F%9B%E7%9B%BE%E7%82%B9%E5%91%A2%EF%BC%9F"><span class="toc-text">攻击者如何去解决这个矛盾点呢？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E2%80%9D%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E2%80%9C%EF%BC%9F"><span class="toc-text">3.攻击复盘：如何实现”任意地址写“？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%8E%B0%E4%BB%A3%E9%98%B2%E5%BE%A1%EF%BC%9ASafe-Unlink-glibc-2-23"><span class="toc-text">4. 现代防御：Safe Unlink (glibc 2.23+)</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
