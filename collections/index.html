@@ -13,8 +13,8 @@
   
   <title>
     
-      Tag 
-       : 黄金票据
+      collections 
+      
       
       |
     
@@ -119,40 +119,189 @@
 
 
       <div class="flex-container">
-        <!-- 标签详情页，展示某个标签下的文章列表，url形式：https://yoursite/tags/某个标签/ -->
+        <!-- 收藏页 url形式：https://yoursite/collections/ -->
+<div class="container collections-index">
+  <div class="collections-list">
+    
 
-<div class="container tag-details">
-  <div class="content-title">
-    <h2>
-      <span>黄金票据</span>
-    </h2>
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <input type="text" class="search-input" id="collectionSearch" placeholder="搜索标题、标签或简介..." />
+      <button type="button" class="search-btn" onclick="clearSearch()">
+        <i class="iconfont icon-search"></i> 清除搜索
+      </button>
+    </div>
+
+    
+      <table class="collections-table" id="collectionsTable">
+        <thead>
+          <tr>
+            <th>标题</th>
+            <th>链接</th>
+            <th>标签</th>
+            <th>简介</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr class="collection-row" data-index="0">
+              <td>
+                <a href="https://blog.slonser.info/posts/make-self-xss-great-again/" target="_blank" rel="noopener noreferrer" title="Make Self-XSS Great Again">
+                  Make Self-XSS Great Again
+                </a>
+              </td>
+              <td>
+                <a href="https://blog.slonser.info/posts/make-self-xss-great-again/" target="_blank" rel="noopener noreferrer" title="https://blog.slonser.info/posts/make-self-xss-great-again/">
+                  https://blog.slonser.info/posts/make-sel...
+                </a>
+              </td>
+              <td>
+                
+                  
+                    <span class="collection-tag">xss</span>
+                  
+                
+              </td>
+              <td>
+                
+                  self-xss的利用
+                
+              </td>
+            </tr>
+          
+        </tbody>
+      </table>
+
+      <!-- 分页导航 -->
+      
+
+    
   </div>
-  
-    <div class="post-list">
-      <div class="post-item" title="NTLM协议和Kerberos协议">
-        <span class="time-m-d">2025-11-06</span>
-        <a href="/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/">
-          <span>NTLM协议和Kerberos协议</span>
-        </a>
-      </div>
-    </div>
-  
-    <div class="post-list">
-      <div class="post-item" title="暗月项目六内网域渗透笔记">
-        <span class="time-m-d">2025-05-11</span>
-        <a href="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/">
-          <span>暗月项目六内网域渗透笔记</span>
-        </a>
-      </div>
-    </div>
-  
-  <nav class="post-navigation">
+  <div class="markdown-body">
     
-    <span class="page-num">1 / 1</span>
-    
-  </nav>
-</div>
+  </div>
 
+  <!-- 搜索功能脚本 -->
+  <script>
+    function initCollectionSearch() {
+      const searchInput = document.getElementById('collectionSearch');
+      const table = document.getElementById('collectionsTable');
+      const rows = table ? table.querySelectorAll('tbody tr') : [];
+
+      if (!searchInput || !table) return;
+
+      // 移除高亮样式
+      function removeHighlights() {
+        const highlights = table.querySelectorAll('.search-highlight');
+        highlights.forEach(highlight => {
+          highlight.outerHTML = highlight.innerHTML;
+        });
+      }
+
+      // 添加高亮样式
+      function highlightText(element, searchTerm) {
+        if (!searchTerm.trim()) return;
+
+        const walker = document.createTreeWalker(
+          element,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+          textNodes.push(node);
+        }
+
+        textNodes.forEach(textNode => {
+          const text = textNode.textContent;
+          const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+          if (regex.test(text)) {
+            const span = document.createElement('span');
+            span.innerHTML = text.replace(regex, '<mark class="search-highlight">$1</mark>');
+            textNode.parentNode.replaceChild(span, textNode);
+          }
+        });
+      }
+
+      function filterRows(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        let visibleCount = 0;
+
+        // 先移除所有高亮
+        removeHighlights();
+
+        rows.forEach(row => {
+          const titleCell = row.cells[0];
+          const urlCell = row.cells[1];
+          const tagsCell = row.cells[2];
+          const descriptionCell = row.cells[3];
+
+          const title = titleCell.textContent.toLowerCase();
+          const url = urlCell.textContent.toLowerCase();
+          const tags = tagsCell.textContent.toLowerCase();
+          const description = descriptionCell.textContent.toLowerCase();
+
+          const isVisible = !term ||
+            title.includes(term) ||
+            url.includes(term) ||
+            tags.includes(term) ||
+            description.includes(term);
+
+          row.style.display = isVisible ? '' : 'none';
+
+          if (isVisible && term) {
+            // 为可见行添加高亮
+            highlightText(titleCell, searchTerm);
+            highlightText(urlCell, searchTerm);
+            highlightText(tagsCell, searchTerm);
+            highlightText(descriptionCell, searchTerm);
+            visibleCount++;
+          } else if (isVisible) {
+            visibleCount++;
+          }
+        });
+
+        // 显示无结果提示
+        const noResults = document.querySelector('.no-results');
+        if (noResults) {
+          noResults.style.display = visibleCount === 0 && term ? 'block' : 'none';
+          if (visibleCount === 0 && term) {
+            noResults.innerHTML = `
+              <i class="iconfont icon-search"></i>
+              <p>未找到包含 "${searchTerm}" 的收藏</p>
+            `;
+          }
+        }
+      }
+
+      // 实时搜索
+      searchInput.addEventListener('input', function() {
+        filterRows(this.value);
+      });
+
+      // 回车搜索
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          filterRows(this.value);
+        }
+      });
+    }
+
+    function clearSearch() {
+      const searchInput = document.getElementById('collectionSearch');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+      }
+    }
+
+    // 页面加载完成后初始化搜索功能
+    document.addEventListener('DOMContentLoaded', initCollectionSearch);
+  </script>
+</div>
         
 <div class="footer">
   <div class="social">
@@ -414,6 +563,24 @@
 
 
         
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + collections + '&url=' + https%3A%2F%2Fx2nn.github.io%2Fcollections%2Findex.html + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/collections/index.html" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
   
   
 <script src="/js/shares.js"></script>
