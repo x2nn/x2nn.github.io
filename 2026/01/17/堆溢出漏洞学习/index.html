@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-21 23:39:35
+          2026-01-22 10:03:36
         </span>
         
               <span class="post-tags">
@@ -458,6 +458,7 @@
 <h4 id="内存结构图解">内存结构图解</h4>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 High Address ]</span><br><span class="line">         ^</span><br><span class="line">         |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              (Current Chunk&#x27;s User Data)              |</span><br><span class="line">|        |            用户正在读写的实际数据区域 (Payload)           |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+ &lt;--- 边界</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        | [!] 特殊机制：如果物理相邻的**前一个块**是 Allocated 状态，  |</span><br><span class="line">|        | 该区域实际上属于**前一个块的用户数据**的一部分。              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |   Chunk 总大小 (含Header)  |  A  |  M  |  P (Flags)    |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x10  |              User Data (Buffer Start)                 | &lt;--- malloc 返回的地址</span><br><span class="line">|        | ----------------------------------------------------- |</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              用户实际写入的数据区域                       |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">         |</span><br><span class="line">         v</span><br><span class="line">    [ 内存低地址 Low Address ]</span><br></pre></td></tr></table></figure>
 <h4 id="字段解释">字段解释</h4>
+<p>“含Header“，是说size的大小，包括用户申请的内存+Header头（8字节size和8字节prev_size），这才是真正的size的大小。</p>
 <ul>
 <li>
 <p><strong>Offset 0x00 (<code>prev_size</code>):</strong> 仅当前一个块是 Free 状态时，这里才记录前一个块的大小。否则，这里存的是前一个块的数据。</p>
@@ -515,6 +516,26 @@
 </table>
 <h3 id="Allocated与Free的视图切换">Allocated与Free的视图切换</h3>
 <p>对于同一个内存地址 <code>0x55555555a010</code> (即 Header 之后的第一个字)：</p>
+<ol>
+<li>当 Chunk <strong>Allocated</strong> 时：
+<ul>
+<li>这里是 <code>User Data</code> (buf[0]…buf[7])。</li>
+<li><strong>权限：</strong> 用户可读写。</li>
+</ul>
+</li>
+<li>当 Chunk <strong>Free</strong> (Small Bin) 时：
+<ul>
+<li>这里是 <code>fd</code> 指针。</li>
+<li><strong>权限：</strong> 堆管理器读写，用户（理论上）不可访问。</li>
+</ul>
+</li>
+<li>当 Chunk <strong>Free</strong> (Large Bin) 时：
+<ul>
+<li>这里是 <code>fd</code> 指针，且 <code>+0x10</code> 处变成了 <code>fd_nextsize</code>。</li>
+</ul>
+</li>
+</ol>
+<p>同一块内存在不同生命周期扮演不同角色。</p>
 
       </div>
       
@@ -530,7 +551,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-21 23:39:35
+              2026-01-22 10:03:36
             </span>
             
                   <span class="post-tags">
