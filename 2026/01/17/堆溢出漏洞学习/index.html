@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-22 10:03:36
+          2026-01-25 00:18:20
         </span>
         
               <span class="post-tags">
@@ -241,7 +241,7 @@
 <h3 id="核心职责">核心职责</h3>
 <p>它是应用程序与操作系统内核之间的<strong>中间层 (Abstraction Layer)</strong>。</p>
 <ul>
-<li><strong>对下 (Kernel):</strong> 通过 <code>brk/mmap</code> 系统调用，以“页 (Page, 4KB)”为单位向内核批发大块内存。</li>
+<li><strong>对下 (Kernel):</strong> 通过 <code>brk/mmap</code> 系统调用，以“页 <strong>(Page, 4KB</strong>)”为单位向内核批发大块内存。</li>
 <li><strong>对上 (Application):</strong> 提供 <code>malloc/free</code> 标准接口，实现“任意字节大小”的精细化分配与回收。</li>
 </ul>
 <h3 id="内部数据结构-以-glibc-为例">内部数据结构 (以 glibc 为例)</h3>
@@ -253,7 +253,7 @@
 <li>包含 <strong>User Data (用户数据)</strong>：<code>malloc</code> 返回的实际载荷。</li>
 </ul>
 </li>
-<li><strong>Bins (空闲链表):</strong> 用于索引 Free Chunks 的指针数组（Fastbin, Smallbin, Largebin, Unsorted Bin）。</li>
+<li><strong>Bins (空闲链表):</strong> 用于索引 Free Chunks 的<strong>指针数组</strong>（Fastbin, Smallbin, Largebin, Unsorted Bin）。</li>
 <li><strong>Arena (分配区):</strong> 用于多线程并发控制的独立内存池，每个 Arena 维护自己的一套 Bins 和 Top Chunk。</li>
 </ul>
 <h2 id="交互流程">交互流程</h2>
@@ -271,6 +271,122 @@
 <li><strong>堆管理器</strong> 并不立即将内存归还给操作系统（不缩小 <strong>堆</strong> 的 <code>brk</code>）。</li>
 <li><strong>堆管理器</strong> 将该 Chunk 标记为空闲，合并相邻空闲块，并将其挂入 Bins，留作后用（缓存复用）。</li>
 </ul>
+<h2 id="Allocated-Chunk和Free-Chunk">Allocated Chunk和Free Chunk</h2>
+<p>在 Glibc 的内存分配器（ptmalloc）中，内存并非是一块平坦的画布，而是由无数个被称为 <strong>Chunk (堆块)</strong> 的微小单元拼接而成的。</p>
+<p>理解 Chunk 结构的核心挑战在于：<strong>复用 (Reuse)</strong>。为了节省内存，同一个内存偏移位置，在“使用中”和“空闲中”代表着完全不同的含义。</p>
+<h3 id="Allocated-Chunk（已分配堆块）">Allocated Chunk（已分配堆块）</h3>
+<p>当用户调用 <code>malloc</code> 拿到一个指针时，他在内存中实际拥有的是一个 Allocated Chunk。</p>
+<h4 id="设计思想">设计思想</h4>
+<ul>
+<li>用户视角：只关心存储数据的区域。</li>
+<li>管理器视角：只需要知道这个块多大（Size），以及前一个块是否在使用（以便决定未来释放时是否合并）。</li>
+<li>空间优化：如果<strong>前一个块</strong>也在使用中，当前块的 <code>prev_size</code> 空间是闲置的。<strong>ptmalloc 允许前一个块借用这 8 字节来存它的用户数据。</strong></li>
+</ul>
+<h4 id="内存结构图解">内存结构图解</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[ 内存低地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              (Current Chunk&#x27;s User Data)              |</span><br><span class="line">|        |            用户正在读写的实际数据区域 (Payload)           |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+ &lt;--- 边界</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        | [!] 特殊机制：如果物理相邻的**前一个块**是 Allocated 状态，  |</span><br><span class="line">|        | 该区域实际上属于**前一个块的用户数据**的一部分。              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |   Chunk 总大小 (含Header)  |  A  |  M  |  P (Flags)    |</span><br><span class="line">+--------+-------------------------------------------------------+&lt;--- malloc 返回的地址</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x10  |              User Data (Buffer Start)                 |</span><br><span class="line">|        | ----------------------------------------------------- |</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              用户实际写入的数据区域                       |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存高地址 ]</span><br></pre></td></tr></table></figure>
+<h4 id="字段解释">字段解释</h4>
+<p>“含Header“，是说size的大小，包括用户申请的内存+Header头（8字节size和8字节prev_size），这才是真正的size的大小。</p>
+<ul>
+<li>
+<p><strong>Offset 0x00 (<code>prev_size</code>):</strong> 仅当前一个块是 Free 状态时，这里才记录前一个块的大小。否则，这里存的是前一个块的数据。</p>
+</li>
+<li>
+<p><strong>Offset 0x08 (<code>size</code>):</strong> 当前块的大小。低 3 位被留作标志位。</p>
+</li>
+<li>
+<p><strong>Offset 0x10 (<code>User Data</code>):</strong> 用户指针指向这里。</p>
+</li>
+</ul>
+<h3 id="Free-Chunk（空闲堆块）">Free Chunk（空闲堆块）</h3>
+<p>当 chunk 被释放 (<code>free</code>) 后，它失去了存储用户数据的义务。原本用于存数据的地方，现在被堆管理器征用，用来存储<strong>链表指针</strong>，以便将这个空闲块串起来。</p>
+<p>根据所属 Bin（垃圾回收桶）的不同，Free Chunk 的结构有明显的变体。</p>
+<h4 id="标准Free-Chunk（Small-Unsorted-Bin）">标准Free Chunk（Small / Unsorted Bin）</h4>
+<p>这是最标准的空闲块结构，使用双向链表维护。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |           Unused / Padding (未使用/填充数据)            |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             bk (Backward Pointer) (8 bytes)           |</span><br><span class="line">| +0x18  | ----------------------------------------------------- |</span><br><span class="line">|        |           指向链表中的**下一个**空闲块 (Next Free)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             fd (Forward Pointer) (8 bytes)            |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |           指向链表中的**上一个**空闲块 (Prev Free)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |       Chunk 总大小       |  0  |  0  |  1 (P=1)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        |       如果再前一个块也是 Free，这里记录其大小 (用于合并)     |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
+<h4 id="Fastbin-Tcache-Chunk-小块特例">Fastbin / Tcache Chunk (小块特例)</h4>
+<p>为了极致的性能，Fastbin 和 Tcache 采用<strong>单向链表</strong>。它们不需要 <code>bk</code> 指针。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x18  |           (Unused / Old Data / Key in Tcache)         |</span><br><span class="line">|        |      Fastbin这里未使用；Tcache这里存放 Key (防Double Free)|</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               fd / next (8 bytes)                     |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |            单向指向链表中的下一个空闲块                    |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               size (8 bytes)                          |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |          Chunk 总大小    |  A  |  M  |  P              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               prev_size (8 bytes)                     |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        |                  (同标准定义)                           |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
+<h4 id="Large-Bin-Chunk（大块堆）">Large Bin Chunk（大块堆）</h4>
+<p>Large Bin 存储较大的块，且同一 Bin 内的块大小不一。为了提高检索效率（Best-fit 算法），除了标准的 <code>fd/bk</code> 双向链表外，还额外增加了 <code>fd_nextsize/bk_nextsize</code> 指针，形成第二层跳表。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             bk_nextsize (8 bytes)                     |</span><br><span class="line">| +0x28  | ----------------------------------------------------- |</span><br><span class="line">|        |        指向前一个**大小不同**的空闲块 (Skip List)          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             fd_nextsize (8 bytes)                     |</span><br><span class="line">| +0x20  | ----------------------------------------------------- |</span><br><span class="line">|        |        指向下一个**大小不同**的空闲块 (Skip List)          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                bk (8 bytes)                           |</span><br><span class="line">| +0x18  | ----------------------------------------------------- |</span><br><span class="line">|        |            标准双向链表指针 (同 Small Bin)               |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                fd (8 bytes)                           |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |            标准双向链表指针 (同 Small Bin)               |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| +0x08  |                size (Header)                          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| +0x00  |              prev_size (Header)                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
+<h3 id="核心标志位（Flag）详解">核心标志位（Flag）详解</h3>
+<p>在所有 Chunk 的 <code>size</code> 字段（Offset +0x08）中，由于对齐原因，<strong>最低的 3 个比特位 (Bits 0-2)</strong> 永远不会被用到大小计算中。glibc 利用它们存储当前 Chunk 的属性。</p>
+<table>
+<thead>
+<tr>
+<th><strong>掩码 (Mask)</strong></th>
+<th><strong>标志 (Flag)</strong></th>
+<th><strong>全称</strong></th>
+<th><strong>详细状态定义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0x1（001）</strong></td>
+<td><strong>P</strong></td>
+<td><strong>PREV_INUSE</strong></td>
+<td><strong>最重要的标志位。</strong><br>● <strong>1 (Set):</strong> 表示物理相邻的<strong>前一个 Chunk</strong> 正在使用中 (Allocated)。此时当前块的 <code>prev_size</code> 字段无效（可能存着前一个块的数据）。<br> ● <strong>0 (Cleared):</strong> 表示物理相邻的<strong>前一个 Chunk</strong> 是空闲的 (Free)。此时 <code>prev_size</code> 记录前块大小，Heap Manager 会利用它找到前块头部并进行合并。</td>
+</tr>
+<tr>
+<td><strong>0x2（010）</strong></td>
+<td><strong>M</strong></td>
+<td><strong>IS_MMAPPED</strong></td>
+<td>● <strong>1 (Set):</strong> 当前 Chunk 是通过 <code>mmap()</code> 系统调用直接分配的独立内存映射，不属于 Main Heap。 <br>● <strong>0 (Cleared):</strong> 当前 Chunk 属于常规 Heap (通过 <code>brk</code> 扩展)。</td>
+</tr>
+<tr>
+<td><strong>0x4（100）</strong></td>
+<td><strong>A</strong></td>
+<td><strong>NON_MAIN_ARENA</strong></td>
+<td>● <strong>1 (Set):</strong> 当前 Chunk 属于子线程的分配区 (Thread Arena)。 <br>● <strong>0 (Cleared):</strong> 当前 Chunk 属于主分配区 (Main Arena)。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="Allocated与Free的视图切换">Allocated与Free的视图切换</h3>
+<p>对于同一个内存地址 <code>0x55555555a010</code> (即 Header 之后的第一个字)：</p>
+<ol>
+<li>当 Chunk <strong>Allocated</strong> 时：
+<ul>
+<li>这里是 <code>User Data</code> (buf[0]…buf[7])。</li>
+<li><strong>权限：</strong> 用户可读写。</li>
+</ul>
+</li>
+<li>当 Chunk <strong>Free</strong> (Small Bin) 时：
+<ul>
+<li>这里是 <code>fd</code> 指针。</li>
+<li><strong>权限：</strong> 堆管理器读写，用户（理论上）不可访问。</li>
+</ul>
+</li>
+<li>当 Chunk <strong>Free</strong> (Large Bin) 时：
+<ul>
+<li>这里是 <code>fd</code> 指针，且 <code>+0x10</code> 处变成了 <code>fd_nextsize</code>。</li>
+</ul>
+</li>
+</ol>
+<p>同一块内存在不同生命周期扮演不同角色。</p>
+<h2 id="GDB调试查看">GDB调试查看</h2>
+<p>以最简单的c语言程序展示堆：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">	<span class="type">void</span>* ptr = <span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line">	<span class="built_in">free</span>(ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译后，使用gdb调试查看。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223743709.png" alt="image-20260124223743709"></p>
+<p>在未进行执行malloc()的时候查看进程的虚拟内存。此时，发现还没有heap数据。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223759215.png" alt="image-20260124223759215"></p>
+<p>执行malloc()后。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223923543.png" alt="image-20260124223923543"></p>
+<p>发现存在了heap数据，heap位置占据的大小为0x21000。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223845529.png" alt="image-20260124223845529">此时查看heap。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124224218402.png" alt="image-20260124224218402"></p>
+<p>发现了有一个allocated chunk，带上flag大小为0x111。</p>
+<p>**为什么是0x111？**回想前面C语言代码，malloc(0x100)，用户申请了0x100大小的内存。又因为size的大小是包括prev_size和size的，这两个分别是8字节（64位），0x10字节。又因为size后三位是flag位，为001，0x1。</p>
+<p>所以size的大小就是0x111。</p>
+<p>继续，上图还能看到chunk的起始地址Addr: 0x5b269ce99290</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124230108370.png" alt="image-20260124230108370"></p>
+<p>调试看到ptr变量指向的地址为0x5b269ce992a0，刚好差了0x10！！，16字节，这是为什么？</p>
+<p>prev_size + size = 0x10字节</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124230736788.png" alt="image-20260124230736788"></p>
+<p>继续执行，过free()函数。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260125000353974.png" alt="image-20260125000353974"></p>
+<p>发现chunk被放到了tcachebins中。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260125000519309.png" alt="image-20260125000519309"></p>
 <h2 id="什么是堆溢出？">什么是堆溢出？</h2>
 <p><strong>堆溢出 (Heap Overflow)</strong> 是指程序向堆内存（Heap）中的缓冲区写入数据时，超出了该缓冲区原本申请的大小，导致数据覆盖了**相邻堆块（Chunk）**的内容。</p>
 <p>与栈溢出（Stack Overflow）不同，堆溢出的破坏力不仅在于覆盖数据，更在于破坏了堆分配器（如 glibc 的 ptmalloc）维护的<strong>管理结构（Metadata）</strong>。</p>
@@ -280,7 +396,7 @@
 <h2 id="堆块（Chunk）的结构">堆块（Chunk）的结构</h2>
 <p>在 Linux (glibc) 环境下，堆内存是以 <strong>Chunk</strong> 为单位进行管理的。理解 Chunk 的结构是利用漏洞的前提。</p>
 <p>一个 allocated（已分配）或 free（空闲）的 chunk 在内存中的布局大致如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line">  <span class="comment">/* Request size + metadata overhead */</span></span><br><span class="line">  INTERNAL_SIZE_T      prev_size;  <span class="comment">/* 前一个空闲块的大小 (如果前一个块是free的) */</span></span><br><span class="line">  INTERNAL_SIZE_T      size;       <span class="comment">/* 当前块的大小 (低3位作为标志位: AMP) */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* User data starts here (malloc返回的指针) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>         <span class="comment">/* Forward pointer (仅限空闲块) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span>         <span class="comment">/* Backward pointer (仅限空闲块) */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line">  <span class="comment">/* Request size + metadata overhead */</span></span><br><span class="line">  INTERNAL_SIZE_T      prev_size;  <span class="comment">/* 前一个空闲块(必须是free chunk)的大小 (如果前一个块是free的) */</span></span><br><span class="line">  INTERNAL_SIZE_T      size;       <span class="comment">/* 当前块的大小 (低3位作为标志位: AMP) */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* User data starts here (malloc返回的指针) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>         <span class="comment">/* Forward pointer (仅限空闲块) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span>         <span class="comment">/* Backward pointer (仅限空闲块) */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>
 <p><strong><code>prev_size</code></strong>: 如果物理相邻的前一个 chunk 是空闲的，这里记录它的大小（用于合并）。</p>
@@ -443,99 +559,6 @@
 <p>glibc后来加上了一个非常简单的效验：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) &#123;</span><br><span class="line">    malloc_printerr(<span class="string">&quot;corrupted double-linked list&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>逻辑是：</strong> 既然 <code>P</code> 说 <code>FD</code> 是它的前驱，那么 <code>FD</code> 的后继（<code>FD-&gt;bk</code>）<strong>必须</strong>指向 <code>P</code>。如果不是，说明有人在撒谎（篡改了指针），程序直接崩溃。</p>
-<h2 id="Allocated-Chunk和Free-Chunk">Allocated Chunk和Free Chunk</h2>
-<p>前面的堆溢出漏洞，只是介绍了一下相关的原理，并没有具体实际去利用。实际的堆溢出漏洞，还要去详细的了解Chunk的结构，才能实际去利用漏洞。</p>
-<p>在 Glibc 的内存分配器（ptmalloc）中，内存并非是一块平坦的画布，而是由无数个被称为 <strong>Chunk (堆块)</strong> 的微小单元拼接而成的。</p>
-<p>理解 Chunk 结构的核心挑战在于：<strong>复用 (Reuse)</strong>。为了节省内存，同一个内存偏移位置，在“使用中”和“空闲中”代表着完全不同的含义。</p>
-<h3 id="Allocated-Chunk（已分配堆块）">Allocated Chunk（已分配堆块）</h3>
-<p>当用户调用 <code>malloc</code> 拿到一个指针时，他在内存中实际拥有的是一个 Allocated Chunk。</p>
-<h4 id="设计思想">设计思想</h4>
-<ul>
-<li>用户视角：只关心存储数据的区域。</li>
-<li>管理器视角：只需要知道这个块多大（Size），以及前一个块是否在使用（以便决定未来释放时是否合并）。</li>
-<li>空间优化：如果<strong>前一个块</strong>也在使用中，当前块的 <code>prev_size</code> 空间是闲置的。ptmalloc 允许前一个块借用这 8 字节来存它的用户数据。</li>
-</ul>
-<h4 id="内存结构图解">内存结构图解</h4>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 High Address ]</span><br><span class="line">         ^</span><br><span class="line">         |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              (Current Chunk&#x27;s User Data)              |</span><br><span class="line">|        |            用户正在读写的实际数据区域 (Payload)           |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+ &lt;--- 边界</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        | [!] 特殊机制：如果物理相邻的**前一个块**是 Allocated 状态，  |</span><br><span class="line">|        | 该区域实际上属于**前一个块的用户数据**的一部分。              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |   Chunk 总大小 (含Header)  |  A  |  M  |  P (Flags)    |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x10  |              User Data (Buffer Start)                 | &lt;--- malloc 返回的地址</span><br><span class="line">|        | ----------------------------------------------------- |</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              用户实际写入的数据区域                       |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">         |</span><br><span class="line">         v</span><br><span class="line">    [ 内存低地址 Low Address ]</span><br></pre></td></tr></table></figure>
-<h4 id="字段解释">字段解释</h4>
-<p>“含Header“，是说size的大小，包括用户申请的内存+Header头（8字节size和8字节prev_size），这才是真正的size的大小。</p>
-<ul>
-<li>
-<p><strong>Offset 0x00 (<code>prev_size</code>):</strong> 仅当前一个块是 Free 状态时，这里才记录前一个块的大小。否则，这里存的是前一个块的数据。</p>
-</li>
-<li>
-<p><strong>Offset 0x08 (<code>size</code>):</strong> 当前块的大小。低 3 位被留作标志位。</p>
-</li>
-<li>
-<p><strong>Offset 0x10 (<code>User Data</code>):</strong> 用户指针指向这里。</p>
-</li>
-</ul>
-<h3 id="Free-Chunk（空闲堆块）">Free Chunk（空闲堆块）</h3>
-<p>当 chunk 被释放 (<code>free</code>) 后，它失去了存储用户数据的义务。原本用于存数据的地方，现在被堆管理器征用，用来存储<strong>链表指针</strong>，以便将这个空闲块串起来。</p>
-<p>根据所属 Bin（垃圾回收桶）的不同，Free Chunk 的结构有明显的变体。</p>
-<h4 id="标准Free-Chunk（Small-Unsorted-Bin）">标准Free Chunk（Small / Unsorted Bin）</h4>
-<p>这是最标准的空闲块结构，使用双向链表维护。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |           Unused / Padding (未使用/填充数据)            |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             bk (Backward Pointer) (8 bytes)           |</span><br><span class="line">| +0x18  | ----------------------------------------------------- |</span><br><span class="line">|        |           指向链表中的**下一个**空闲块 (Next Free)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             fd (Forward Pointer) (8 bytes)            |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |           指向链表中的**上一个**空闲块 (Prev Free)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |       Chunk 总大小       |  0  |  0  |  1 (P=1)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        |       如果再前一个块也是 Free，这里记录其大小 (用于合并)     |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
-<h4 id="Fastbin-Tcache-Chunk-小块特例">Fastbin / Tcache Chunk (小块特例)</h4>
-<p>为了极致的性能，Fastbin 和 Tcache 采用<strong>单向链表</strong>。它们不需要 <code>bk</code> 指针。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x18  |           (Unused / Old Data / Key in Tcache)         |</span><br><span class="line">|        |      Fastbin这里未使用；Tcache这里存放 Key (防Double Free)|</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               fd / next (8 bytes)                     |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |            单向指向链表中的下一个空闲块                    |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               size (8 bytes)                          |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |          Chunk 总大小    |  A  |  M  |  P              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               prev_size (8 bytes)                     |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        |                  (同标准定义)                           |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
-<h4 id="Large-Bin-Chunk（大块堆）">Large Bin Chunk（大块堆）</h4>
-<p>Large Bin 存储较大的块，且同一 Bin 内的块大小不一。为了提高检索效率（Best-fit 算法），除了标准的 <code>fd/bk</code> 双向链表外，还额外增加了 <code>fd_nextsize/bk_nextsize</code> 指针，形成第二层跳表。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             bk_nextsize (8 bytes)                     |</span><br><span class="line">| +0x28  | ----------------------------------------------------- |</span><br><span class="line">|        |        指向前一个**大小不同**的空闲块 (Skip List)          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             fd_nextsize (8 bytes)                     |</span><br><span class="line">| +0x20  | ----------------------------------------------------- |</span><br><span class="line">|        |        指向下一个**大小不同**的空闲块 (Skip List)          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                bk (8 bytes)                           |</span><br><span class="line">| +0x18  | ----------------------------------------------------- |</span><br><span class="line">|        |            标准双向链表指针 (同 Small Bin)               |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                fd (8 bytes)                           |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |            标准双向链表指针 (同 Small Bin)               |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| +0x08  |                size (Header)                          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| +0x00  |              prev_size (Header)                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
-<h3 id="核心标志位（Flag）详解">核心标志位（Flag）详解</h3>
-<p>在所有 Chunk 的 <code>size</code> 字段（Offset +0x08）中，由于对齐原因，<strong>最低的 3 个比特位 (Bits 0-2)</strong> 永远不会被用到大小计算中。glibc 利用它们存储当前 Chunk 的属性。</p>
-<table>
-<thead>
-<tr>
-<th><strong>掩码 (Mask)</strong></th>
-<th><strong>标志 (Flag)</strong></th>
-<th><strong>全称</strong></th>
-<th><strong>详细状态定义</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>0x1（001）</strong></td>
-<td><strong>P</strong></td>
-<td><strong>PREV_INUSE</strong></td>
-<td><strong>最重要的标志位。</strong><br>● <strong>1 (Set):</strong> 表示物理相邻的<strong>前一个 Chunk</strong> 正在使用中 (Allocated)。此时当前块的 <code>prev_size</code> 字段无效（可能存着前一个块的数据）。<br> ● <strong>0 (Cleared):</strong> 表示物理相邻的<strong>前一个 Chunk</strong> 是空闲的 (Free)。此时 <code>prev_size</code> 记录前块大小，Heap Manager 会利用它找到前块头部并进行合并。</td>
-</tr>
-<tr>
-<td><strong>0x2（010）</strong></td>
-<td><strong>M</strong></td>
-<td><strong>IS_MMAPPED</strong></td>
-<td>● <strong>1 (Set):</strong> 当前 Chunk 是通过 <code>mmap()</code> 系统调用直接分配的独立内存映射，不属于 Main Heap。 <br>● <strong>0 (Cleared):</strong> 当前 Chunk 属于常规 Heap (通过 <code>brk</code> 扩展)。</td>
-</tr>
-<tr>
-<td><strong>0x4（100）</strong></td>
-<td><strong>A</strong></td>
-<td><strong>NON_MAIN_ARENA</strong></td>
-<td>● <strong>1 (Set):</strong> 当前 Chunk 属于子线程的分配区 (Thread Arena)。 <br>● <strong>0 (Cleared):</strong> 当前 Chunk 属于主分配区 (Main Arena)。</td>
-</tr>
-</tbody>
-</table>
-<h3 id="Allocated与Free的视图切换">Allocated与Free的视图切换</h3>
-<p>对于同一个内存地址 <code>0x55555555a010</code> (即 Header 之后的第一个字)：</p>
-<ol>
-<li>当 Chunk <strong>Allocated</strong> 时：
-<ul>
-<li>这里是 <code>User Data</code> (buf[0]…buf[7])。</li>
-<li><strong>权限：</strong> 用户可读写。</li>
-</ul>
-</li>
-<li>当 Chunk <strong>Free</strong> (Small Bin) 时：
-<ul>
-<li>这里是 <code>fd</code> 指针。</li>
-<li><strong>权限：</strong> 堆管理器读写，用户（理论上）不可访问。</li>
-</ul>
-</li>
-<li>当 Chunk <strong>Free</strong> (Large Bin) 时：
-<ul>
-<li>这里是 <code>fd</code> 指针，且 <code>+0x10</code> 处变成了 <code>fd_nextsize</code>。</li>
-</ul>
-</li>
-</ol>
-<p>同一块内存在不同生命周期扮演不同角色。</p>
 
       </div>
       
@@ -551,7 +574,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-22 10:03:36
+              2026-01-25 00:18:20
             </span>
             
                   <span class="post-tags">
@@ -602,7 +625,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%EF%BC%88heap%EF%BC%89%EF%BC%9F"><span class="toc-text">什么是堆（heap）？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E4%B8%8E%E4%BD%8D%E7%BD%AE"><span class="toc-text">定义与位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%8E%A7%E5%88%B6"><span class="toc-text">边界控制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%88The-Heap-Manager%EF%BC%89"><span class="toc-text">什么是堆管理器（The Heap Manager）?</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%81%8C%E8%B4%A3"><span class="toc-text">核心职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%BB%A5-glibc-%E4%B8%BA%E4%BE%8B"><span class="toc-text">内部数据结构 (以 glibc 为例)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"><span class="toc-text">交互流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="toc-text">什么是堆溢出？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%EF%BC%88Chunk%EF%BC%89%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">堆块（Chunk）的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%88%90%E5%9B%A0"><span class="toc-text">堆溢出漏洞的成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E8%A6%86%E7%9B%96%E5%88%B0%E5%8A%AB%E6%8C%81%EF%BC%88Exploitation%EF%BC%89"><span class="toc-text">利用原理：从覆盖到劫持（Exploitation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%B4%E5%9D%8F%E6%95%B0%E6%8D%AE%EF%BC%88Data-Corruption%EF%BC%89"><span class="toc-text">破坏数据（Data Corruption）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81%E6%8E%A7%E5%88%B6%E6%B5%81%EF%BC%88Unlink-Attack%EF%BC%89"><span class="toc-text">劫持控制流（Unlink Attack）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%BA%E6%99%AF%E8%BF%98%E5%8E%9F"><span class="toc-text">1. 场景还原</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E9%80%90%E8%A1%8C%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-text">2. 代码逐行深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE%E7%82%B9%EF%BC%81"><span class="toc-text">漏洞利用存在的矛盾点！</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E8%80%85%E5%A6%82%E4%BD%95%E5%8E%BB%E8%A7%A3%E5%86%B3%E8%BF%99%E4%B8%AA%E7%9F%9B%E7%9B%BE%E7%82%B9%E5%91%A2%EF%BC%9F"><span class="toc-text">攻击者如何去解决这个矛盾点呢？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E2%80%9D%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E2%80%9C%EF%BC%9F"><span class="toc-text">3.攻击复盘：如何实现”任意地址写“？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%8E%B0%E4%BB%A3%E9%98%B2%E5%BE%A1%EF%BC%9ASafe-Unlink-glibc-2-23"><span class="toc-text">4. 现代防御：Safe Unlink (glibc 2.23+)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Allocated-Chunk%E5%92%8CFree-Chunk"><span class="toc-text">Allocated Chunk和Free Chunk</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Allocated-Chunk%EF%BC%88%E5%B7%B2%E5%88%86%E9%85%8D%E5%A0%86%E5%9D%97%EF%BC%89"><span class="toc-text">Allocated Chunk（已分配堆块）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-text">设计思想</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE%E8%A7%A3"><span class="toc-text">内存结构图解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5%E8%A7%A3%E9%87%8A"><span class="toc-text">字段解释</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Free-Chunk%EF%BC%88%E7%A9%BA%E9%97%B2%E5%A0%86%E5%9D%97%EF%BC%89"><span class="toc-text">Free Chunk（空闲堆块）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%87%E5%87%86Free-Chunk%EF%BC%88Small-Unsorted-Bin%EF%BC%89"><span class="toc-text">标准Free Chunk（Small &#x2F; Unsorted Bin）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Fastbin-Tcache-Chunk-%E5%B0%8F%E5%9D%97%E7%89%B9%E4%BE%8B"><span class="toc-text">Fastbin &#x2F; Tcache Chunk (小块特例)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Large-Bin-Chunk%EF%BC%88%E5%A4%A7%E5%9D%97%E5%A0%86%EF%BC%89"><span class="toc-text">Large Bin Chunk（大块堆）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A0%87%E5%BF%97%E4%BD%8D%EF%BC%88Flag%EF%BC%89%E8%AF%A6%E8%A7%A3"><span class="toc-text">核心标志位（Flag）详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Allocated%E4%B8%8EFree%E7%9A%84%E8%A7%86%E5%9B%BE%E5%88%87%E6%8D%A2"><span class="toc-text">Allocated与Free的视图切换</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%EF%BC%88heap%EF%BC%89%EF%BC%9F"><span class="toc-text">什么是堆（heap）？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E4%B8%8E%E4%BD%8D%E7%BD%AE"><span class="toc-text">定义与位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%8E%A7%E5%88%B6"><span class="toc-text">边界控制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%88The-Heap-Manager%EF%BC%89"><span class="toc-text">什么是堆管理器（The Heap Manager）?</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%81%8C%E8%B4%A3"><span class="toc-text">核心职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%BB%A5-glibc-%E4%B8%BA%E4%BE%8B"><span class="toc-text">内部数据结构 (以 glibc 为例)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"><span class="toc-text">交互流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Allocated-Chunk%E5%92%8CFree-Chunk"><span class="toc-text">Allocated Chunk和Free Chunk</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Allocated-Chunk%EF%BC%88%E5%B7%B2%E5%88%86%E9%85%8D%E5%A0%86%E5%9D%97%EF%BC%89"><span class="toc-text">Allocated Chunk（已分配堆块）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-text">设计思想</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE%E8%A7%A3"><span class="toc-text">内存结构图解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5%E8%A7%A3%E9%87%8A"><span class="toc-text">字段解释</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Free-Chunk%EF%BC%88%E7%A9%BA%E9%97%B2%E5%A0%86%E5%9D%97%EF%BC%89"><span class="toc-text">Free Chunk（空闲堆块）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%87%E5%87%86Free-Chunk%EF%BC%88Small-Unsorted-Bin%EF%BC%89"><span class="toc-text">标准Free Chunk（Small &#x2F; Unsorted Bin）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Fastbin-Tcache-Chunk-%E5%B0%8F%E5%9D%97%E7%89%B9%E4%BE%8B"><span class="toc-text">Fastbin &#x2F; Tcache Chunk (小块特例)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Large-Bin-Chunk%EF%BC%88%E5%A4%A7%E5%9D%97%E5%A0%86%EF%BC%89"><span class="toc-text">Large Bin Chunk（大块堆）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A0%87%E5%BF%97%E4%BD%8D%EF%BC%88Flag%EF%BC%89%E8%AF%A6%E8%A7%A3"><span class="toc-text">核心标志位（Flag）详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Allocated%E4%B8%8EFree%E7%9A%84%E8%A7%86%E5%9B%BE%E5%88%87%E6%8D%A2"><span class="toc-text">Allocated与Free的视图切换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB%E8%B0%83%E8%AF%95%E6%9F%A5%E7%9C%8B"><span class="toc-text">GDB调试查看</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="toc-text">什么是堆溢出？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%EF%BC%88Chunk%EF%BC%89%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">堆块（Chunk）的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%88%90%E5%9B%A0"><span class="toc-text">堆溢出漏洞的成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E8%A6%86%E7%9B%96%E5%88%B0%E5%8A%AB%E6%8C%81%EF%BC%88Exploitation%EF%BC%89"><span class="toc-text">利用原理：从覆盖到劫持（Exploitation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%B4%E5%9D%8F%E6%95%B0%E6%8D%AE%EF%BC%88Data-Corruption%EF%BC%89"><span class="toc-text">破坏数据（Data Corruption）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81%E6%8E%A7%E5%88%B6%E6%B5%81%EF%BC%88Unlink-Attack%EF%BC%89"><span class="toc-text">劫持控制流（Unlink Attack）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%BA%E6%99%AF%E8%BF%98%E5%8E%9F"><span class="toc-text">1. 场景还原</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E9%80%90%E8%A1%8C%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-text">2. 代码逐行深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE%E7%82%B9%EF%BC%81"><span class="toc-text">漏洞利用存在的矛盾点！</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E8%80%85%E5%A6%82%E4%BD%95%E5%8E%BB%E8%A7%A3%E5%86%B3%E8%BF%99%E4%B8%AA%E7%9F%9B%E7%9B%BE%E7%82%B9%E5%91%A2%EF%BC%9F"><span class="toc-text">攻击者如何去解决这个矛盾点呢？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%94%BB%E5%87%BB%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E2%80%9D%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E2%80%9C%EF%BC%9F"><span class="toc-text">3.攻击复盘：如何实现”任意地址写“？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%8E%B0%E4%BB%A3%E9%98%B2%E5%BE%A1%EF%BC%9ASafe-Unlink-glibc-2-23"><span class="toc-text">4. 现代防御：Safe Unlink (glibc 2.23+)</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
