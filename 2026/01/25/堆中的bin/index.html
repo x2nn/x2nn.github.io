@@ -13,7 +13,7 @@
   
   <title>
     
-      windbg调试windows环境搭建 
+      堆中的bin 
       
       
       |
@@ -165,19 +165,25 @@
   <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
   <div class="container post-details" id="post-details">
     <div class="post-content">
-      <div class="post-title">windbg调试windows环境搭建</div>
+      <div class="post-title">堆中的bin</div>
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-01-19 00:53:14
+          2026-01-25 23:49:45
         </span>
         
               <span class="post-tags">
                 <i class="iconfont icon-tags mr-10" title="Tags"></i>
                 
                 <span class="span--tag mr-8">
-                  <a href="/tags/windbg/" title="windbg">
-                    #windbg
+                  <a href="/tags/bin/" title="bin">
+                    #bin
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Heap/" title="Heap">
+                    #Heap
                   </a>
                 </span>
                 
@@ -187,8 +193,8 @@
                 <i class="iconfont icon-bookmark" title="Categories"></i>
                 
                 <span class="span--category">
-                  <a href="/categories/Tools/" title="Tools">
-                    <b>#</b> Tools
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                    <b>#</b> 二进制安全
                   </a>
                 </span>
                 
@@ -196,172 +202,125 @@
           
       </div>
       <div class="markdown-body">
-        <h2 id="前言">前言</h2>
-<p>刚开始学习二进制安全，尝试搭建windbg调试vmware的windows7 x86环境，学习一些其中的二进制漏洞。</p>
-<h2 id="环境所需">环境所需</h2>
-<p>windbg直接下载官网的，windows7的镜像<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>en_windows_7_ultimate_with_sp1_x86_dvd_u_677460.iso，激活windows系统的key为：<code>FJGCP-4DFJD-GJY49-VJBQ7-HYRR2</code>。</p>
-<h2 id="配置环境">配置环境</h2>
-<p>使用vmware安装好windows7 x86。然后参考教程<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，打开”虚拟机设置“ —&gt; ”添加“ —&gt; ”串行端口“，配置好命名的管道，然后确认，启动windows。</p>
-<p>命名的管道为：<code>\\.\pipe\windows2007_debug</code></p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118213712022.png" alt="image-20260118213712022"></p>
-<p>然后重新启动windows7，输入命令：<code>bcdedit /copy {current} /d &quot;Windows 7 Debug&quot;</code></p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118213156840.png" alt="image-20260118213156840"></p>
-<p>输出命令<code>msconfig</code>，切换到 <strong>Boot (引导)</strong> 选项卡。看到两个启动项（如果你刚才执行了 copy 命令），选中 <strong>Windows 7 Debug</strong>。点击 <strong>Advanced options (高级选项)</strong>。勾选 <strong>Debug (调试)</strong>。<strong>Debug port</strong> 选择 <strong>COM1</strong>。<strong>Baud rate</strong> 选择 <strong>115200</strong>。点击 OK，再点击 OK。</p>
-<p>系统会提示重启，选择 <strong>Exit without restart (稍后重启)</strong>。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118213343412.png" alt="image-20260118213343412"></p>
-<p>此时到我们自己的电脑上，打开windbg，选择attach to kernel，port位置输入我们的<code>\\.\pipe\windows7_debug</code>，然后点击ok。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118214937565.png" alt="image-20260118214937565"></p>
-<p>此时我们再去配置符号表，symbol path:<code>SRV*D:\pwn\symbols*http://msdl.microsoft.com/download/symbols</code>，我把符号放在了D:\pwn\symbols位置。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118215031119.png" alt="image-20260118215031119"></p>
-<p>此时我们去启动虚拟机的windows7。启动windows7的时候选择“Windows 7 Debug”</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118215612446.png" alt="image-20260118215612446"></p>
-<p>windbg成功连接。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118221221146.png" alt="image-20260118221221146"></p>
-<p>查看进程<code>!process 0 0</code></p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118221329542.png" alt="image-20260118221329542"></p>
-<h2 id="windbg调试的一些命令">windbg调试的一些命令</h2>
-<p>这里以断点notepad.exe的进程为例。</p>
-<p>首先是<code>bc *</code>，清空所有断点。然后查看进程<code>!process 0 0</code>，我只截取了部分，我在windows7中是打开了notepad.exe的。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118232718727.png" alt="image-20260118232718727"></p>
-<p>查看notepad.exe的进程，<code>!process 0 0 notepad.exe</code>。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118232944069.png" alt="image-20260118232944069"></p>
-<p>可以注意到EPROCESS 地址为<code>86ff55a8</code>。<code>.process /i 86ff55a8</code>，告诉windbg聚焦在这个进程上。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118233213817.png" alt="image-20260118233213817"></p>
-<p>加载符号（必做），确保windbg可以看懂notepad调用的函数名。使用<code>.reload /f /user</code>。</p>
-<p>然后就是专门的断点。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bp /p &lt;EPROCESS地址&gt; &lt;函数名&gt;</span><br></pre></td></tr></table></figure>
-<p>使用<code>bp /p 86ff55a8 user32!GetMessageW</code>。<code>bl</code>是查看有哪些断点。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118233550528.png" alt="image-20260118233550528"></p>
-<p>此时回到windows7，把鼠标移动到记事本的窗口范围内，或者在记事本里随便按一个键盘按键。第一次没断下来，又尝试了一下，才断下来的。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118233828813.png" alt="image-20260118233828813"></p>
-<p>下面就是去看寄存器的内容，执行<code>r</code>。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118234349793.png" alt="image-20260118234349793"></p>
-<p><strong>EIP (Instruction Pointer):指令寄存器</strong>，它指向<strong>下一条要执行的指令地址</strong>。攻击者（溢出）的核心目标就是篡改 EIP，让 CPU 去执行恶意代码。</p>
-<p><strong>ESP (Stack Pointer)</strong>: <strong>栈顶指针</strong>。它指向当前栈的最上方。函数参数和返回地址都这附近。</p>
-<p><strong>EAX</strong>: <strong>多功能搬运工</strong>。通常用于存放函数的<strong>返回值</strong>。</p>
-<p>继续多探究一些命令。</p>
-<p><code>du poi(esp + 4)、du poi(esp + 4)</code></p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260118234643165.png" alt="image-20260118234643165"></p>
-<p><code>du</code>命令，<code>d</code>：Display（显示内存）、<code>u</code>：Unicode（宽字节）。</p>
-<p><code>esp + 4</code>：指向第1个参数，因为是32位。</p>
-<p><code>esp + 8</code>：指向第2个参数。</p>
-<p><code>poi</code>是<code>Pointer</code>指针的缩写，就是取地址里的值。</p>
-<p><code>du poi(esp+4)</code>的意思就是，去 <code>esp + 4</code> 的位置拿到一个指针，跳到那个指针指向的内存，并把它作为 Unicode 字符串打印出来。</p>
-<p>下面再去断点其它的函数看一看。</p>
-<p><code>bc *</code>清空断点。断点<code>bp /p 86ff55a8 user32!MessageBoxW</code>，这次断点函数<code>user32!MessageBoxW</code>。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260119001015571.png" alt="image-20260119001015571"></p>
-<p>然后我windows7，点击notepad的Help -&gt; About Notepad，发现翻车了，并没有断下来。可能是”About Notepad“这个窗口使用的并不是<code>user32!MessageBoxW</code>函数。</p>
-<p>经过查询发现使用的是<code>shell32!ShellAboutW</code>函数。这次使用<code>bu</code>断点，<code>bu SHELL32!ShellAboutW</code>，此时点击About Notepad，端下来了。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260119004216960.png" alt="image-20260119004216960"></p>
-<p>再查看寄存器的内容。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260119004308422.png" alt="image-20260119004308422"></p>
-<p><code>eu poi(esp+8) &quot;hacker by x2n&quot;</code>编辑寄存器中的内容。<code>eu(edit unicode)</code>，可以看到内容已经被修改了。</p>
-<p><img src="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/image-20260119004131707.png" alt="image-20260119004131707"></p>
-<p><strong>为什么刚才使用<code>bp</code>没有断下点，使用了<code>bu</code>就可以断下来？</strong></p>
-<p><strong>（1）绑定对象的区别</strong></p>
+        <h2 id="bin是什么？">bin是什么？</h2>
+<p>在 Glibc 的 <code>ptmalloc</code> 分配器中，<strong>Bin</strong> 是指用于管理空闲内存块（Free Chunk）的核心数据结构。</p>
+<p>从实现角度看，Bin 并非一个物理容器，而是维护在 <code>malloc_state</code>（也称为 Arena）结构体中的<strong>指针数组</strong>。这些指针指向了由空闲 Chunk 组成的<strong>链表（Linked List）</strong>。</p>
+<p>当用户通过 <code>free()</code> 释放内存时，分配器会根据 Chunk 的大小将其挂载（Link）到对应的 Bin 链表中；当用户 <code>malloc()</code> 时，分配器从 Bin 中卸载（Unlink）并返回内存。</p>
+<h2 id="核心单元：malloc-chunk">核心单元：malloc_chunk</h2>
+<p>Bin管理的对象是<code>malloc_chunk</code>。理解其字段是理解 Bin 运作机制的前提。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line">  INTERNAL_SIZE_T      mchunk_prev_size;  <span class="comment">/* 前一 Chunk 大小（仅当前一 Chunk 空闲时有效） */</span></span><br><span class="line">  INTERNAL_SIZE_T      mchunk_size;       <span class="comment">/* 当前 Chunk 大小（包含 AMP 标志位） */</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>                <span class="comment">/* Forward pointer: 指向链表中下一个 Chunk */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span>                <span class="comment">/* Backward pointer: 指向链表中上一个 Chunk */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 仅用于 Large Bin 的扩展字段 */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd_nextsize</span>;</span>       <span class="comment">/* 指向下一个不同大小的 Chunk */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk_nextsize</span>;</span>       <span class="comment">/* 指向前一个不同大小的 Chunk */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>复用机制：</strong> 这里的 <code>fd</code>、<code>bk</code> 等指针仅在 Chunk 处于 <strong>Free（空闲）</strong> 状态并存在于 Bin 中时才有意义。当 Chunk 被分配给用户时，这些内存空间被用作 User Data。</p>
+<h2 id="Bin的分类与数据结构特性">Bin的分类与数据结构特性</h2>
+<p><code>ptmalloc</code> 根据 chunk 的大小（Size）和操作策略（Policy），将 Bin 划分为四类。</p>
+<p><strong>Fast Bins、Unsorted Bin、Small Bins、Large Bins。</strong></p>
+<h3 id="Fast-Bins">Fast Bins</h3>
+<p>这是为了优化小内存分配性能而设计的结构。</p>
 <ul>
-<li><strong>bp (Break Point) 绑定的是“虚拟内存地址”</strong>
+<li><strong>数据结构：</strong> <strong>单向链表 (Singly Linked List)</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.fastbinsY</code> 数组。</li>
+<li><strong>操作策略：</strong> <strong>LIFO (Last In, First Out)</strong>。最近释放的 chunk 会被插入链表头部，下次申请时最先被取出。</li>
+<li><strong>合并策略 (Coalescing)：</strong> <strong>不执行合并</strong>。即使两个 Fast Bin chunk 物理相邻，它们也不会合并成一个更大的 chunk。这通过保持 chunk 的 <code>P</code> (PREV_INUSE) 标志位为 1 来实现。</li>
+<li><strong>范围：</strong> 默认覆盖 16 到 80 字节（具体取决于 <code>SIZE_SZ</code>）。</li>
+<li><strong>技术细节：</strong> 由于是单向链表，Fast Bin chunk 只有 <code>fd</code> 指针指向下一个节点，<code>bk</code> 指针无定义。</li>
+</ul>
+<h3 id="Unsorted-Bin">Unsorted Bin</h3>
+<p>这是 chunk 被释放后的第一个缓冲区，也是唯一的非分类容器。</p>
 <ul>
-<li>当你输入 <code>bp 0x77123456</code> 或 <code>bp shell32!ShellAboutW</code> 时，调试器会立即解析出该符号当前对应的<strong>线性虚拟地址</strong>，并记录这个固定的数值。</li>
-<li>它不关心这个地址属于哪个模块，它只认这个数值。</li>
+<li><strong>数据结构：</strong> <strong>双向环形链表 (Doubly Linked Circular List)</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.bins[1]</code>。</li>
+<li><strong>功能逻辑：</strong> 当一个 chunk 被释放（且大小超出 Fast Bin 范围）时，它首先被插入 Unsorted Bin 的头部。</li>
+<li><strong>遍历逻辑：</strong> 在 <code>malloc</code> 过程中，如果 Fast Bin 无法满足请求，分配器会遍历 Unsorted Bin。在遍历过程中，分配器会将每个遇到的 chunk <strong>重新分类（Resort）</strong> 并放入对应的 Small Bin 或 Large Bin 中。</li>
+<li><strong>利用价值：</strong> 利用了<strong>时间局部性原理</strong>。如果程序释放了一个 chunk 随后立即申请相同大小的 chunk，可以直接从这里复用，避免了复杂的查找逻辑。</li>
 </ul>
-</li>
-<li><strong>bu (Break Unresolved) 绑定的是“符号名称”</strong>
+<h3 id="Small-Bins">Small Bins</h3>
+<p>用于管理固定大小的中小块内存。</p>
 <ul>
-<li>当你输入 <code>bu shell32!ShellAboutW</code> 时，调试器记录的是字符串 <code>&quot;shell32!ShellAboutW&quot;</code> 以及它在模块内的偏移量。</li>
-<li>它不记录具体的绝对地址。</li>
+<li><strong>数据结构：</strong> <strong>双向环形链表</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.bins[2]</code> 到 <code>malloc_state.bins[63]</code>。</li>
+<li><strong>大小映射：</strong> 每个 Small Bin 对应一个精确的固定大小。例如，Bin 2 存储 32 字节，Bin 3 存储 48 字节（步长通常为 16 字节）。</li>
+<li><strong>操作策略：</strong> <strong>FIFO (First In, First Out)</strong>。插入到头部，从尾部摘取。</li>
+<li><strong>合并策略：</strong> 严格执行合并。相邻的空闲 chunk 会合并，生成的更大的 chunk 可能进入 Large Bin 或 Unsorted Bin。</li>
 </ul>
-</li>
-</ul>
-<p><strong>（2）生效机制与时机的区别</strong></p>
+<h3 id="Large-Bins">Large Bins</h3>
+<p>用于管理大块内存。</p>
 <ul>
-<li><strong>bp：立即写入 (Immediate Write)</strong>
+<li><strong>数据结构：</strong> <strong>双向环形链表</strong> + <strong>跳表逻辑 (Skip-list logic)</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.bins[64]</code> 到 <code>malloc_state.bins[126]</code>。</li>
+<li><strong>大小映射：</strong> <strong>范围映射 (Range Mapping)</strong>。每个 Large Bin 存储一定范围大小的 chunks（例如：Bin 64 存储 512B~576B）。</li>
+<li><strong>排序机制：</strong> 链表中的 chunk 按照<strong>大小（Size）从大到小</strong>排序。</li>
+<li><strong>性能优化：</strong> 为了避免在长链表中线性查找合适的大小，Large Bin chunk 使用了 <code>fd_nextsize</code> 和 <code>bk_nextsize</code> 字段。这两个指针构成了一个子链表，仅连接大小不同的 chunk。这允许分配器快速跳过相同大小的 chunk，直接定位到满足大小需求的 chunk。</li>
+</ul>
+<h2 id="现代架构补充：Tcache（Thread-Local-Cache）">现代架构补充：Tcache（Thread Local Cache）</h2>
+<p>自 Glibc 2.26 引入，位于 <code>malloc_state</code> 之外，是线程私有的堆数据结构。</p>
 <ul>
-<li>执行命令瞬间，WinDbg 必须能够访问该内存地址。</li>
-<li>调试器会尝试立即将该地址处的指令字节修改为 <code>0xCC</code> (INT 3)。</li>
-<li><strong>限制</strong>：如果此时模块未加载，或当前进程上下文（页表）中该地址未映射，命令会直接失败或写入错误的物理内存。</li>
+<li><strong>并发控制：</strong> <strong>无锁 (Lock-free)</strong>。每个线程拥有独立的 <code>tcache_perthread_struct</code>。</li>
+<li><strong>数据结构：</strong> <strong>单向链表</strong>，LIFO 策略（结构上类似 Fast Bin）。</li>
+<li><strong>优先级：</strong> 最高。<code>malloc</code> 时最先检查 Tcache，<code>free</code> 时最先放入 Tcache。</li>
+<li><strong>限制：</strong> 有容量限制（默认每个 size 链表最多存 7 个 chunk）。</li>
 </ul>
-</li>
-<li><strong>bu：延迟解析 (Deferred Resolution)</strong>
-<ul>
-<li>执行命令时，不需要模块已加载。</li>
-<li>WinDbg 会挂钩系统的“模块加载事件”。每当有一个 DLL 或驱动被加载时，调试器会检查其名称是否匹配。</li>
-<li>一旦匹配（例如 shell32.dll 被加载），调试器会根据**（当前模块基址 + 函数偏移量）**动态计算出真实地址，然后在那个位置写入 <code>0xCC</code>。</li>
-</ul>
-</li>
-</ul>
-<p><strong>（3） 对 ASLR (地址空间布局随机化) 的处理</strong></p>
-<ul>
-<li><strong>bp：不支持 ASLR</strong>
-<ul>
-<li>如果是硬编码的地址断点，一旦程序重启，操作系统通过 ASLR 机制将 DLL 加载到了新的基地址，原来的地址（如 <code>0x77123456</code>）可能变成了无效内存或别人的代码。<code>bp</code> 断点因此失效。</li>
-</ul>
-</li>
-<li><strong>bu：原生支持 ASLR</strong>
-<ul>
-<li>当程序重启，DLL 加载到新地址（例如从 <code>0x77000000</code> 变到了 <code>0x66000000</code>），WinDbg 会收到通知，重新计算函数的最新地址，并自动在新的位置下断点。</li>
-</ul>
-</li>
-</ul>
-<p><strong>（4）持久性 (Persistence)</strong></p>
-<ul>
-<li><strong>bp</strong>：通常只在当前调试会话有效。一旦进程终止，该地址关联的断点逻辑即被清除（因为地址已无意义）。</li>
-<li><strong>bu</strong>：保存在调试器的工作区（Workspace）中。即使你关闭调试器再打开，或者重启计算机，只要符号匹配，断点依然存在。</li>
-</ul>
+<h2 id="技术参数对比表">技术参数对比表</h2>
 <table>
 <thead>
 <tr>
 <th><strong>特性</strong></th>
-<th><strong>bp (地址断点)</strong></th>
-<th><strong>bu (符号断点)</strong></th>
+<th><strong>Fast Bin</strong></th>
+<th><strong>Small Bin</strong></th>
+<th><strong>Large Bin</strong></th>
+<th><strong>Unsorted Bin</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>核心索引</strong></td>
-<td>线性虚拟地址 (Virtual Address)</td>
-<td>符号名 (Symbol Name) + 偏移</td>
+<td><strong>链表拓扑</strong></td>
+<td>单向 (fd)</td>
+<td>双向环形 (fd/bk)</td>
+<td>双向环形 (fd/bk) + NextSize</td>
+<td>双向环形 (fd/bk)</td>
 </tr>
 <tr>
-<td><strong>写入时机</strong></td>
-<td>命令执行时立即写入</td>
-<td>模块加载时动态写入</td>
+<td><strong>分配顺序</strong></td>
+<td>LIFO</td>
+<td>FIFO</td>
+<td>Sorted Best-Fit</td>
+<td>遍历过程中的 Exact Fit</td>
 </tr>
 <tr>
-<td><strong>内存要求</strong></td>
-<td>内存必须存在且可写</td>
-<td>无需内存存在</td>
+<td><strong>尺寸精度</strong></td>
+<td>精确大小</td>
+<td>精确大小</td>
+<td><strong>范围大小</strong></td>
+<td>混合大小</td>
 </tr>
 <tr>
-<td><strong>ASLR 兼容</strong></td>
-<td>否 (重启后地址变化即失效)</td>
-<td>是 (自动跟随基址变化)</td>
+<td><strong>合并逻辑</strong></td>
+<td>不合并 (P=1)</td>
+<td>自动合并</td>
+<td>自动合并</td>
+<td>自动合并</td>
 </tr>
 <tr>
-<td><strong>适用场景</strong></td>
-<td>临时调试特定的指令行、汇编地址</td>
-<td>调试 API、系统函数、重启后仍需保留的断点</td>
+<td><strong>索引计算</strong></td>
+<td>显式索引转换</td>
+<td>$$Index = Size / 16$$</td>
+<td>复杂的范围分段函数</td>
+<td>固定 Index 1</td>
 </tr>
 </tbody>
 </table>
-<p><strong>所以总的来说，对于开启了ASLR的windows7 x86系统，最好还是使用bu最可靠。</strong></p>
-<h2 id="参考">参考</h2>
-<hr class="footnotes-sep">
-<section class="footnotes">
-<ol class="footnotes-list">
-<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://archive.org/details/en_windows_7_ultimate_with_sp1_x86_dvd_u_677460_202006">https://archive.org/details/en_windows_7_ultimate_with_sp1_x86_dvd_u_677460_202006</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
-</li>
-<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=yQQLIEM6qp8">https://www.youtube.com/watch?v=yQQLIEM6qp8</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
-</li>
+<h2 id="内存布局视角的安全影响">内存布局视角的安全影响</h2>
+<p>在二进制安全领域，Bin 的链表结构特性直接导致了特定的漏洞利用原语（Primitives）：</p>
+<ol>
+<li><strong>单向链表攻击 (Fastbin/Tcache):</strong> 由于只校验 <code>fd</code>，攻击者可以通过篡改 <code>fd</code> 指针，将其指向任意地址（如 Stack 或 GOT 表），下次 <code>malloc</code> 时即可获得该地址的控制权。</li>
+<li><strong>双向链表解链 (Unlink Exploit):</strong> 在 Small/Large Bin 中，当一个 chunk 被取出时，会执行 <code>FD-&gt;bk = BK</code> 和 <code>BK-&gt;fd = FD</code>。如果攻击者控制了 <code>fd</code> 和 <code>bk</code>，这实际上是一个<strong>任意地址写（Arbitrary Write）</strong> 操作。</li>
+<li><strong>Unsorted Bin 泄露:</strong> 由于 Unsorted Bin 是双向循环链表，链表头部的 <code>bk</code> 指针指向 <code>main_arena</code> 结构体内部。通过读取未被清空的 <code>bk</code> 指针，攻击者可以计算出 libc 的基地址（ASLR Bypass）。</li>
 </ol>
-</section>
 
       </div>
       
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/" target="_self">
+              <a href="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>Prev</span>
               </a>
@@ -370,15 +329,21 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-01-19 00:53:14
+              2026-01-25 23:49:45
             </span>
             
                   <span class="post-tags">
                     <i class="iconfont icon-tags mr-10" title="Tags"></i>
                     
                     <span class="span--tag mr-8">
-                      <a href="/tags/windbg/" title="windbg">
-                        #windbg
+                      <a href="/tags/bin/" title="bin">
+                        #bin
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Heap/" title="Heap">
+                        #Heap
                       </a>
                     </span>
                     
@@ -388,8 +353,8 @@
                     <i class="iconfont icon-bookmark" title="Categories"></i>
                     
                     <span class="span--category">
-                      <a href="/categories/Tools/" title="Tools">
-                        <b>#</b> Tools
+                      <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                        <b>#</b> 二进制安全
                       </a>
                     </span>
                     
@@ -397,11 +362,6 @@
               
           </div>
           <div class="post-foot-prev">
-            
-              <a href="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/" target="_self">
-                <span>Next</span>
-                <i class="iconfont icon-chevronright"></i>
-              </a>
             
           </div>
         </div>
@@ -415,7 +375,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%89%80%E9%9C%80"><span class="toc-text">环境所需</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%83"><span class="toc-text">配置环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#windbg%E8%B0%83%E8%AF%95%E7%9A%84%E4%B8%80%E4%BA%9B%E5%91%BD%E4%BB%A4"><span class="toc-text">windbg调试的一些命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#bin%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">bin是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8D%95%E5%85%83%EF%BC%9Amalloc-chunk"><span class="toc-text">核心单元：malloc_chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bin%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%89%B9%E6%80%A7"><span class="toc-text">Bin的分类与数据结构特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Fast-Bins"><span class="toc-text">Fast Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsorted-Bin"><span class="toc-text">Unsorted Bin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Small-Bins"><span class="toc-text">Small Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Large-Bins"><span class="toc-text">Large Bins</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E4%BB%A3%E6%9E%B6%E6%9E%84%E8%A1%A5%E5%85%85%EF%BC%9ATcache%EF%BC%88Thread-Local-Cache%EF%BC%89"><span class="toc-text">现代架构补充：Tcache（Thread Local Cache）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8F%82%E6%95%B0%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-text">技术参数对比表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E8%A7%86%E8%A7%92%E7%9A%84%E5%AE%89%E5%85%A8%E5%BD%B1%E5%93%8D"><span class="toc-text">内存布局视角的安全影响</span></a></li></ol>
       
     </div>
   </div>
@@ -709,12 +669,12 @@
       </a>
       <div class="share-content hidden">
         
-          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F01%2F18%2Fwindbg%25E8%25B0%2583%25E8%25AF%2595windows%25E7%258E%25AF%25E5%25A2%2583%25E6%2590%25AD%25E5%25BB%25BA%2F + '" target="_blank" title="Twitter">
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%A0%86%E4%B8%AD%E7%9A%84bin + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F01%2F25%2F%25E5%25A0%2586%25E4%25B8%25AD%25E7%259A%2584bin%2F + '" target="_blank" title="Twitter">
             <i class="iconfont icon-twitter"></i>
           </a>
         
         
-          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" target="_blank" title="Facebook">
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/" target="_blank" title="Facebook">
             <i class="iconfont icon-facebooksquare"></i>
           </a>
         
