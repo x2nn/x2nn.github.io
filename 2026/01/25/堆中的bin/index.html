@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-02-02 14:21:53
+          2026-02-02 14:24:44
         </span>
         
               <span class="post-tags">
@@ -265,7 +265,7 @@
 <p>（4）<strong>使用 Top Chunk:</strong> 如果所有 Bin 都空了，则计算 <code>top</code> 指针指向的剩余空间。</p>
 <p>（5）<strong>系统调用:</strong> 如果连 Top Chunk 都不够了，则通过 <code>sbrk</code> (Main Arena) 或 <code>mmap</code> (Thread Arena) 向内核申请更多物理内存。</p>
 <h3 id="安全意义">安全意义</h3>
-<p>在二进制漏洞利用（Heap Exploitation）中，<code>malloc_state</code> 是攻击者的“圣杯”。</p>
+<p>在二进制漏洞利用中，<code>malloc_state</code> 对于攻击者来说非常重要。</p>
 <ul>
 <li><strong>libc 地址泄露:</strong> 由于 <code>main_arena</code> 是 <a target="_blank" rel="noopener" href="http://libc.so">libc.so</a> 中的一个全局变量，泄露了 <code>malloc_state</code> 的地址（比如泄露了 Unsorted Bin 的指针）就能绕过 <strong>ASLR</strong>，计算出 libc 的基地址。</li>
 <li><strong>控制流篡改:</strong> 攻击者通过堆溢出伪造 <code>malloc_state</code> 中的指针，可以诱导 <code>malloc</code> 返回任意地址（如栈地址或 GOT 表地址），实现任意代码执行。</li>
@@ -395,7 +395,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-02-02 14:21:53
+              2026-02-02 14:24:44
             </span>
             
                   <span class="post-tags">
