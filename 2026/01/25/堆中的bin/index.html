@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-02-02 14:24:44
+          2026-02-03 01:41:07
         </span>
         
               <span class="post-tags">
@@ -208,7 +208,9 @@
 <p>当用户通过 <code>free()</code> 释放内存时，分配器会根据 Chunk 的大小将其挂载（Link）到对应的 Bin 链表中；当用户 <code>malloc()</code> 时，分配器从 Bin 中卸载（Unlink）并返回内存。</p>
 <h2 id="Malloc-state">Malloc_state</h2>
 <p>在 glibc 的内存管理器（ptmalloc）中，<strong><code>malloc_state</code></strong> 是一个至关重要的结构体，它被通俗地称为 <strong>Arena（分配区）</strong>。</p>
-<p>简单来说，<code>malloc_state</code> 记录了一个分配区内所有内存管理的核心信息，包括空闲块的链表、Top Chunk 的位置以及统计数据。</p>
+<p>简单来说，<code>malloc_state</code> 记录了一个分配区内所有内存管理的核心信息，包括<strong>空闲块的链表、Top Chunk 的位置以及统计数据</strong>。</p>
+<p>glic-2.35的malloc_state结构体源代码<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">malloc_state</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* Serialize access.  */</span></span><br><span class="line">  __libc_lock_define (, mutex);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Flags (formerly in max_fast).  */</span></span><br><span class="line">  <span class="type">int</span> flags;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Set if the fastbin chunks contain recently inserted free blocks.  */</span></span><br><span class="line">  <span class="comment">/* Note this is a bool but not all targets support atomics on booleans.  */</span></span><br><span class="line">  <span class="type">int</span> have_fastchunks;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Fastbins */</span></span><br><span class="line">  mfastbinptr fastbinsY[NFASTBINS];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Base of the topmost chunk -- not otherwise kept in a bin */</span></span><br><span class="line">  mchunkptr top;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The remainder from the most recent split of a small request */</span></span><br><span class="line">  mchunkptr last_remainder;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Normal bins packed as described above */</span></span><br><span class="line">  mchunkptr bins[NBINS * <span class="number">2</span> - <span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Bitmap of bins */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> binmap[BINMAPSIZE];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Linked list */</span></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">malloc_state</span> *next;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Linked list for free arenas.  Access to this field is serialized</span></span><br><span class="line"><span class="comment">     by free_list_lock in arena.c.  */</span></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">malloc_state</span> *next_free;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Number of threads attached to this arena.  0 if the arena is on</span></span><br><span class="line"><span class="comment">     the free list.  Access to this field is serialized by</span></span><br><span class="line"><span class="comment">     free_list_lock in arena.c.  */</span></span><br><span class="line">  INTERNAL_SIZE_T attached_threads;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Memory allocated from the system in this arena.  */</span></span><br><span class="line">  INTERNAL_SIZE_T system_mem;</span><br><span class="line">  INTERNAL_SIZE_T max_system_mem;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <h3 id="Arena的分类：主和从">Arena的分类：主和从</h3>
 <p>在一个多线程程序中，为了减少锁竞争，glibc 会创建多个 Arena：</p>
 <p>（1）<strong>Main Arena (主分配区):</strong> 进程中只有一个。它直接管理通过 <code>sbrk</code>（堆区扩展）和 <code>mmap</code> 分配的内存。它是一个全局变量。</p>
@@ -287,7 +289,7 @@
 <li><strong>范围：</strong> 默认覆盖 16 到 80 字节（具体取决于 <code>SIZE_SZ</code>）。</li>
 <li><strong>技术细节：</strong> 由于是单向链表，Fast Bin chunk 只有 <code>fd</code> 指针指向下一个节点，<code>bk</code> 指针无定义。</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">malloc_state (Arena)</span><br><span class="line">+-----------------------+</span><br><span class="line">| fastbinsY(数组)        |</span><br><span class="line">|                       |</span><br><span class="line">|  [0] (16 Bytes)       |------&gt; [Chunk A] ------&gt; [Chunk B] ------&gt; NULL</span><br><span class="line">|                       |        (Next Ptr)       (Next Ptr)</span><br><span class="line">|                       |</span><br><span class="line">|  [1] (24 Bytes)       |------&gt; [Chunk C] ------&gt; NULL</span><br><span class="line">|                       |</span><br><span class="line">|  [2] (32 Bytes)       |------&gt; NULL (当前为空)</span><br><span class="line">|                       |</span><br><span class="line">|  [...]                |</span><br><span class="line">|                       |</span><br><span class="line">|  [9] (80 Bytes)       |------&gt; [Chunk D] ------&gt; [Chunk E] ------&gt; NULL</span><br><span class="line">+-----------------------+</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/image-20260202234907703.png" alt="image-20260202234907703"></p>
 <h3 id="Unsorted-Bin">Unsorted Bin</h3>
 <p>这是 chunk 被释放后的第一个缓冲区，也是唯一的非分类容器。</p>
 <ul>
@@ -297,6 +299,7 @@
 <li><strong>遍历逻辑：</strong> 在 <code>malloc</code> 过程中，如果 Fast Bin 无法满足请求，分配器会遍历 Unsorted Bin。在遍历过程中，分配器会将每个遇到的 chunk <strong>重新分类（Resort）</strong> 并放入对应的 Small Bin 或 Large Bin 中。</li>
 <li><strong>利用价值：</strong> 利用了<strong>时间局部性原理</strong>。如果程序释放了一个 chunk 随后立即申请相同大小的 chunk，可以直接从这里复用，避免了复杂的查找逻辑。</li>
 </ul>
+<p><img src="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/image-20260203014103804.png" alt="image-20260203014103804"></p>
 <h3 id="Small-Bins">Small Bins</h3>
 <p>用于管理固定大小的中小块内存。</p>
 <ul>
@@ -380,6 +383,13 @@
 <li><strong>Unsorted Bin 泄露:</strong> 由于 Unsorted Bin 是双向循环链表，链表头部的 <code>bk</code> 指针指向 <code>main_arena</code> 结构体内部。通过读取未被清空的 <code>bk</code> 指针，攻击者可以计算出 libc 的基地址（ASLR Bypass）。</li>
 </ol>
 <h2 id="参考">参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830">https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
 
       </div>
       
@@ -395,7 +405,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-02-02 14:24:44
+              2026-02-03 01:41:07
             </span>
             
                   <span class="post-tags">
