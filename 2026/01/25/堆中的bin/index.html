@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-02-03 01:41:07
+          2026-02-28 16:08:01
         </span>
         
               <span class="post-tags">
@@ -203,9 +203,9 @@
       </div>
       <div class="markdown-body">
         <h2 id="bin是什么？">bin是什么？</h2>
-<p>在 Glibc 的 <code>ptmalloc</code> 分配器中，<strong>Bin</strong> 是指用于管理空闲内存块（Free Chunk）的核心数据结构。</p>
-<p>从实现角度看，Bin 并非一个物理容器，而是维护在 <code>malloc_state</code>（也称为 Arena）结构体中的<strong>指针数组</strong>。这些指针指向了由空闲 Chunk 组成的<strong>链表（Linked List）</strong>。</p>
-<p>当用户通过 <code>free()</code> 释放内存时，分配器会根据 Chunk 的大小将其挂载（Link）到对应的 Bin 链表中；当用户 <code>malloc()</code> 时，分配器从 Bin 中卸载（Unlink）并返回内存。</p>
+<p>在 Glibc 的 <code>ptmalloc</code> 分配器中，<strong>Bin</strong> 是用于管理空闲内存块（Free Chunk）的核心数据结构。</p>
+<p>从实现角度来看，Bin 并非物理容器，而是维护在 <code>malloc_state</code>（也称为 Arena）结构体中的<strong>指针数组</strong>。这些指针指向由空闲 Chunk 组成的<strong>链表（Linked List）</strong>。</p>
+<p>当用户通过 <code>free()</code> 释放内存时，分配器会根据 Chunk 的大小将其插入（Link）到对应的 Bin 链表中；当用户 <code>malloc()</code> 时，分配器从 Bin 中取出（Unlink）合适的 Chunk 并返回给用户。</p>
 <h2 id="Malloc-state">Malloc_state</h2>
 <p>在 glibc 的内存管理器（ptmalloc）中，<strong><code>malloc_state</code></strong> 是一个至关重要的结构体，它被通俗地称为 <strong>Arena（分配区）</strong>。</p>
 <p>简单来说，<code>malloc_state</code> 记录了一个分配区内所有内存管理的核心信息，包括<strong>空闲块的链表、Top Chunk 的位置以及统计数据</strong>。</p>
@@ -286,7 +286,7 @@
 <li><strong>存储位置：</strong> <code>malloc_state.fastbinsY</code> 数组。</li>
 <li><strong>操作策略：</strong> <strong>LIFO (Last In, First Out)</strong>。最近释放的 chunk 会被插入链表头部，下次申请时最先被取出。</li>
 <li><strong>合并策略 (Coalescing)：</strong> <strong>不执行合并</strong>。即使两个 Fast Bin chunk 物理相邻，它们也不会合并成一个更大的 chunk。这通过保持 chunk 的 <code>P</code> (PREV_INUSE) 标志位为 1 来实现。</li>
-<li><strong>范围：</strong> 默认覆盖 16 到 80 字节（具体取决于 <code>SIZE_SZ</code>）。</li>
+<li><strong>范围：</strong> 默认覆盖 16 到 80 字节（32位系统）或 16 到 160 字节（64位系统），具体取决于 <code>SIZE_SZ</code>。</li>
 <li><strong>技术细节：</strong> 由于是单向链表，Fast Bin chunk 只有 <code>fd</code> 指针指向下一个节点，<code>bk</code> 指针无定义。</li>
 </ul>
 <p><img src="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/image-20260202234907703.png" alt="image-20260202234907703"></p>
@@ -301,31 +301,37 @@
 </ul>
 <p><img src="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/image-20260203014103804.png" alt="image-20260203014103804"></p>
 <h3 id="Small-Bins">Small Bins</h3>
-<p>用于管理固定大小的中小块内存。</p>
+<p>用于管理固定大小的中小块内存，采用精确匹配策略。</p>
 <ul>
 <li><strong>数据结构：</strong> <strong>双向环形链表</strong>。</li>
 <li><strong>存储位置：</strong> <code>malloc_state.bins[2]</code> 到 <code>malloc_state.bins[63]</code>。</li>
-<li><strong>大小映射：</strong> 每个 Small Bin 对应一个精确的固定大小。例如，Bin 2 存储 32 字节，Bin 3 存储 48 字节（步长通常为 16 字节）。</li>
+<li><strong>大小映射：</strong> 每个 Small Bin 对应一个精确的固定大小，步长为 16 字节。例如，Bin 2 存储 32 字节，Bin 3 存储 48 字节，依此类推。</li>
 <li><strong>操作策略：</strong> <strong>FIFO (First In, First Out)</strong>。插入到头部，从尾部摘取。</li>
-<li><strong>合并策略：</strong> 严格执行合并。相邻的空闲 chunk 会合并，生成的更大的 chunk 可能进入 Large Bin 或 Unsorted Bin。</li>
+<li><strong>合并策略：</strong> <strong>不执行合并</strong>。Small Bins 中的 chunk 都是固定大小的，相邻的空闲 chunk 不会被合并，它们保持各自独立的状态。这样可以确保分配时的效率，避免额外的合并开销。</li>
 </ul>
+<p><strong>Small Bins 结构示意图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">malloc_state.bins[] 数组:</span><br><span class="line">  bins[0]: (未使用)</span><br><span class="line">  bins[1]: Unsorted Bin</span><br><span class="line">  bins[2]: Small Bin 2 (32字节) → [Chunk A] ↔ [Chunk B] ↔ [Chunk C] ↔ (环回)</span><br><span class="line">  bins[3]: Small Bin 3 (48字节) → [Chunk D] ↔ [Chunk E] ↔ (环回)</span><br><span class="line">  bins[4]: Small Bin 4 (64字节) → [Chunk F] ↔ (环回)</span><br><span class="line">  bins[5]: Small Bin 5 (80字节) → (空)</span><br><span class="line">  ...</span><br><span class="line">  bins[63]: Small Bin 63 (1008字节)</span><br><span class="line"></span><br><span class="line">详细的双向环形链表结构:</span><br><span class="line">Small Bin 2 (32字节):</span><br><span class="line">  HEAD → Chunk A ↔ Chunk B ↔ Chunk C → BACK</span><br><span class="line">         ↑                           ↓</span><br><span class="line">         └───────────────────────────┘</span><br><span class="line">         (环形链表)</span><br><span class="line"></span><br><span class="line">FIFO 操作示意:</span><br><span class="line">初始状态: HEAD → [A] ↔ [B] ↔ [C] → BACK</span><br><span class="line">插入新chunk D: HEAD → [D] ↔ [A] ↔ [B] ↔ [C] → BACK  (插入头部)</span><br><span class="line">摘取chunk: HEAD → [D] ↔ [A] ↔ [B] → BACK, 返回 [C]  (从尾部摘取)</span><br></pre></td></tr></table></figure>
 <h3 id="Large-Bins">Large Bins</h3>
-<p>用于管理大块内存。</p>
+<p>用于管理大块内存，支持范围分配和最佳匹配策略。</p>
 <ul>
 <li><strong>数据结构：</strong> <strong>双向环形链表</strong> + <strong>跳表逻辑 (Skip-list logic)</strong>。</li>
 <li><strong>存储位置：</strong> <code>malloc_state.bins[64]</code> 到 <code>malloc_state.bins[126]</code>。</li>
-<li><strong>大小映射：</strong> <strong>范围映射 (Range Mapping)</strong>。每个 Large Bin 存储一定范围大小的 chunks（例如：Bin 64 存储 512B~576B）。</li>
+<li><strong>大小映射：</strong> <strong>范围映射 (Range Mapping)</strong>。每个 Large Bin 存储一定范围大小的 chunks。例如，Bin 64 存储 1024 字节及以上的 chunk（具体范围取决于复杂的计算公式）。</li>
 <li><strong>排序机制：</strong> 链表中的 chunk 按照<strong>大小（Size）从大到小</strong>排序。</li>
 <li><strong>性能优化：</strong> 为了避免在长链表中线性查找合适的大小，Large Bin chunk 使用了 <code>fd_nextsize</code> 和 <code>bk_nextsize</code> 字段。这两个指针构成了一个子链表，仅连接大小不同的 chunk。这允许分配器快速跳过相同大小的 chunk，直接定位到满足大小需求的 chunk。</li>
 </ul>
+<p><strong>Large Bins 结构示意图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">malloc_state.bins[] 数组 (Large Bins 部分):</span><br><span class="line">  bins[64]: Large Bin 64 → [Chunk A(2048B)] ↔ [Chunk B(1536B)] ↔ [Chunk C(1024B)] ↔ (环回)</span><br><span class="line">  bins[65]: Large Bin 65 → [Chunk D(3072B)] ↔ [Chunk E(2560B)] ↔ (环回)</span><br><span class="line">  bins[66]: Large Bin 66 → (空)</span><br><span class="line">  ...</span><br><span class="line">  bins[126]: Large Bin 126 → [Chunk Z(大尺寸)] ↔ (环回)</span><br><span class="line"></span><br><span class="line">双向链表 + 跳表结构详细示意:</span><br><span class="line">Large Bin 64:</span><br><span class="line">  主链表 (fd/bk):    [2048B] ↔ [1536B] ↔ [1024B]  (按大小降序)</span><br><span class="line">  跳表链表 (fd_nextsize/bk_nextsize): </span><br><span class="line">                     [2048B] → [1536B] → [1024B]  (仅连接不同大小)</span><br><span class="line"></span><br><span class="line">跳表工作原理:</span><br><span class="line">查找 1500B chunk 时:</span><br><span class="line">  [2048B] → 太大，跳到 [1536B] → 太大，跳到 [1024B] → 太小</span><br><span class="line">  最终选择最合适的 [1536B] 进行分割</span><br></pre></td></tr></table></figure>
 <h2 id="现代架构补充：Tcache（Thread-Local-Cache）">现代架构补充：Tcache（Thread Local Cache）</h2>
-<p>自 Glibc 2.26 引入，位于 <code>malloc_state</code> 之外，是线程私有的堆数据结构。</p>
+<p>自 Glibc 2.26 版本引入，Tcache 位于 <code>malloc_state</code> 之外，是线程私有的堆缓存结构。</p>
 <ul>
 <li><strong>并发控制：</strong> <strong>无锁 (Lock-free)</strong>。每个线程拥有独立的 <code>tcache_perthread_struct</code>。</li>
 <li><strong>数据结构：</strong> <strong>单向链表</strong>，LIFO 策略（结构上类似 Fast Bin）。</li>
 <li><strong>优先级：</strong> 最高。<code>malloc</code> 时最先检查 Tcache，<code>free</code> 时最先放入 Tcache。</li>
 <li><strong>限制：</strong> 有容量限制（默认每个 size 链表最多存 7 个 chunk）。</li>
 </ul>
+<p><strong>Tcache 结构示意图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">线程私有 Tcache (tcache_perthread_struct):</span><br><span class="line">  counts[TCACHE_MAX_BINS]: 记录每个bin中的chunk数量</span><br><span class="line"></span><br><span class="line">  entries[TCACHE_MAX_BINS]: 单向链表数组</span><br><span class="line">    entries[0]: 24字节 → [Chunk A] → [Chunk B] → [Chunk C] → NULL  (3个chunk)</span><br><span class="line">    entries[1]: 32字节 → [Chunk D] → [Chunk E] → NULL                (2个chunk)</span><br><span class="line">    entries[2]: 40字节 → [Chunk F] → [Chunk G] → [Chunk H] → [Chunk I] → [Chunk J] → [Chunk K] → [Chunk L] → NULL  (7个chunk, 已满)</span><br><span class="line">    entries[3]: 48字节 → NULL                                         (0个chunk, 空)</span><br><span class="line">    ...</span><br><span class="line">    entries[TCACHE_MAX_BINS-1]: 最大尺寸</span><br><span class="line"></span><br><span class="line">LIFO 操作示意:</span><br><span class="line">初始状态: entries[1] → [D] → [E] → NULL</span><br><span class="line">释放新chunk F: entries[1] → [F] → [D] → [E] → NULL  (插入头部)</span><br><span class="line">分配请求: 返回 [F], entries[1] → [D] → [E] → NULL   (从头部取出)</span><br><span class="line"></span><br><span class="line">多线程独立性:</span><br><span class="line">线程1 Tcache: entries[0] → [A] → [B] → NULL</span><br><span class="line">线程2 Tcache: entries[0] → [C] → [D] → NULL</span><br><span class="line">线程3 Tcache: entries[0] → NULL</span><br><span class="line">(每个线程完全独立，无需锁竞争)</span><br></pre></td></tr></table></figure>
 <h2 id="技术参数对比表">技术参数对比表</h2>
 <table>
 <thead>
@@ -362,7 +368,7 @@
 <tr>
 <td><strong>合并逻辑</strong></td>
 <td>不合并 (P=1)</td>
-<td>自动合并</td>
+<td><strong>不合并</strong></td>
 <td>自动合并</td>
 <td>自动合并</td>
 </tr>
@@ -382,11 +388,11 @@
 <li><strong>双向链表解链 (Unlink Exploit):</strong> 在 Small/Large Bin 中，当一个 chunk 被取出时，会执行 <code>FD-&gt;bk = BK</code> 和 <code>BK-&gt;fd = FD</code>。如果攻击者控制了 <code>fd</code> 和 <code>bk</code>，这实际上是一个<strong>任意地址写（Arbitrary Write）</strong> 操作。</li>
 <li><strong>Unsorted Bin 泄露:</strong> 由于 Unsorted Bin 是双向循环链表，链表头部的 <code>bk</code> 指针指向 <code>main_arena</code> 结构体内部。通过读取未被清空的 <code>bk</code> 指针，攻击者可以计算出 libc 的基地址（ASLR Bypass）。</li>
 </ol>
-<h2 id="参考">参考</h2>
+<h2 id="参考文献">参考文献</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
 <ol class="footnotes-list">
-<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830">https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+<li id="fn1" class="footnote-item"><p>Glibc 2.35 malloc_state 结构体定义：<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830">https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
 </li>
 </ol>
 </section>
@@ -405,7 +411,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-02-03 01:41:07
+              2026-02-28 16:08:01
             </span>
             
                   <span class="post-tags">
@@ -451,7 +457,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#bin%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">bin是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Malloc-state"><span class="toc-text">Malloc_state</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Arena%E7%9A%84%E5%88%86%E7%B1%BB%EF%BC%9A%E4%B8%BB%E5%92%8C%E4%BB%8E"><span class="toc-text">Arena的分类：主和从</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc-state%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90"><span class="toc-text">malloc_state核心结构解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E6%A6%82%E8%A7%88"><span class="toc-text">工作流程概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%84%8F%E4%B9%89"><span class="toc-text">安全意义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8D%95%E5%85%83%EF%BC%9Amalloc-chunk"><span class="toc-text">核心单元：malloc_chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bin%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%89%B9%E6%80%A7"><span class="toc-text">Bin的分类与数据结构特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Fast-Bins"><span class="toc-text">Fast Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsorted-Bin"><span class="toc-text">Unsorted Bin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Small-Bins"><span class="toc-text">Small Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Large-Bins"><span class="toc-text">Large Bins</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E4%BB%A3%E6%9E%B6%E6%9E%84%E8%A1%A5%E5%85%85%EF%BC%9ATcache%EF%BC%88Thread-Local-Cache%EF%BC%89"><span class="toc-text">现代架构补充：Tcache（Thread Local Cache）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8F%82%E6%95%B0%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-text">技术参数对比表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E8%A7%86%E8%A7%92%E7%9A%84%E5%AE%89%E5%85%A8%E5%BD%B1%E5%93%8D"><span class="toc-text">内存布局视角的安全影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#bin%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">bin是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Malloc-state"><span class="toc-text">Malloc_state</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Arena%E7%9A%84%E5%88%86%E7%B1%BB%EF%BC%9A%E4%B8%BB%E5%92%8C%E4%BB%8E"><span class="toc-text">Arena的分类：主和从</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc-state%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90"><span class="toc-text">malloc_state核心结构解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E6%A6%82%E8%A7%88"><span class="toc-text">工作流程概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%84%8F%E4%B9%89"><span class="toc-text">安全意义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8D%95%E5%85%83%EF%BC%9Amalloc-chunk"><span class="toc-text">核心单元：malloc_chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bin%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%89%B9%E6%80%A7"><span class="toc-text">Bin的分类与数据结构特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Fast-Bins"><span class="toc-text">Fast Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsorted-Bin"><span class="toc-text">Unsorted Bin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Small-Bins"><span class="toc-text">Small Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Large-Bins"><span class="toc-text">Large Bins</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E4%BB%A3%E6%9E%B6%E6%9E%84%E8%A1%A5%E5%85%85%EF%BC%9ATcache%EF%BC%88Thread-Local-Cache%EF%BC%89"><span class="toc-text">现代架构补充：Tcache（Thread Local Cache）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8F%82%E6%95%B0%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-text">技术参数对比表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E8%A7%86%E8%A7%92%E7%9A%84%E5%AE%89%E5%85%A8%E5%BD%B1%E5%93%8D"><span class="toc-text">内存布局视角的安全影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">参考文献</span></a></li></ol>
       
     </div>
   </div>
