@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2026-02-28T08:08:01.292Z</updated>
+  <updated>2026-03-01T17:17:58.783Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -15,6 +15,37 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>二进制堆的练习题</title>
+    <link href="https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/"/>
+    <id>https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/</id>
+    <published>2026-02-28T08:16:19.000Z</published>
+    <updated>2026-03-01T17:17:58.783Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;fmtstr-uaf&quot;&gt;fmtstr_uaf&lt;/h2&gt;
+&lt;p&gt;可执行文件为：&lt;code&gt;echo2&lt;/code&gt;，尝试执行。&lt;/p&gt;
+&lt;p&gt;&lt;img</summary>
+        
+      
+    
+    
+    
+    <category term="CTF" scheme="https://x2nn.github.io/categories/CTF/"/>
+    
+    
+    <category term="heap Overflow" scheme="https://x2nn.github.io/tags/heap-Overflow/"/>
+    
+    <category term="bins" scheme="https://x2nn.github.io/tags/bins/"/>
+    
+    <category term="UAF" scheme="https://x2nn.github.io/tags/UAF/"/>
+    
+  </entry>
   
   <entry>
     <title>堆中的bin</title>
@@ -558,34 +589,6 @@
     <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
     
     <category term="反序列化" scheme="https://x2nn.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Codeql原理分析</title>
-    <link href="https://x2nn.github.io/2025/06/09/Codeql%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/"/>
-    <id>https://x2nn.github.io/2025/06/09/Codeql%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</id>
-    <published>2025-06-09T08:05:26.000Z</published>
-    <updated>2025-06-10T02:28:59.258Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;前言&quot;&gt;前言&lt;/h2&gt;
-&lt;p&gt;本文内容几乎都来自大佬文章&lt;sup class=&quot;footnote-ref&quot;&gt;&lt;a href=&quot;#fn1&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="代码审计" scheme="https://x2nn.github.io/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    
-    
-    <category term="CodeQL" scheme="https://x2nn.github.io/tags/CodeQL/"/>
-    
-    <category term="污点分析" scheme="https://x2nn.github.io/tags/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
