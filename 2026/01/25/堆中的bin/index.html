@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-02-28 16:08:01
+          2026-03-07 21:08:35
         </span>
         
               <span class="post-tags">
@@ -325,10 +325,11 @@
 <h2 id="现代架构补充：Tcache（Thread-Local-Cache）">现代架构补充：Tcache（Thread Local Cache）</h2>
 <p>自 Glibc 2.26 版本引入，Tcache 位于 <code>malloc_state</code> 之外，是线程私有的堆缓存结构。</p>
 <ul>
-<li><strong>并发控制：</strong> <strong>无锁 (Lock-free)</strong>。每个线程拥有独立的 <code>tcache_perthread_struct</code>。</li>
-<li><strong>数据结构：</strong> <strong>单向链表</strong>，LIFO 策略（结构上类似 Fast Bin）。</li>
+<li><strong>并发控制：</strong> <strong>无锁 (Lock-free)</strong>。每个线程拥有独立的 <code>tcache_perthread_struct</code>，通过线程局部存储 (TLS) 实现，完全避免锁竞争。</li>
+<li><strong>数据结构：</strong> <strong>单向链表</strong>，LIFO 策略（结构上类似 Fast Bin，但独立于 Fast Bin）。</li>
 <li><strong>优先级：</strong> 最高。<code>malloc</code> 时最先检查 Tcache，<code>free</code> 时最先放入 Tcache。</li>
-<li><strong>限制：</strong> 有容量限制（默认每个 size 链表最多存 7 个 chunk）。</li>
+<li><strong>限制：</strong> 有容量限制（默认每个 size 链表最多存 7 个 chunk，可通过 <code>tcache_count</code> 宏调整）。</li>
+<li><strong>尺寸范围：</strong> 覆盖小块内存（24-1032字节，64位系统），与 Fast Bin 部分重叠但优先级更高。</li>
 </ul>
 <p><strong>Tcache 结构示意图：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">线程私有 Tcache (tcache_perthread_struct):</span><br><span class="line">  counts[TCACHE_MAX_BINS]: 记录每个bin中的chunk数量</span><br><span class="line"></span><br><span class="line">  entries[TCACHE_MAX_BINS]: 单向链表数组</span><br><span class="line">    entries[0]: 24字节 → [Chunk A] → [Chunk B] → [Chunk C] → NULL  (3个chunk)</span><br><span class="line">    entries[1]: 32字节 → [Chunk D] → [Chunk E] → NULL                (2个chunk)</span><br><span class="line">    entries[2]: 40字节 → [Chunk F] → [Chunk G] → [Chunk H] → [Chunk I] → [Chunk J] → [Chunk K] → [Chunk L] → NULL  (7个chunk, 已满)</span><br><span class="line">    entries[3]: 48字节 → NULL                                         (0个chunk, 空)</span><br><span class="line">    ...</span><br><span class="line">    entries[TCACHE_MAX_BINS-1]: 最大尺寸</span><br><span class="line"></span><br><span class="line">LIFO 操作示意:</span><br><span class="line">初始状态: entries[1] → [D] → [E] → NULL</span><br><span class="line">释放新chunk F: entries[1] → [F] → [D] → [E] → NULL  (插入头部)</span><br><span class="line">分配请求: 返回 [F], entries[1] → [D] → [E] → NULL   (从头部取出)</span><br><span class="line"></span><br><span class="line">多线程独立性:</span><br><span class="line">线程1 Tcache: entries[0] → [A] → [B] → NULL</span><br><span class="line">线程2 Tcache: entries[0] → [C] → [D] → NULL</span><br><span class="line">线程3 Tcache: entries[0] → NULL</span><br><span class="line">(每个线程完全独立，无需锁竞争)</span><br></pre></td></tr></table></figure>
@@ -337,6 +338,7 @@
 <thead>
 <tr>
 <th><strong>特性</strong></th>
+<th><strong>Tcache</strong></th>
 <th><strong>Fast Bin</strong></th>
 <th><strong>Small Bin</strong></th>
 <th><strong>Large Bin</strong></th>
@@ -347,12 +349,14 @@
 <tr>
 <td><strong>链表拓扑</strong></td>
 <td>单向 (fd)</td>
+<td>单向 (fd)</td>
 <td>双向环形 (fd/bk)</td>
 <td>双向环形 (fd/bk) + NextSize</td>
 <td>双向环形 (fd/bk)</td>
 </tr>
 <tr>
 <td><strong>分配顺序</strong></td>
+<td>LIFO</td>
 <td>LIFO</td>
 <td>FIFO</td>
 <td>Sorted Best-Fit</td>
@@ -362,11 +366,13 @@
 <td><strong>尺寸精度</strong></td>
 <td>精确大小</td>
 <td>精确大小</td>
+<td>精确大小</td>
 <td><strong>范围大小</strong></td>
 <td>混合大小</td>
 </tr>
 <tr>
 <td><strong>合并逻辑</strong></td>
+<td>不合并 (P=1)</td>
 <td>不合并 (P=1)</td>
 <td><strong>不合并</strong></td>
 <td>自动合并</td>
@@ -374,10 +380,51 @@
 </tr>
 <tr>
 <td><strong>索引计算</strong></td>
+<td>直接尺寸映射 (size/16)</td>
 <td>显式索引转换</td>
 <td>$$Index = Size / 16$$</td>
 <td>复杂的范围分段函数</td>
 <td>固定 Index 1</td>
+</tr>
+<tr>
+<td><strong>并发控制</strong></td>
+<td>无锁 (Thread-Local)</td>
+<td>有锁</td>
+<td>有锁</td>
+<td>有锁</td>
+<td>有锁</td>
+</tr>
+<tr>
+<td><strong>优先级</strong></td>
+<td>最高 (先检查/后释放)</td>
+<td>中等</td>
+<td>低</td>
+<td>低</td>
+<td>中等</td>
+</tr>
+<tr>
+<td><strong>容量限制</strong></td>
+<td>默认7个/chunk (可配置)</td>
+<td>无限制</td>
+<td>无限制</td>
+<td>无限制</td>
+<td>无限制</td>
+</tr>
+<tr>
+<td><strong>存储位置</strong></td>
+<td>线程私有 (TLS)</td>
+<td>malloc_state.fastbinsY</td>
+<td>malloc_state.bins[2-63]</td>
+<td>malloc_state.bins[64-126]</td>
+<td>malloc_state.bins[1]</td>
+</tr>
+<tr>
+<td><strong>安全特性</strong></td>
+<td>双重释放检测 (Double Free)</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
 </tr>
 </tbody>
 </table>
@@ -411,7 +458,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-02-28 16:08:01
+              2026-03-07 21:08:35
             </span>
             
                   <span class="post-tags">
