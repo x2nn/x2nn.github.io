@@ -6,7 +6,7 @@
   <link href="https://x2nn.github.io/atom.xml" rel="self"/>
   
   <link href="https://x2nn.github.io/"/>
-  <updated>2026-03-07T14:07:11.222Z</updated>
+  <updated>2026-03-11T07:06:36.430Z</updated>
   <id>https://x2nn.github.io/</id>
   
   <author>
@@ -17,11 +17,39 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Kubernetes(K8s)学习笔记</title>
+    <link href="https://x2nn.github.io/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    <id>https://x2nn.github.io/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</id>
+    <published>2026-03-08T14:55:44.000Z</published>
+    <updated>2026-03-11T07:06:36.430Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1&gt;Kubernetes (K8s) 学习笔记&lt;/h1&gt;
+&lt;h2 id=&quot;一、Kubernetes-是什么&quot;&gt;一、Kubernetes 是什么&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;定义&lt;/strong&gt;：Kubernetes</summary>
+        
+      
+    
+    
+    
+    <category term="云安全" scheme="https://x2nn.github.io/categories/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
+    
+    
+    <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
+    
+  </entry>
+  
+  <entry>
     <title>二进制堆的练习题</title>
     <link href="https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/"/>
     <id>https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/</id>
     <published>2026-02-28T08:16:19.000Z</published>
-    <updated>2026-03-07T14:07:11.222Z</updated>
+    <updated>2026-03-07T17:01:24.054Z</updated>
     
     
       
@@ -558,37 +586,6 @@
     <category term="反序列化" scheme="https://x2nn.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
     
     <category term="CommonsCollections利用链" scheme="https://x2nn.github.io/tags/CommonsCollections%E5%88%A9%E7%94%A8%E9%93%BE/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Java反序列化和URLDNS链</title>
-    <link href="https://x2nn.github.io/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/"/>
-    <id>https://x2nn.github.io/2025/07/03/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8CURLDNS%E9%93%BE/</id>
-    <published>2025-07-03T12:29:57.000Z</published>
-    <updated>2025-10-28T14:20:30.969Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;Java反序列基础知识&quot;&gt;Java反序列基础知识&lt;/h2&gt;
-&lt;h3 id=&quot;什么是Java序列化和反序列化？&quot;&gt;什么是Java序列化和反序列化？&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Java序列化：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Java</summary>
-        
-      
-    
-    
-    
-    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
-    
-    
-    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
-    
-    <category term="反序列化" scheme="https://x2nn.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
     
   </entry>
   
