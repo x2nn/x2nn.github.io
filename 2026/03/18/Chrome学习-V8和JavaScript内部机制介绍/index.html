@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-03-23 20:25:41
+          2026-03-23 21:51:25
         </span>
         
               <span class="post-tags">
@@ -294,7 +294,7 @@
 <p>**Properties：<strong>指向包含</strong>命名属性（named properties）**的对象的指针。</p>
 </li>
 <li>
-<p>**Elements：**指向包含编号属性的对象的指针。</p>
+<p>**Elements：<strong>指向包含</strong>编号属性（numbered properties）**的对象的指针。</p>
 </li>
 <li>
 <p><strong>In-Object Properties：<strong>指向在对象</strong>初始化时</strong>定义的命名属性（named properties）的指针。</p>
@@ -304,8 +304,8 @@
 <p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319202310194.png" alt="image-20260319202310194"></p>
 <p>观察<code>JSObject</code>的结构，我们可以看到属性（Properties）和元素（Elements）分别存储在两个独立的<code>FixedArray</code>数据结构中，这使得添加和访问Properties或Elements更加高效。</p>
 <p><strong>Elements结构主要存储非负整数（non-negative）或数组索引（array-indexed）属性（keys），这些通常被称为元素（Elements）。</strong></p>
-<p><strong>Properties结构，如果对象的Property键不是非负整数，例如string，则该属性将存储为内联对象属性（Inline-Object Property）或者存储在Elements结构中，有时也称为对象的属性后备存储（objects properties backing store）。</strong></p>
-<p>需要注意的是，虽然命名属性（named properties）的存储方式与数组元素类似，但它们在属性访问方面却并不相同。与元素不同，我们不能直接使用键（key）来查找命名属性（named properties）在属性数组中的位置；我们需要一些额外的元数据。如前所述，V8使用一个名为<code>HiddenClass</code>或<code>Map</code>特殊对象，该对象与每个<code>JSObject</code>相关联。这个<code>Map</code>存储了<code>JavaScript</code>对象的所有信息，从而使V8能够“动态（dynamic）”运行。</p>
+<p><strong>Properties结构，如果对象的Property键不是非负整数，例如string，则该属性将存储为内联对象属性（Inline-Object Property）（稍后会解释）或者存储在Elements结构中，有时也称为对象的属性后备存储（objects properties backing store）。</strong></p>
+<p>需要注意的是，虽然命名属性（named properties）的存储方式与数组元素类似，但它们在属性访问方面却并不相同。与元素不同，我们不能直接使用键（key）来查找命名属性（named properties）在属性数组中的位置；我们需要一些额外的元数据（additional metadata）。如前所述，V8使用一个名为<code>HiddenClass</code>或<code>Map</code>特殊对象，该对象与每个<code>JSObject</code>相关联。这个<code>Map</code>存储了<code>JavaScript</code>对象的所有信息，从而使V8能够“动态（dynamic）”运行。</p>
 <p>因此，在进一步了解<code>JSObject</code>结构及其属性之前，我们首先需要了解V8中的<code>HiddenClass</code>是如何工作的。</p>
 <h2 id="HiddenCLass（Map）and-Shape-Transitions">HiddenCLass（Map）and Shape Transitions</h2>
 <p>如前所述，我们知道 JavaScript 是一种动态类型语言。正因如此，JavaScript 中没有类的概念。在 C++ 中，如果你创建了一个类或对象，就无法像在 JavaScript 中那样动态地添加或删除它的方法和属性。在 C++ 和其他面向对象语言中，你可以将对象属性存储在固定的内存偏移量中，因为给定类的实例的对象布局永远不会改变，但在 JavaScript 中，对象布局会在运行时动态变化。为了解决这个问题，JavaScript 使用了一种称为“ <a target="_blank" rel="noopener" href="https://262.ecma-international.org/6.0/#sec-objects">基于原型的继承</a> ”的机制，其中每个对象都引用一个原型对象（prototype object）或 “ shape ”，并继承其属性。</p>
@@ -346,7 +346,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">d8&gt; </span><span class="language-bash">var obj1 = &#123;a: 1, b: 2, c: 3&#125;</span></span><br></pre></td></tr></table></figure>
 <p>完成后，我们将使用<code>%DebugPrint()</code>命令来显示对象的属性（properties）、映射（map）以及其他信息，例如实例描述符（instance descriptor）。执行后，注意以下事项：</p>
 <p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320201725825.png" alt="image-20260320201725825"></p>
-<p><strong>黄色部分</strong>显示的是我们的对象<code>obj1</code>。<strong>红色部分</strong>显示的是指向HiddenClass或Map的指针。在该HiddenClass中，我们找到了指向<code>DescriptorArray</code>的实例描述符（instance descriptors）。使用<code>%DebugPrintPtr()</code>函数访问该数组的指针，我们可以看到该数组在内存中的更多细节，这些细节以<strong>蓝色高亮显示</strong>。</p>
+<p><strong>黄色部分</strong>显示的是我们的对象<code>obj1</code>。<strong>红色部分</strong>显示的是指向HiddenClass或Map的指针。在该HiddenClass中，我们找到了指向<code>DescriptorArray</code>的实例描述符（instance descriptors）。使用<code>%DebugPrintPtr()</code>函数访问该数组的指针，我们可以看到该数组在内存中的更多细节，这些细节以<strong>蓝色显示</strong>。</p>
 <p>请注意，我们有3个属性，这与Map中instance descriptors部分的descriptors数量一致。在下方，我们可以看到descriptors数组保存着属性键，而<code>const data field</code>则保存着属性存储中对应属性值的偏移量。现在，如果我们沿着箭头从偏移量向上找到对象，我们会发现偏移量确实匹配，并且每个属性都已分配了正确的值。</p>
 <p>另外，请注意这些属性的右侧，您可以看到每个属性的<strong>location</strong> ；正如我之前提到的，这些属性位于<strong>in-object</strong> 。这几乎可以证明，这些偏移量指向的是对象内部（In-Object）和属性存储（Properties store）中的属性。</p>
 <p>好了，现在我们明白了为什么要使用偏移量（offset），让我们回到之前的HiddenClass示例。正如我们之前所说，通过向<code>obj1</code>添加属性<code>x</code>，我们现在会创建一个名为“C1”的新HiddenClass，其偏移量为<code>x</code>。由于我们创建了一个新的HiddenClass，V8会使用“类转换（class transition）”更新“C0”，该转换表明，如果创建了一个具有属性<code>x</code>的新对象，则HiddenClass应直接切换到“C1”。</p>
@@ -371,7 +371,7 @@
 <p>那么，如果我们删除一个属性，transition tree会发生什么变化呢？在这种情况下，V8每次删除属性时都会创建一个新的Map，这其中存在一些微妙之处，我们知道，Map在内存使用方面相对昂贵，因此，当属性删除到一定程度时，继承（inheriting）和维护transition tree的成本会越来越高，速度也会越来越慢。如果删除对象的最后一个属性，Map只会调整其back pointer，使其返回到之前的Map，而不会创建一个新的Map。但是，<strong>如果我们删除对象的中间属性（middle property）会发生什么呢？在这种情况下，每当我们添加过多属性或删除非最后一个元素时，V8都会放弃维护transition tree，并切换到一种称为字典模式（dictionary mode）的较慢模式。</strong></p>
 <p>那么，什么是dictionary mode呢？既然我们已经了解了 V8 如何使用HiddenClass来跟踪对象的shape，现在我们可以回过头来，进一步了解这些Properties和Elements在 V8 中是如何存储和处理的。</p>
 <h2 id="Properties">Properties</h2>
-<p>如前所述，我们知道JavaScript对象有两种基本属性：命名属性（named properties）和索引属性（indexed elements）。下面首先介绍named properties。</p>
+<p>如前所述，我们知道JavaScript对象有两种基本属性：命名属性（named properties）和索引元素（indexed elements）。下面首先介绍named properties。</p>
 <p>如果你还记得我们之前关于映射（Maps）和描述符数组（Descriptor Array）的讨论，我们提到过named properties可以存储在对象内部（In-Object）或属性数组（Property array）中。</p>
 <p>我们所说的对象内部属性（In-Object Property）是什么呢？</p>
 <p>在 V8 中，这种模式是一种非常快速的直接在对象上存储属性的方法，因为无需任何间接层即可访问属性。虽然速度很快，但它也受限于对象的初始大小。如果添加的属性数量超过了对象的空间，则新属性将被存储在属性存储区（properties store）中——这会增加一层间接层（one level of indirection）。</p>
@@ -380,7 +380,7 @@
 <li><strong>Fast Properties：</strong> 通常用于定义存储在线性属性存储（linear properties store）中的属性。这些属性可以通过访问HiddenClass中的描述符数组（Descriptor Array），并根据在属性存储（properties store）中的索引查找来访问。</li>
 <li>**Slow Properties：**也称为“dictionary mode”，当添加或删除的属性过多，导致大量内存开销时，就会使用此模式。因此，具有慢属性（slow properties）的对象会使用一个独立的字典（a self-contained dictionary）作为属性存储。所有属性的元信息（meta information）不再存储在HiddenClass中的描述符数组（Descriptor Array）中，而是直接存储在属性字典中（properties dictionary）。V8 将使用哈希表（hash table）来访问这些属性。</li>
 </ul>
-<p>下面可以查看 Map 在过渡到（transitions to）具有自包含字典的慢属性（slow Properties）时的示例。</p>
+<p>下面可以查看 Map 在过渡到（transitions to）具有自包含字典（self-contained dictionary）的慢属性（slow Properties）时的示例。</p>
 <p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321232028666.png" alt="image-20260321232028666"></p>
 <p>这里还需要注意一点。形状过渡（Shape transitions）仅适用于快速属性（Fast Properties），而不适用于慢速属性（Slow Properties），因为字典形状（dictionary shapes）仅供单个对象使用，因此无法在不同对象之间共享，因而没有过渡（transitions）效果。</p>
 <h2 id="Elements">Elements</h2>
@@ -451,6 +451,171 @@
 <h2 id="Pointer-Compression">Pointer Compression</h2>
 <p>Chrome和V8中的指针压缩（Pointer Compression）利用了堆上对象的一个有趣特性：堆对象通常彼此靠近，因此指针的最高有效位（ the most significant bits）很可能相同。在这种情况下，V8只将指针的一半（最低有效位，the least significant bits）保存到内存中，并将V8堆（称为<strong>isolate root</strong>）的最高有效位（高32位）放入**root register（R13）**中。每当我们需要访问指针时，只需将寄存器中的值与内存中的值相加，即可得到完整的地址。该压缩方案在V8的<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/common/ptr-compr-inl.h"><code>/src/common/ptr-compr-inl.h</code></a> 源文件中实现。</p>
 <p>基本上，V8 团队的目标是想方设法将两种类型的标记值（tagged values）都放入 64 位架构的 32 位中，特别是为了减少 V8 的开销，从而尽可能多地在 x64 架构中回收浪费的 4 个字节。</p>
+<h2 id="AI总结版">AI总结版</h2>
+<blockquote>
+<p><strong>Map（隐藏类） + Properties（命名属性） + Elements（索引属性） = 完整描述一个 JS 对象</strong></p>
+</blockquote>
+<p>我会用你这个例子贯穿讲：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="一、整体结构：V8如何表示一个对象？">一、整体结构：V8如何表示一个对象？</h3>
+<p>在 V8 内部，一个 JS 对象大致是这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">JSObject &#123;</span><br><span class="line">  map        ---&gt; Map（隐藏类）</span><br><span class="line">  elements   ---&gt; Elements（数组索引属性）</span><br><span class="line">  properties ---&gt; Properties（普通属性存储）</span><br><span class="line">  in-object fields（直接内嵌的属性值）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>👉 关键点：</p>
+<ul>
+<li><strong>map：描述“对象长什么样”</strong></li>
+<li><strong>properties：存“字符串属性”</strong></li>
+<li><strong>elements：存“数字索引属性”</strong></li>
+</ul>
+<p>官方总结也很明确：</p>
+<ul>
+<li>named properties 和 elements 是分开存的 (<a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties?utm_source=chatgpt.com">v8.dev</a>)</li>
+</ul>
+<h3 id="二、Map（隐藏类）：对象的“结构定义”">二、Map（隐藏类）：对象的“结构定义”</h3>
+<h4 id="1-Map-是什么？">1. Map 是什么？</h4>
+<p>Map（Hidden Class）本质是：</p>
+<blockquote>
+<p><strong>对象的结构描述（shape / layout）</strong></p>
+</blockquote>
+<p>它记录：</p>
+<ul>
+<li>有哪些属性（x, y）</li>
+<li>每个属性存在哪里（offset）</li>
+<li>属性类型（数据属性 / accessor）</li>
+<li>属性顺序</li>
+</ul>
+<p>📌 类比：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map ≈ C语言 struct 定义</span><br></pre></td></tr></table></figure>
+<h4 id="2-Map-内部关键结构">2. Map 内部关键结构</h4>
+<p>一个 Map 关联三个重要结构：</p>
+<h5 id="1-DescriptorArray（描述符数组）">(1) DescriptorArray（描述符数组）</h5>
+<p>记录：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[x → offset 0]</span><br><span class="line">[y → offset 1]</span><br></pre></td></tr></table></figure>
+<p>👉 本质是：</p>
+<blockquote>
+<p>属性名 → 内存位置 的映射 (<a target="_blank" rel="noopener" href="https://v8.dev/docs/hidden-classes?utm_source=chatgpt.com">v8.dev</a>)</p>
+</blockquote>
+<h5 id="2-TransitionArray（状态迁移）">(2) TransitionArray（状态迁移）</h5>
+<p>当对象“加属性”时：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#125; --add x--&gt; &#123;x&#125;</span><br><span class="line">&#123;x&#125; --add y--&gt; &#123;x,y&#125;</span><br></pre></td></tr></table></figure>
+<p>👉 每一步都会生成一个新 Map (<a target="_blank" rel="noopener" href="https://v8.dev/docs/hidden-classes?utm_source=chatgpt.com">v8.dev</a>)</p>
+<h5 id="3-Map-指针">(3) Map 指针</h5>
+<p>每个对象第一个字段就是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj.map → Map</span><br></pre></td></tr></table></figure>
+<p>👉 用来快速判断对象“类型是否相同”</p>
+<h5 id="3-用你的例子解释-Map">3. 用你的例子解释 Map</h5>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;;</span><br></pre></td></tr></table></figure>
+<p>V8内部大致过程：</p>
+<ul>
+<li>Step 1：创建空对象</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map0: &#123;&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Step 2：加 x</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Map1: &#123; x &#125;</span><br><span class="line">Descriptor: [x → offset0]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Step 3：加 y</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Map2: &#123; x, y &#125;</span><br><span class="line">Descriptor: [x → offset0, y → offset1]</span><br></pre></td></tr></table></figure>
+<p>👉 最终：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj1.map = Map2</span><br></pre></td></tr></table></figure>
+<h3 id="三、Properties：普通属性存储">三、Properties：普通属性存储</h3>
+<h4 id="1-Properties-是什么？">1. Properties 是什么？</h4>
+<blockquote>
+<p><strong>存储字符串 key 的属性值</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">obj1.<span class="property">x</span></span><br><span class="line">obj1.<span class="property">y</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-两种存储方式">2. 两种存储方式</h4>
+<h5 id="✅-1-In-object-properties（最重要）">✅ (1) In-object properties（最重要）</h5>
+<p>直接存在对象内部：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">obj1:</span><br><span class="line">  [map]</span><br><span class="line">  [x:1]</span><br><span class="line">  [y:2]</span><br></pre></td></tr></table></figure>
+<p>👉 最快访问方式 (<a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties?utm_source=chatgpt.com">v8.dev</a>)</p>
+<h5 id="❗-2-properties-backing-store">❗ (2) properties backing store</h5>
+<p>如果属性太多：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">obj1:</span><br><span class="line">  [map]</span><br><span class="line">  [x]</span><br><span class="line">  [y]</span><br><span class="line">  properties → [z, k, ...]</span><br></pre></td></tr></table></figure>
+<p>👉 Map 决定：</p>
+<ul>
+<li>z 在 properties[0]</li>
+<li>k 在 properties[1]</li>
+</ul>
+<h4 id="3-Map-和-Properties-的关系（核心）">3. Map 和 Properties 的关系（核心）</h4>
+<p>Map 不存值，只存：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x → offset 0</span><br><span class="line">y → offset 1</span><br></pre></td></tr></table></figure>
+<p>而值在：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj + offset</span><br></pre></td></tr></table></figure>
+<p>👉 所以访问：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj1.<span class="property">x</span></span><br></pre></td></tr></table></figure>
+<p>变成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">load obj1 + offset0</span><br></pre></td></tr></table></figure>
+<p>🚀 这就是为什么 JS 能像 C 一样快</p>
+<h3 id="四、Elements：数组-索引属性">四、Elements：数组/索引属性</h3>
+<h4 id="1-Elements-是什么？">1. Elements 是什么？</h4>
+<blockquote>
+<p><strong>key 是整数（0,1,2…）的属性</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> arr = [<span class="number">10</span>, <span class="number">20</span>];</span><br></pre></td></tr></table></figure>
+<p>内部：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">elements = [10, 20]</span><br></pre></td></tr></table></figure>
+<h4 id="2-为什么要单独分？">2. 为什么要单独分？</h4>
+<p>因为访问模式不同：</p>
+<ul>
+<li>elements：连续访问（数组）</li>
+<li>properties：随机访问（对象）</li>
+</ul>
+<p>👉 V8 专门优化两套结构 (<a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties?utm_source=chatgpt.com">v8.dev</a>)</p>
+<h4 id="3-obj1-有没有-elements？">3. obj1 有没有 elements？</h4>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123; <span class="attr">x</span>:<span class="number">1</span>, <span class="attr">y</span>:<span class="number">2</span> &#125;;</span><br></pre></td></tr></table></figure>
+<p>👉 没有</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">elements = []</span><br></pre></td></tr></table></figure>
+<hr>
+<p>如果你这样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj1[<span class="number">0</span>] = <span class="number">100</span>;</span><br></pre></td></tr></table></figure>
+<p>就会变成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">elements = [100]</span><br><span class="line">properties = &#123;x, y&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="五、三者关系总结（最关键）">五、三者关系总结（最关键）</h3>
+<p>我们把三者串起来：</p>
+<h4 id="1-Map-“结构说明书”">1. Map = “结构说明书”</h4>
+<p>描述：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">属性名 → 存储位置</span><br></pre></td></tr></table></figure>
+<h4 id="2-Properties-“数据区（字符串key）”">2. Properties = “数据区（字符串key）”</h4>
+<p>存：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = 1</span><br><span class="line">y = 2</span><br></pre></td></tr></table></figure>
+<h4 id="3-Elements-“数组数据区（数字key）”">3. Elements = “数组数据区（数字key）”</h4>
+<p>存：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0 = xxx</span><br><span class="line">1 = xxx</span><br></pre></td></tr></table></figure>
+<h4 id="4-最终-obj1-内部结构">4. 最终 obj1 内部结构</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">obj1:</span><br><span class="line">  map ------&gt; Map2</span><br><span class="line">  elements -&gt; []</span><br><span class="line">  properties -&gt; (可能为空)</span><br><span class="line"></span><br><span class="line">  in-object:</span><br><span class="line">    offset0 → 1 (x)</span><br><span class="line">    offset1 → 2 (y)</span><br></pre></td></tr></table></figure>
+<h3 id="六、从-exploitation-角度再补一层（非常重要）">六、从 exploitation 角度再补一层（非常重要）</h3>
+<p>你看那篇文章，其实关心的是：</p>
+<h4 id="👉-Map-是类型系统">👉 Map 是类型系统</h4>
+<p>漏洞利用常见套路：</p>
+<h5 id="1-类型混淆（Type-Confusion）">1. 类型混淆（Type Confusion）</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">obj1.map != obj2.map</span><br><span class="line">但被当成一样用</span><br></pre></td></tr></table></figure>
+<p>👉 导致：</p>
+<ul>
+<li>读取错误 offset</li>
+<li>越界访问</li>
+</ul>
+<h5 id="2-Map-控制内存布局">2. Map 控制内存布局</h5>
+<p>攻击目标：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">伪造 Map</span><br><span class="line">→ 控制 property offset</span><br><span class="line">→ 任意读写</span><br></pre></td></tr></table></figure>
+<h5 id="3-elements-vs-properties-混淆">3. elements vs properties 混淆</h5>
+<p>因为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">elements 是数组</span><br><span class="line">properties 是对象</span><br></pre></td></tr></table></figure>
+<p>👉 利用点：</p>
+<ul>
+<li>HOLEY_ELEMENTS</li>
+<li>PACKED_ELEMENTS</li>
+<li>转换 bug</li>
+</ul>
+<h3 id="七、一句话总结（非常重要）">七、一句话总结（非常重要）</h3>
+<blockquote>
+<p><strong>Map 决定“属性在哪”，Properties/Elements 存“值在哪”</strong></p>
+</blockquote>
+<p>更精确一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Map = layout（布局）</span><br><span class="line">Properties = named storage</span><br><span class="line">Elements = indexed storage</span><br></pre></td></tr></table></figure>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
@@ -482,7 +647,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-03-23 20:25:41
+              2026-03-23 21:51:25
             </span>
             
                   <span class="post-tags">
@@ -528,7 +693,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#V8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">V8是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaScript%E5%BC%95%E6%93%8E%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">JavaScript引擎的工作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaScript%E5%92%8CV8%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6"><span class="toc-text">JavaScript和V8内部机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Object-Representation-%E5%AF%B9%E8%B1%A1%E8%A1%A8%E7%A4%BA"><span class="toc-text">Object Representation 对象表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HiddenCLass%EF%BC%88Map%EF%BC%89and-Shape-Transitions"><span class="toc-text">HiddenCLass（Map）and Shape Transitions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#V8%E8%B0%83%E8%AF%95"><span class="toc-text">V8调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Properties"><span class="toc-text">Properties</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Elements"><span class="toc-text">Elements</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Viewing-Chrome-Objects-In-Memory"><span class="toc-text">Viewing Chrome Objects In-Memory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pointer-Tagging"><span class="toc-text">Pointer Tagging</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pointer-Compression"><span class="toc-text">Pointer Compression</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#V8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">V8是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaScript%E5%BC%95%E6%93%8E%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">JavaScript引擎的工作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaScript%E5%92%8CV8%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6"><span class="toc-text">JavaScript和V8内部机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Object-Representation-%E5%AF%B9%E8%B1%A1%E8%A1%A8%E7%A4%BA"><span class="toc-text">Object Representation 对象表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HiddenCLass%EF%BC%88Map%EF%BC%89and-Shape-Transitions"><span class="toc-text">HiddenCLass（Map）and Shape Transitions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#V8%E8%B0%83%E8%AF%95"><span class="toc-text">V8调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Properties"><span class="toc-text">Properties</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Elements"><span class="toc-text">Elements</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Viewing-Chrome-Objects-In-Memory"><span class="toc-text">Viewing Chrome Objects In-Memory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pointer-Tagging"><span class="toc-text">Pointer Tagging</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pointer-Compression"><span class="toc-text">Pointer Compression</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AI%E6%80%BB%E7%BB%93%E7%89%88"><span class="toc-text">AI总结版</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84%EF%BC%9AV8%E5%A6%82%E4%BD%95%E8%A1%A8%E7%A4%BA%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%9F"><span class="toc-text">一、整体结构：V8如何表示一个对象？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Map%EF%BC%88%E9%9A%90%E8%97%8F%E7%B1%BB%EF%BC%89%EF%BC%9A%E5%AF%B9%E8%B1%A1%E7%9A%84%E2%80%9C%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89%E2%80%9D"><span class="toc-text">二、Map（隐藏类）：对象的“结构定义”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-Map-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. Map 是什么？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-Map-%E5%86%85%E9%83%A8%E5%85%B3%E9%94%AE%E7%BB%93%E6%9E%84"><span class="toc-text">2. Map 内部关键结构</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-DescriptorArray%EF%BC%88%E6%8F%8F%E8%BF%B0%E7%AC%A6%E6%95%B0%E7%BB%84%EF%BC%89"><span class="toc-text">(1) DescriptorArray（描述符数组）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-TransitionArray%EF%BC%88%E7%8A%B6%E6%80%81%E8%BF%81%E7%A7%BB%EF%BC%89"><span class="toc-text">(2) TransitionArray（状态迁移）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-Map-%E6%8C%87%E9%92%88"><span class="toc-text">(3) Map 指针</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E7%94%A8%E4%BD%A0%E7%9A%84%E4%BE%8B%E5%AD%90%E8%A7%A3%E9%87%8A-Map"><span class="toc-text">3. 用你的例子解释 Map</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81Properties%EF%BC%9A%E6%99%AE%E9%80%9A%E5%B1%9E%E6%80%A7%E5%AD%98%E5%82%A8"><span class="toc-text">三、Properties：普通属性存储</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-Properties-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. Properties 是什么？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%B8%A4%E7%A7%8D%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F"><span class="toc-text">2. 两种存储方式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E2%9C%85-1-In-object-properties%EF%BC%88%E6%9C%80%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text">✅ (1) In-object properties（最重要）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E2%9D%97-2-properties-backing-store"><span class="toc-text">❗ (2) properties backing store</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Map-%E5%92%8C-Properties-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%88%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="toc-text">3. Map 和 Properties 的关系（核心）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Elements%EF%BC%9A%E6%95%B0%E7%BB%84-%E7%B4%A2%E5%BC%95%E5%B1%9E%E6%80%A7"><span class="toc-text">四、Elements：数组&#x2F;索引属性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-Elements-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. Elements 是什么？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8D%95%E7%8B%AC%E5%88%86%EF%BC%9F"><span class="toc-text">2. 为什么要单独分？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-obj1-%E6%9C%89%E6%B2%A1%E6%9C%89-elements%EF%BC%9F"><span class="toc-text">3. obj1 有没有 elements？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%89%E8%80%85%E5%85%B3%E7%B3%BB%E6%80%BB%E7%BB%93%EF%BC%88%E6%9C%80%E5%85%B3%E9%94%AE%EF%BC%89"><span class="toc-text">五、三者关系总结（最关键）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-Map-%E2%80%9C%E7%BB%93%E6%9E%84%E8%AF%B4%E6%98%8E%E4%B9%A6%E2%80%9D"><span class="toc-text">1. Map &#x3D; “结构说明书”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-Properties-%E2%80%9C%E6%95%B0%E6%8D%AE%E5%8C%BA%EF%BC%88%E5%AD%97%E7%AC%A6%E4%B8%B2key%EF%BC%89%E2%80%9D"><span class="toc-text">2. Properties &#x3D; “数据区（字符串key）”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Elements-%E2%80%9C%E6%95%B0%E7%BB%84%E6%95%B0%E6%8D%AE%E5%8C%BA%EF%BC%88%E6%95%B0%E5%AD%97key%EF%BC%89%E2%80%9D"><span class="toc-text">3. Elements &#x3D; “数组数据区（数字key）”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E6%9C%80%E7%BB%88-obj1-%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="toc-text">4. 最终 obj1 内部结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E-exploitation-%E8%A7%92%E5%BA%A6%E5%86%8D%E8%A1%A5%E4%B8%80%E5%B1%82%EF%BC%88%E9%9D%9E%E5%B8%B8%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text">六、从 exploitation 角度再补一层（非常重要）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%91%89-Map-%E6%98%AF%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="toc-text">👉 Map 是类型系统</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E7%B1%BB%E5%9E%8B%E6%B7%B7%E6%B7%86%EF%BC%88Type-Confusion%EF%BC%89"><span class="toc-text">1. 类型混淆（Type Confusion）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-Map-%E6%8E%A7%E5%88%B6%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-text">2. Map 控制内存布局</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-elements-vs-properties-%E6%B7%B7%E6%B7%86"><span class="toc-text">3. elements vs properties 混淆</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93%EF%BC%88%E9%9D%9E%E5%B8%B8%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text">七、一句话总结（非常重要）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
       
     </div>
   </div>
