@@ -169,7 +169,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2026-03-21 19:08:45
+          2026-03-23 20:17:08
         </span>
         
               <span class="post-tags">
@@ -371,10 +371,86 @@
 <p>那么，如果我们删除一个属性，transition tree会发生什么变化呢？在这种情况下，V8每次删除属性时都会创建一个新的Map，这其中存在一些微妙之处，我们知道，Map在内存使用方面相对昂贵，因此，当属性删除到一定程度时，继承（inheriting）和维护transition tree的成本会越来越高，速度也会越来越慢。如果删除对象的最后一个属性，Map只会调整其back pointer，使其返回到之前的Map，而不会创建一个新的Map。但是，<strong>如果我们删除对象的中间属性（middle property）会发生什么呢？在这种情况下，每当我们添加过多属性或删除非最后一个元素时，V8都会放弃维护transition tree，并切换到一种称为字典模式（dictionary mode）的较慢模式。</strong></p>
 <p>那么，什么是dictionary mode呢？既然我们已经了解了 V8 如何使用HiddenClass来跟踪对象的shape，现在我们可以回过头来，进一步了解这些Properties和Elements在 V8 中是如何存储和处理的。</p>
 <h2 id="Properties">Properties</h2>
+<p>如前所述，我们知道JavaScript对象有两种基本属性：命名属性（named properties）和索引属性（indexed elements）。下面首先介绍named properties。</p>
+<p>如果你还记得我们之前关于映射（Maps）和描述符数组（Descriptor Array）的讨论，我们提到过named properties可以存储在对象内部（In-Object）或属性数组（Property array）中。</p>
+<p>我们所说的对象内部属性（In-Object Property）是什么呢？</p>
+<p>在 V8 中，这种模式是一种非常快速的直接在对象上存储属性的方法，因为无需任何间接层即可访问属性。虽然速度很快，但它也受限于对象的初始大小。如果添加的属性数量超过了对象的空间，则新属性将被存储在属性存储区（properties store）中——这会增加一层间接层（one level of indirection）。</p>
+<p>一般来说，JavaScript引擎使用两种”模式（modes）“来存储属性，它们被分别称为：</p>
+<ul>
+<li><strong>Fast Properties：</strong> 通常用于定义存储在线性属性存储（linear properties store）中的属性。这些属性可以通过访问HiddenClass中的描述符数组（Descriptor Array），并根据在属性存储（properties store）中的索引查找来访问。</li>
+<li>**Slow Properties：**也称为“dictionary mode”，当添加或删除的属性过多，导致大量内存开销时，就会使用此模式。因此，具有慢属性（slow properties）的对象会使用一个独立的字典（a self-contained dictionary）作为属性存储。所有属性的元信息（meta information）不再存储在HiddenClass中的描述符数组（Descriptor Array）中，而是直接存储在属性字典中（properties dictionary）。V8 将使用哈希表（hash table）来访问这些属性。</li>
+</ul>
+<p>下面可以查看 Map 在过渡到（transitions to）具有自包含字典的慢属性（slow Properties）时的示例。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321232028666.png" alt="image-20260321232028666"></p>
+<p>这里还需要注意一点。形状过渡（Shape transitions）仅适用于快速属性（Fast Properties），而不适用于慢速属性（Slow Properties），因为字典形状（dictionary shapes）仅供单个对象使用，因此无法在不同对象之间共享，因而没有过渡（transitions）效果。</p>
 <h2 id="Elements">Elements</h2>
+<p>好了，至此，我们已经基本讲完了命名属性（named properties）。现在让我们来看看数组索引属性（array indexed properties）或元素（elements）。你可能会认为索引属性（indexed properties）的处理会更简单…但是你的想法是错误的。元素（elements）的处理并不比命名属性（named properties）简单。尽管所有索引属性（indexed properties）都保存在元素存储区（elements store）中，但V8会非常精确地区分每个数组包含的元素类型。实际上，该存储区可以跟踪大约<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/elements-kind.h;l=78">21种不同的元素类型！</a>这使得V8能够针对特定类型的元素（elements）优化对数组（array）的任何操作。</p>
+<p>这是什么意思你？下面来看这行代码的例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260322170624371.png" alt="image-20260322170624371"></p>
+<p>在JavaScript中，如果我们对这个数组执行<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">typeof操作</a>，它会判定该数组包含<code>numbers</code>因为JavaScript无法区分整数（integer）、浮点数（float）和双精度浮点数（double）。然而，V8的区分更加精确，会将该数组归类为<code>PACKED_SMI_ELEMENTS</code>，其中<code>SMI</code>指的是小整数（Small Integers）。</p>
+<p>那么，SMI到底有什么用呢？V8会跟踪每个数组包含哪些类别的元素。然后，它会利用这些信息来优化针对该类型元素的数组操作。在V8中，我们需要了解三种不同的元素类型，它们分别是：</p>
+<ul>
+<li>**<code>SMI_ELEMENTS</code>：**用于表示包含小整数（例如1、2、3等）的数组。</li>
+<li>**<code>DOUBLE_ELEMENTS</code>：**用于表示包含浮点数（floating-point）的数组，例如4.5、5.5等。</li>
+<li>**<code>ELEMENTS</code>：**用于表示包含字符串字面量元素（string literal elements）或无法表示为<code>SMI</code>或<code>Double</code>例如：<code>x</code>的数组。</li>
+</ul>
+<p>那么V8是如何使用数组的这些元素类型的呢？它们是针对整个数组设置的，还是针对每个元素设置的？</p>
+<p>答案是，元素类型是针对整个数组设置的。我们需要记住的重要一点是，元素类型（element kinds）之间存在一个”转换（transition）“，这个transition只能单向进行，我们可以采用”自顶向下（top down）“的方法来查看这个转换树（transition tree）。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260322173329762.png" alt="image-20260322173329762"></p>
+<p>例如，让我们以之前提到的数组示例为例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_SMI_ELEMENTS</span></span><br></pre></td></tr></table></figure>
+<p>如你所见，V8 将此数组的元素类型跟踪为打包的<code>SMI</code>（packed SMI），packed SMI是什么？这个后面会说到。现在，如果我们添加一个浮点数（floating-point number），则数组元素的类型将“转换（transition）”为 Double元素类型，如下所示。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_SMI_ELEMENTS</span></span><br><span class="line">array.<span class="title function_">push</span>(<span class="number">3.337</span>)</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_DOUBLE_ELEMENTS</span></span><br></pre></td></tr></table></figure>
+<p>这种transition的原因很简单，就是为了优化运算。因为我们使用的是浮点整数（floating-point integer），V8需要能够对这些值进行优化，所以它向下过渡（transitions）到<code>DOUBLES</code>，因为可以用<code>SMI</code>表示的数字集合是可以用双精度浮点（double）表示的数字集合的子集。</p>
+<p>由于元素类型的transitions是单向的，一旦数组被标记为较低类型（lower elements）的元素，例如<code>PACKED_DOUBLES_ELEMENTS</code>，即使我们替换或删除浮点整数，它也无法再”升级“（go back “up”）回<code>PACKED_SMI_ELEMENTS</code>。一般来说，创建数组时指定的元素类型越具体，可实现的优化就越精细（fine-grained）。元素类型越低，对对象的操作速度可能就越慢。</p>
+<p>接下来，我们还需要了解V8在跟踪索引被删除或为空时，元素后端存储方式的第一个主要区别。这些区别是：</p>
+<ul>
+<li>**PACKED：**用于表示密集数组（dense）,意味着数组中的所有可用元素都已填充。</li>
+<li>**HOLEY：**用于表示数组中存在”空位（holes）“，例如索引元素被删除或未定义时。这也被称为使数组”稀疏“（making an array ”sparse“）。</li>
+</ul>
+<p>那么让我们仔细看看。例如，我们来看一下两个数组：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> packed_array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">5.5</span>,<span class="string">&#x27;x&#x27;</span>];</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_ELEMENTS</span></span><br><span class="line"><span class="keyword">const</span> holey_array = [<span class="number">1</span>,<span class="number">2</span>,,<span class="number">5</span>,<span class="string">&#x27;x&#x27;</span>];</span><br><span class="line"><span class="comment">// Elements Kind: HOLEY_ELEMENTS</span></span><br></pre></td></tr></table></figure>
+<p>正如你所见，<code>holey_array</code>数组中存在”空洞（holes）“，因为我们忘记在索引上加上<code>3</code>，而是将其留空或设为<code>undefined</code>。V8之所以区分这两种数组，是因为对<code>packed arrays</code>的操作可以比对<code>holey_array</code>的操作进行更积极的优化。</p>
+<p>如果你想了解更多相关信息，我建议你观看Mathias Bynens的演讲&quot;V8 internals for JavaScript Developers&quot;<sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>，其中对此有非常详细的讲解。</p>
+<p>V8还实现了前面提到的<code>PACKED</code>和<code>HOLEY</code>数组上的元素类型转换，从而形成一个“晶格（lattice）”。下面是V8博客中对这些转换的简单可视化。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323142108914.png" alt="image-20260323142108914"></p>
+<p>再次强调，元素类型在这个lattice中，只能单向向下转换。例如，向SMI数组（SMI array）中添加一个浮点数（floating-point）会将其标记为双精度浮点数（double）；类似的，一旦数组中出现空位（hole），即使之后填充了该空位，它也会被永久标记为空位。</p>
+<p>V8对元素（elements）还有第二个需要我们理解的重要区别。在元素存储中（in the element backing stores），元素也可以是fast模式或dictionary-mode（slow）。快速元素（fast elements）就是一个数组，其中属性索引（property index）映射到元素存储（elements store）中对应项的偏移量。至于慢速数组（slow array），这种情况通常发生在只有少量条目被使用的大型稀疏数组（large sparse arrays）中。在这种情况下，数组存储（array backing store）会使用类似属性存储（properties store）中的字典表示（dictionary representation）来节省内存，但会牺牲一些性能。该字典会将键（key）、值（value）和元素属性存储（element attributes）在字典三元组值中。</p>
 <h2 id="Viewing-Chrome-Objects-In-Memory">Viewing Chrome Objects In-Memory</h2>
+<p>到目前为止，我们已经探讨了许多关于JavaScript和V8内部机制的复杂主题。希望你现在对V8底层运行的一些概念已经有了一定的了解。既然我们已经掌握了这些知识，接下来就让我们通过GDB来观察 V8 及其对象（objects）在内存中的运行情况，以及它们使用了哪些优化。这里我使用的是Linux中的Chrome V8，使用GDB调试V8程序，查看内存中的内容。</p>
+<p>我们知道我们已经研究过对象（objects）和映射（maps）的内存结构，也接触过<code>d8</code>库，所以我们应该对指针指向什么以及内存中数据的位置有了大致的了解。但是，不要以为事情，就这么简单。就像 V8 的所有功能一样，优化在保证其速度和效率方面起着至关重要的作用，这同样适用于它处理和存储内存值的方式。</p>
+<p>这是什么意思呢？下面不妨使用d8和gdb快速了解一下简单的V8对象结构。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./d8 --allow-natives-syntax</span><br></pre></td></tr></table></figure>
+<p>完成后，我们继续使用 <code>%DebugPrint()</code> 函数打印出对象的信息。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">root@x2n:/home/x2n/Documents/v8/v8/out/x64_.release# ./d8 --allow-natives-syntax</span><br><span class="line">V8 version 9.6.180.6</span><br><span class="line"><span class="meta prompt_">d8&gt; </span><span class="language-bash">var obj = &#123;x:1, y:2&#125;;</span>    </span><br><span class="line">undefined</span><br><span class="line"><span class="meta prompt_">d8&gt; </span><span class="language-bash">%DebugPrint(obj)</span></span><br><span class="line">DebugPrint: 0x3791080498ed: [JS_OBJECT_TYPE]</span><br><span class="line"> - map: 0x379108207aa1 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x3791081c41f5 &lt;Object map = 0x3791082021b9&gt;</span><br><span class="line"> - elements: 0x37910800222d &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - properties: 0x37910800222d &lt;FixedArray[0]&gt;</span><br><span class="line"> - All own properties (excluding elements): &#123;</span><br><span class="line">    0x3791081d3111: [String] in OldSpace: #x: 1 (const data field 0), location: in-object</span><br><span class="line">    0x3791081d3121: [String] in OldSpace: #y: 2 (const data field 1), location: in-object</span><br><span class="line"> &#125;</span><br><span class="line">0x379108207aa1: [Map]</span><br><span class="line"> - type: JS_OBJECT_TYPE</span><br><span class="line"> - instance size: 20</span><br><span class="line"> - inobject properties: 2</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - back pointer: 0x379108207a79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line"> - prototype_validity cell: 0x379108142405 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #2: 0x37910804991d &lt;DescriptorArray[2]&gt;</span><br><span class="line"> - prototype: 0x3791081c41f5 &lt;Object map = 0x3791082021b9&gt;</span><br><span class="line"> - constructor: 0x3791081c3e2d &lt;JSFunction Object (sfi = 0x37910814474d)&gt;</span><br><span class="line"> - dependent code: 0x3791080021b9 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br><span class="line"></span><br><span class="line">&#123;x: 1, y: 2&#125;</span><br></pre></td></tr></table></figure>
+<p>之后，启动gdb并将其附加到<code>d8</code>进程。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb -p $(pidof d8)</span><br></pre></td></tr></table></figure>
+<p>我们将使用<code>x/10wx 0x3791080498ed</code>，查看<code>0x3791080498ed</code>地址的内容。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323191204748.png" alt="image-20260323191204748"></p>
+<p>查案GDB输出，我们可以看到对象使用的内存地址是正确的。但是，当我们查看内存内容时，第一个地址（如果你还记得我们的 JSObject 结构，它应该是一个指向map的指针）似乎已损坏。嗯，人们可能会认为它损坏了，更有经验的逆向工程师或漏洞利用开发者甚至可能会认为存在偏移/对齐（offset/alignment）问题，从技术上讲，你的猜测很接近，但并不完全正确。</p>
+<p>朋友们，这又是 V8 引擎的优化在起作用。你们应该能理解为什么我们需要讨论这些优化，因为对于非专业人士来说，内存中发生的一切都会让人感到困惑不已。我们在这里实际看到的是两件事——指针压缩（Pointer Compression）和指针标记（Pointer Tagging）。</p>
+<p>我们首先来了解一下 V8 中的指针（Pointer）或值标记（Value tagging）。</p>
 <h2 id="Pointer-Tagging">Pointer Tagging</h2>
+<p>那么，什么是指针标记（pointer tagging）？我们为什么要使用它？</p>
+<p>我们知道，在 V8 中，值（values）被表示为对象（objects）并分配在堆上——无论它们是对象（objects）、数组（array）、数字（number）还是字符串（string）。现在，许多 JavaScript 程序实际上会对整数值（integer values）进行计算，因此，如果我们每次递增或修改值时都必须在 JavaScript 中创建一个新的 <code>Number()</code> 对象，那么就会增加创建对象和堆跟踪（heap tracking）的时间开销，并增加内存占用，从而导致效率低下。</p>
+<p>在这种情况下，V8 的做法是，它不会每次都创建一个新对象，而是将部分值直接存储到对象内部。虽然这种方法可行，但却带来了第二个问题：<strong>如何区分对象指针（object pointer）和内联值（inline value）？这就需要用到<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Tagged_pointer">指针标记（pointer tagging）了 </a>。</strong></p>
+<p>指针标记技术（Pointer tagging’s technique）基于这样的观察：</p>
+<p>在 x32 和 x64 系统中，已分配的数据必须按字对齐（4 字节）边界排列。由于数据以这种方式对齐，最低有效位 (LSB) 始终为零。<strong>标记技术（Tagging）随后使用最低两位来区分堆对象指针（heap object pointer）和整数（an integer）或 SMI。</strong></p>
+<p>在x64架构上，使用以下标记方案：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">            |----- 32 bits -----|----- 32 bits -------|</span><br><span class="line">Pointer:    |________________address______________(w1)|</span><br><span class="line">Smi:        |____int32_value____|000000000000000000(0)|</span><br></pre></td></tr></table></figure>
+<p>如示例所示，<strong>0 用于表示 SMI，1 用于表示指针</strong>。需要注意的是，你看到的是内存中的 SMI，虽然它们以内联方式存储（stored inline），但实际上会被复制两份以避免指针标记（pointer tag）。因此，<strong>如果原始值为 1，则在内存中它将是 2。</strong></p>
+<p>指针内部，第二个最低有效位（LSB）上还有一个 <em>“w”</em> ，它用于区分强指针和弱指针（strong or weak pointer）。如果您不熟悉强指针和弱指针的概念，我来解释一下。简单来说， <strong>强指针（strong pointer）表示其指向的对象必须保留在内存中（它代表一个对象），而弱指针（weak pointer）则指向可能已被删除的数据</strong>。当垃圾回收器（GC）删除对象时，它必须同时删除强指针，因为它保存着引用计数（reference count）。</p>
+<p>在这种指针标记（pointer tagging）方案下，对整数进行算术（arithmetic）或二进制运算（binary operations）时可以忽略标记（tag），因为低 32 位将全部为零。然而，当需要解引用（dereferencing a HeapObject）堆对象时，V8 需要先屏蔽（mask off）最低有效位，为此使用了一个特殊的访问器（accessor）来清除最低有效位。</p>
+<p>现在我们了解了这一点，回到GDB中的例子，<strong>通过从地址中减去 1 来清除最低有效位 (LSB)。这样应该就能得到有效的内存地址</strong>。完成后，输出应该如下所示。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323195426610.png" alt="image-20260323195426610"></p>
+<p>如您所见，清除最低有效位 (LSB) 后，内存中就出现了有效的指针地址！具体来说，我们有了映射 (map)、属性 (properties)、元素 (elements) 以及内联对象 (inline objects)。再次提醒，<strong>SMI 的值双倍了（doubled）</strong> ，因此原本存储值为 1 的 x 在内存中实际上是 2，2 也是如此，现在变成了 4。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323200046224.png" alt="image-20260323200046224"></p>
+<p>眼尖的人可能已经注意到，指针只有一半指向内存中的对象。这是为什么呢？</p>
+<p>如果你回答“这是另一种优化”，那就对了。这叫做指针压缩（Pointer Compression），我们接下来会详细讨论。</p>
 <h2 id="Pointer-Compression">Pointer Compression</h2>
+<p>Chrome和V8中的指针压缩（Pointer Compression）利用了堆上对象的一个有趣特性：堆对象通常彼此靠近，因此指针的最高有效位（ the most significant bits）很可能相同。在这种情况下，V8只将指针的一半（最低有效位，the least significant bits）保存到内存中，并将V8堆（称为<strong>isolate root</strong>）的最高有效位（高32位）放入**root register（R13）**中。每当我们需要访问指针时，只需将寄存器中的值与内存中的值相加，即可得到完整的地址。该压缩方案在V8的<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/common/ptr-compr-inl.h"><code>/src/common/ptr-compr-inl.h</code></a> 源文件中实现。</p>
+<p>基本上，V8 团队的目标是想方设法将两种类型的标记值（tagged values）都放入 64 位架构的 32 位中，特别是为了减少 V8 的开销，从而尽可能多地在 x64 架构中回收浪费的 4 个字节。</p>
 <h2 id="参考">参考</h2>
 <hr class="footnotes-sep">
 <section class="footnotes">
@@ -386,6 +462,8 @@
 <li id="fn3" class="footnote-item"><p>Understanding V8’s Bytecode <a target="_blank" rel="noopener" href="https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775">https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
 </li>
 <li id="fn4" class="footnote-item"><p>Firing up the Ignition Interpreter <a target="_blank" rel="noopener" href="https://v8.dev/blog/ignition-interpreter">https://v8.dev/blog/ignition-interpreter</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p>V8 internals for JavaScript Developers <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=m9cTaYI95Zc">https://www.youtube.com/watch?v=m9cTaYI95Zc</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
 </li>
 </ol>
 </section>
@@ -404,7 +482,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2026-03-21 19:08:45
+              2026-03-23 20:17:08
             </span>
             
                   <span class="post-tags">
