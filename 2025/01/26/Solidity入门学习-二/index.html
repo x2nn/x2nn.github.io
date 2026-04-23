@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="控制流 这一讲，我们将介绍 Solidity 中的控制流。 测试代码 Control.sol ，代码如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 3…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      Solidity入门学习(二) 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2025/01/26/Solidity入门学习-二/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="Solidity入门学习(二) | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="控制流 这一讲，我们将介绍 Solidity 中的控制流。 测试代码 Control.sol ，代码如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 3…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2025/01/26/Solidity入门学习-二/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2025-01-26T06:13:20.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2025-09-30T05:04:35.110Z" />
+    
+    
+      <meta property="article:tag" content="以太坊" />
+    
+      <meta property="article:tag" content="Solidity" />
+    
+      <meta property="article:tag" content="Blockchain" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Solidity入门学习(二) | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="控制流 这一讲，我们将介绍 Solidity 中的控制流。 测试代码 Control.sol ，代码如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 3…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Solidity入门学习(二)</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-09-30 13:04:35
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" title="以太坊">
+                    #以太坊
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Solidity/" title="Solidity">
+                    #Solidity
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Blockchain/" title="Blockchain">
+                    #Blockchain
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web3/" title="Web3">
+                    <b>#</b> Web3
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="控制流" tabindex="-1"><a class="headerlink" href="#控制流" aria-hidden="true"></a> 控制流</h2>
+<p>这一讲，我们将介绍<code>Solidity</code>中的控制流。</p>
+<p>测试代码<code>Control.sol</code>，代码如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Controlflow</span> </span>&#123;</span><br><span class="line">    <span class="comment">// if else</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">ifElseTest</span>(<span class="params"><span class="keyword">uint256</span> _number</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">bool</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(_number <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span>(<span class="literal">true</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">return</span>(<span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// for loop</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">forLoopTest</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">uint</span> sum <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">uint</span> i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> <span class="number">10</span>; i<span class="operator">+</span><span class="operator">+</span>)&#123;</span><br><span class="line">            sum <span class="operator">+</span><span class="operator">=</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span>(sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// while</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">whileTest</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">uint</span> sum <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">uint</span> i <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span>(i <span class="operator">&lt;</span> <span class="number">10</span>)&#123;</span><br><span class="line">            sum <span class="operator">+</span><span class="operator">=</span> i;</span><br><span class="line">            i<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span>(sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// do-while</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">doWhileTest</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">uint</span> sum <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">uint</span> i <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        do&#123;</span><br><span class="line">            sum <span class="operator">+</span><span class="operator">=</span> i;</span><br><span class="line">            i<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">        &#125;<span class="keyword">while</span>(i <span class="operator">&lt;</span> <span class="number">10</span>);</span><br><span class="line">        <span class="keyword">return</span>(sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 三元运算符 ternary/conditional operator</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">ternaryTest</span>(<span class="params"><span class="keyword">uint256</span> x, <span class="keyword">uint256</span> y</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">        <span class="comment">// return the max of x and y</span></span><br><span class="line">        <span class="keyword">return</span> x <span class="operator">&gt;</span><span class="operator">=</span> y ? x: y; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意⚠️</strong>：<code>Solidity</code>中最常用的变量类型是<code>uint</code>，也就是正整数，取到负值的话，会报<code>underflow</code>错误。</p>
+<h3 id="控制流-1" tabindex="-1"><a class="headerlink" href="#控制流-1" aria-hidden="true"></a> 控制流</h3>
+<p><code>Solidity</code>的控制流与其他语言类似，主要包含以下几种：</p>
+<ol>
+<li>if-else</li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ifElseTest</span>(<span class="params"><span class="keyword">uint256</span> _number</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">bool</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(_number <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span>(<span class="literal">true</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span>(<span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>for循环</li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">forLoopTest</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">uint</span> sum <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">uint</span> i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> <span class="number">10</span>; i<span class="operator">+</span><span class="operator">+</span>)&#123;</span><br><span class="line">        sum <span class="operator">+</span><span class="operator">=</span> i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>(sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>while循环</li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">whileTest</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">uint</span> sum <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint</span> i <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(i <span class="operator">&lt;</span> <span class="number">10</span>)&#123;</span><br><span class="line">        sum <span class="operator">+</span><span class="operator">=</span> i;</span><br><span class="line">        i<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>(sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>do-while循环</li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doWhileTest</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">uint</span> sum <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint</span> i <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    do&#123;</span><br><span class="line">        sum <span class="operator">+</span><span class="operator">=</span> i;</span><br><span class="line">        i<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">    &#125;<span class="keyword">while</span>(i <span class="operator">&lt;</span> <span class="number">10</span>);</span><br><span class="line">    <span class="keyword">return</span>(sum);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>三目运算</li>
+</ol>
+<p>三元运算符是<code>Solidity</code>中唯一一个接受三个操作数的运算符，规则<code>条件? 条件为真的表达式:条件为假的表达式</code>。此运算符经常用作<code>if</code>语句的快捷方式。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 三元运算符 ternary/conditional operator</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ternaryTest</span>(<span class="params"><span class="keyword">uint256</span> x, <span class="keyword">uint256</span> y</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint256</span></span>)</span>&#123;</span><br><span class="line">    <span class="comment">// return the max of x and y</span></span><br><span class="line">    <span class="keyword">return</span> x <span class="operator">&gt;</span><span class="operator">=</span> y ? x: y; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>另外还有<code>continue</code>（立即进入下一个循环）和<code>break</code>（跳出当前循环）关键字可以使用。</strong></p>
+<h2 id="构造函数和修饰器" tabindex="-1"><a class="headerlink" href="#构造函数和修饰器" aria-hidden="true"></a> 构造函数和修饰器</h2>
+<p>这一讲，我们将用合约权限控制（<code>Ownable</code>）的例子介绍<code>Solidity</code>语言中构造函数（<code>constructor</code>）和独有的修饰器（<code>modifier</code>）。测试代码<code>Owner.sol</code>，如下所示：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Owner</span> </span>&#123;</span><br><span class="line">    <span class="comment">//定义owner变量</span></span><br><span class="line">    <span class="keyword">address</span> <span class="keyword">public</span> owner;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//构造函数</span></span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"><span class="keyword">address</span> initialOwner</span>)</span>&#123;</span><br><span class="line">        <span class="comment">//在部署合约时，将owner设置为initialOwner</span></span><br><span class="line">        owner <span class="operator">=</span> initialOwner;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">modifier</span> <span class="title">onlyOwner</span></span>&#123;</span><br><span class="line">        <span class="comment">//检查地址是否为owner</span></span><br><span class="line">        <span class="built_in">require</span>(<span class="built_in">msg</span>.<span class="built_in">sender</span> <span class="operator">=</span><span class="operator">=</span> owner);</span><br><span class="line">        <span class="comment">//如果是的话，继续运行函数主体，否则报错并revert交易</span></span><br><span class="line">        <span class="keyword">_</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">changeOwner</span>(<span class="params"><span class="keyword">address</span> _newOwner</span>) <span class="title"><span class="keyword">external</span></span> <span class="title">onlyOwner</span></span>&#123;</span><br><span class="line">        <span class="comment">//只有owner能运行这个函数</span></span><br><span class="line">        owner <span class="operator">=</span> _newOwner;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="构造函数" tabindex="-1"><a class="headerlink" href="#构造函数" aria-hidden="true"></a> 构造函数</h3>
+<p>构造函数（<code>constructor</code>）是一种特殊的函数，每个合约可以定义一个，并在部署合约的时候自动运行一次。它可以用来初始化合约的一些参数，例如初始化合约的<code>owner</code>地址。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">address</span> owner; <span class="comment">// 定义owner变量</span></span><br><span class="line"><span class="comment">// 构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">constructor</span>(<span class="params"><span class="keyword">address</span> initialOwner</span>) </span>&#123;</span><br><span class="line">    owner <span class="operator">=</span> initialOwner; <span class="comment">// 在部署合约的时候，将owner设置为传入的initialOwner地址</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong>：构造函数在不同的Solidity版本中的语法并不一致，在<strong>Solidity 0.4.22之前</strong>，构造函数不使用 <code>constructor</code> 而是使用与合约名同名的函数作为构造函数而使用，由于这种旧写法容易使开发者在书写时发生疏漏（例如合约名叫 <code>Parents</code>，构造函数名写成 <code>parents</code>），使得构造函数变成普通函数，引发漏洞，所以0.4.22版本及之后，采用了全新的 <code>constructor</code> 写法。</p>
+<p>构造函数的旧写法代码示例：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> =0.4.21;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Parents</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 与合约名Parents同名的函数就是构造函数</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">Parents</span> (<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="修饰器" tabindex="-1"><a class="headerlink" href="#修饰器" aria-hidden="true"></a> 修饰器</h3>
+<p>修饰器（<code>modifier</code>）是<code>Solidity</code>特有的语法，类似于面向对象编程中的装饰器（<code>decorator</code>），声明函数拥有的特性，并减少代码冗余。它就像钢铁侠的智能盔甲，穿上它的函数会带有某些特定的行为。<code>modifier</code>的主要使用场景是运行函数前的检查，例如地址，变量，余额等。</p>
+<p>我们来定义一个叫做onlyOwner的modifier：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">modifier</span> <span class="title">onlyOwner</span></span>&#123;</span><br><span class="line">        <span class="comment">//检查地址是否为owner</span></span><br><span class="line">        <span class="built_in">require</span>(<span class="built_in">msg</span>.<span class="built_in">sender</span> <span class="operator">=</span><span class="operator">=</span> owner);</span><br><span class="line">        <span class="comment">//如果是的话，继续运行函数主体，否则报错并revert交易</span></span><br><span class="line">        <span class="keyword">_</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>带有<code>onlyOwner</code>修饰符的函数只能被<code>owner</code>地址调用，比如下面这个例子：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义一个带有onlyOwner修饰符的函数</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">changeOwner</span>(<span class="params"><span class="keyword">address</span> _newOwner</span>) <span class="title"><span class="keyword">external</span></span> <span class="title">onlyOwner</span></span>&#123;</span><br><span class="line">        <span class="comment">//只有owner能运行这个函数，并改变owner</span></span><br><span class="line">        owner <span class="operator">=</span> _newOwner;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>我们定义了一个<code>changeOwner</code>函数，运行它可以改变合约的<code>owner</code>，但是由于<code>onlyOwner</code>修饰符的存在，只有原先的<code>owner</code>可以调用，别人调用就会报错。这也是最常用的控制智能合约权限的方法。</p>
+<h3 id="运行测试" tabindex="-1"><a class="headerlink" href="#运行测试" aria-hidden="true"></a> 运行测试</h3>
+<p>首先是部署代码，传递一个需要初始化的<code>owner</code>，初始化<code>owner</code>为<code>0x5B38Da6a701c568545dCfcB03FcB875f56beddC4</code></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126150027700.png" alt="image-20250126150027700" loading="lazy" decoding="async"></p>
+<p>使用另一个用户<code>0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2</code>，去调用合约，并尝试修改<code>owner</code>。<code>owner</code>修改失败！</p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126150311002.png" alt="image-20250126150311002" loading="lazy" decoding="async"></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126150255810.png" alt="image-20250126150255810" loading="lazy" decoding="async"></p>
+<p>尝试使用部署时输入的账户``0x5B38Da6a701c568545dCfcB03FcB875f56beddC4`。</p>
+<p>去改变<code>owner</code>为<code>0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2</code>，<code>owner</code>修改成功！</p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126150540552.png" alt="image-20250126150540552" loading="lazy" decoding="async"></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126150740601.png" alt="image-20250126150740601" loading="lazy" decoding="async"></p>
+<h2 id="事件" tabindex="-1"><a class="headerlink" href="#事件" aria-hidden="true"></a> 事件</h2>
+<p>这一讲，我们用转账ERC20代币为例来介绍<code>Solidity</code>中的事件（<code>event</code>）。</p>
+<p>测试代码<code>Events.sol</code>,代码如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.4;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Events</span></span>&#123;</span><br><span class="line">    <span class="comment">//定义_balances映射变量，记录每个地址的比特币数量</span></span><br><span class="line">    <span class="keyword">mapping</span>(<span class="keyword">address</span> <span class="operator">=</span><span class="operator">&gt;</span> <span class="keyword">uint256</span>) <span class="keyword">public</span> _balances;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定义Transfer event，记录transfer交易的转账地址，接收地址和转账数量。</span></span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Transfer</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">indexed</span> <span class="keyword">from</span>,<span class="keyword">address</span> <span class="keyword">indexed</span> to,<span class="keyword">uint256</span> value</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定义_transfer函数，执行转账逻辑</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">_transfer</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">address</span> <span class="keyword">from</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">address</span> to,</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">uint256</span> amount</span></span></span><br><span class="line"><span class="params"><span class="function">    </span>) <span class="title"><span class="keyword">external</span></span> </span>&#123;</span><br><span class="line">        <span class="comment">//给转账地址一些初始代币</span></span><br><span class="line">        _balances[<span class="keyword">from</span>] <span class="operator">=</span> <span class="number">10000000</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//from地址减去转账数量</span></span><br><span class="line">        _balances[<span class="keyword">from</span>] <span class="operator">-</span><span class="operator">=</span> amount;</span><br><span class="line">        <span class="comment">//to地址加上转账数量</span></span><br><span class="line">        _balances[to] <span class="operator">+</span><span class="operator">=</span> amount;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//释放事件</span></span><br><span class="line">        <span class="keyword">emit</span> Transfer(<span class="keyword">from</span>, to, amount);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="事件-1" tabindex="-1"><a class="headerlink" href="#事件-1" aria-hidden="true"></a> 事件</h3>
+<p><code>Solidity</code>中的事件（<code>event</code>）是<code>EVM</code>上日志的抽象，它具有两个特点：</p>
+<ul>
+<li>响应：应用程序（<a target="_blank" rel="noopener" href="https://learnblockchain.cn/docs/ethers.js/api-contract.html#id18"><code>ethers.js</code></a>）可以通过<code>RPC</code>接口订阅和监听这些事件，并在前端做响应。</li>
+<li>经济：事件是<code>EVM</code>上比较经济的存储数据的方式，每个大概消耗2,000 <code>gas</code>；相比之下，链上存储一个新变量至少需要20,000 <code>gas</code>。</li>
+</ul>
+<h3 id="声明事件" tabindex="-1"><a class="headerlink" href="#声明事件" aria-hidden="true"></a> 声明事件</h3>
+<p>事件的声明由<code>event</code>关键字开头，接着是事件名称，括号里面写好事件需要记录的变量类型和变量名。</p>
+<p>以<code>ERC20</code>代币合约的<code>Transfer</code>事件为例：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">event</span> <span class="title">Transfer</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">indexed</span> <span class="keyword">from</span>, <span class="keyword">address</span> <span class="keyword">indexed</span> to, <span class="keyword">uint256</span> value</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到，<code>Transfer</code>事件共记录了3个变量<code>from</code>，<code>to</code>和<code>value</code>，分别对应代币的转账地址，接收地址和转账数量，其中<code>from</code>和<code>to</code>前面带有<code>indexed</code>关键字，他们会保存在以太坊虚拟机日志的<code>topics</code>中，方便之后检索。</p>
+<h3 id="释放事件" tabindex="-1"><a class="headerlink" href="#释放事件" aria-hidden="true"></a> 释放事件</h3>
+<p>我们可以在函数里释放事件。在下面的例子中，每次用<code>_transfer()</code>函数进行转账操作的时候，都会释放<code>Transfer</code>事件，并记录相应的变量。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义_transfer函数，执行转账逻辑</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_transfer</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">address</span> <span class="keyword">from</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">address</span> to,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">uint256</span> amount</span></span></span><br><span class="line"><span class="params"><span class="function"></span>) <span class="title"><span class="keyword">external</span></span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    _balances[<span class="keyword">from</span>] <span class="operator">=</span> <span class="number">10000000</span>; <span class="comment">// 给转账地址一些初始代币</span></span><br><span class="line"></span><br><span class="line">    _balances[<span class="keyword">from</span>] <span class="operator">-</span><span class="operator">=</span>  amount; <span class="comment">// from地址减去转账数量</span></span><br><span class="line">    _balances[to] <span class="operator">+</span><span class="operator">=</span> amount; <span class="comment">// to地址加上转账数量</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放事件</span></span><br><span class="line">    <span class="keyword">emit</span> Transfer(<span class="keyword">from</span>, to, amount);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="evm日志log" tabindex="-1"><a class="headerlink" href="#evm日志log" aria-hidden="true"></a> EVM日志(Log)</h3>
+<p>以太坊虚拟机（EVM）用日志<code>Log</code>来存储<code>Solidity</code>事件，每条日志记录都包含主题<code>topics</code>和数据<code>data</code>两部分。</p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126183129690.png" alt="image-20250126183129690" loading="lazy" decoding="async"></p>
+<h3 id="主题topics" tabindex="-1"><a class="headerlink" href="#主题topics" aria-hidden="true"></a> 主题(Topics)</h3>
+<p>日志的第一部分是主题数组，用于描述事件，长度不能超过<code>4</code>。它的第一个元素是事件的签名（哈希）。</p>
+<p>对于上面的<code>Transfer</code>事件，它的事件哈希就是：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">keccak256</span>(<span class="string">&quot;Transfer(address,address,uint256)&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef</span></span><br></pre></td></tr></table></figure>
+<p>除了事件哈希，主题还可以包含至多<code>3</code>个<code>indexed</code>参数，也就是<code>Transfer</code>事件中的<code>from</code>和<code>to</code>。</p>
+<p><code>indexed</code>标记的参数可以理解为检索事件的索引“键”，方便之后搜索。每个 <code>indexed</code> 参数的大小为固定的256比特，如果参数太大了（比如字符串），就会自动计算哈希存储在主题中。</p>
+<p>这里其实会引入一个新的问题，根据Solidity的<a target="_blank" rel="noopener" href="https://docs.soliditylang.org/en/v0.8.27/abi-spec.html#encoding-of-indexed-event-parameters">官方文档</a>, 对于非值类型的参数（如arrays, bytes, strings）, Solidity不会直接存储，而是会将<code>Keccak-256</code>哈希存储在主题中，从而导致数据信息的丢失。这对于某些依赖于链上事件的DAPP（跨链，用户注册等等）来说，可能会导致事件检索困难，需要解析哈希值。</p>
+<h3 id="数据data" tabindex="-1"><a class="headerlink" href="#数据data" aria-hidden="true"></a> 数据(Data)</h3>
+<p>事件中不带 <code>indexed</code>的参数会被存储在 <code>data</code> 部分中，可以理解为事件的&quot;值&quot;。<code>data</code> 部分的变量不能被直接检索，但可以存储任意大小的数据。因此一般 <code>data</code> 部分可以用来存储复杂的数据结构，例如数组和字符串等等，因为这些数据超过了256比特，即使存储在事件的 <code>topics</code> 部分中，也是以哈希的方式存储。另外，<code>data</code> 部分的变量在存储上消耗的gas相比于 <code>topics</code> 更少。</p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126185114449.png" alt="image-20250126185114449" loading="lazy" decoding="async"></p>
+<p><code>Topics</code>里面有三个元素，第一个是这个事件的哈希，第二和三是我们定义的两个<code>indexed</code>变量的信息，即转账的转出地址和接收地址。<code>Data</code>里面是剩下的不带<code>indexed</code>的变量，也就是转账数量。可以在上图看到<code>Data</code>部分为<code>0x32</code>，50的16进制。</p>
+<h2 id="继承" tabindex="-1"><a class="headerlink" href="#继承" aria-hidden="true"></a> 继承</h2>
+<p>这一讲，我们介绍<code>Solidity</code>中的继承（<code>inheritance</code>），包括简单继承，多重继承，以及修饰器（<code>Modifier</code>）和构造函数（<code>Constructor</code>）的继承。</p>
+<h3 id="继承-1" tabindex="-1"><a class="headerlink" href="#继承-1" aria-hidden="true"></a> 继承</h3>
+<p>继承是面向对象编程很重要的组成部分，可以显著减少重复代码。如果把合约看作是对象的话，<code>Solidity</code>也是面向对象的编程，也支持继承。</p>
+<h3 id="规则" tabindex="-1"><a class="headerlink" href="#规则" aria-hidden="true"></a> 规则</h3>
+<ul>
+<li><code>virtual</code>: 父合约中的函数，如果<strong>希望子合约重写，需要加上<code>virtual</code>关键字。</strong></li>
+<li><code>override</code>：<strong>子合约重写了父合约中的函数，需要加上<code>override</code>关键字</strong>。</li>
+</ul>
+<p><strong>注意</strong>：用<code>override</code>修饰<code>public</code>变量，会重写与变量同名的<code>getter</code>函数，例如：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mapping</span>(<span class="keyword">address</span> <span class="operator">=</span><span class="operator">&gt;</span> <span class="keyword">uint256</span>) <span class="keyword">public</span> <span class="keyword">override</span> balanceOf;</span><br></pre></td></tr></table></figure>
+<h3 id="简单继承" tabindex="-1"><a class="headerlink" href="#简单继承" aria-hidden="true"></a> 简单继承</h3>
+<p>我们先写一个简单的爷爷合约<code>Yeye</code>，里面包含1个<code>Log</code>事件和3个<code>function</code>: <code>hip()</code>, <code>pop()</code>, <code>yeye()</code>，输出都是”Yeye”。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Yeye</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">string</span> <span class="built_in">msg</span></span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 定义3个function: hip(), pop(), yeye()，Log值为Yeye。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">yeye</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们再定义一个爸爸合约<code>Baba</code>，让他继承<code>Yeye</code>合约，语法就是<code>contract Baba is Yeye</code>，非常直观。在<code>Baba</code>合约里，我们重写一下<code>hip()</code>和<code>pop()</code>这两个函数，加上<code>override</code>关键字，并将他们的输出改为<code>”Baba”</code>；并且加一个新的函数<code>baba</code>，输出也是<code>”Baba”</code>。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Baba</span> <span class="keyword">is</span> <span class="title">Yeye</span></span>&#123;</span><br><span class="line">    <span class="comment">// 继承两个function: hip()和pop()，输出改为Baba。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">baba</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完整的测试代码<code>Yeye.sol</code>，如下所示：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Yeye</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">string</span> <span class="built_in">msg</span></span>)</span>;</span><br><span class="line">    <span class="comment">// 定义3个function: hip(), pop(), yeye()，Log值为Yeye。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">yeye</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Baba</span> <span class="keyword">is</span> <span class="title">Yeye</span></span>&#123;</span><br><span class="line">    <span class="comment">// 继承两个function: hip()和pop()，输出改为Baba。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">baba</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126213523593.png" alt="image-20250126213523593" loading="lazy" decoding="async"></p>
+<h3 id="多重继承" tabindex="-1"><a class="headerlink" href="#多重继承" aria-hidden="true"></a> 多重继承</h3>
+<p><code>Solidity</code>的合约可以继承多个合约。规则：</p>
+<ol>
+<li>继承时要按辈分最高到最低的顺序排。比如我们写一个<code>Erzi</code>合约，继承<code>Yeye</code>合约和<code>Baba</code>合约，那么就要写成<code>contract Erzi is Yeye, Baba</code>，而不能写成<code>contract Erzi is Baba, Yeye</code>，不然就会报错。</li>
+<li>如果某一个函数在多个继承的合约里都存在，比如例子中的<code>hip()</code>和<code>pop()</code>，在子合约里必须重写，不然会报错。</li>
+<li>重写在多个父合约中都重名的函数时，<code>override</code>关键字后面要加上所有父合约名字，例如<code>override(Yeye, Baba)</code>。</li>
+</ol>
+<p>例子：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Erzi</span> <span class="keyword">is</span> <span class="title">Yeye</span>, <span class="title">Baba</span></span>&#123;</span><br><span class="line">    <span class="comment">// 继承两个function: hip()和pop()，输出值为Erzi。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span>(<span class="params">Yeye, Baba</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Erzi&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span>(<span class="params">Yeye, Baba</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Erzi&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到，<code>Erzi</code>合约里面重写了<code>hip()</code>和<code>pop()</code>两个函数，将输出改为<code>”Erzi”</code>，并且还分别从<code>Yeye</code>和<code>Baba</code>合约继承了<code>yeye()</code>和<code>baba()</code>两个函数。</p>
+<p>完整的测试代码<code>Yeye.sol</code>，完整的代码如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Yeye</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">string</span> <span class="built_in">msg</span></span>)</span>;</span><br><span class="line">    <span class="comment">// 定义3个function: hip(), pop(), yeye()，Log值为Yeye。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">yeye</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Baba</span> <span class="keyword">is</span> <span class="title">Yeye</span></span>&#123;</span><br><span class="line">    <span class="comment">// 继承两个function: hip()和pop()，输出改为Baba。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">baba</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Baba&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Erzi</span> <span class="keyword">is</span> <span class="title">Yeye</span>, <span class="title">Baba</span></span>&#123;</span><br><span class="line">    <span class="comment">// 继承两个function: hip()和pop()，输出值为Erzi。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span>(<span class="params">Yeye, Baba</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Erzi&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span>(<span class="params">Yeye, Baba</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Erzi&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126213416543.png" alt="image-20250126213416543" loading="lazy" decoding="async"></p>
+<h3 id="修饰器的继承" tabindex="-1"><a class="headerlink" href="#修饰器的继承" aria-hidden="true"></a> 修饰器的继承</h3>
+<p><code>Solidity</code>中的修饰器（<code>Modifier</code>）同样可以继承，用法与函数继承类似，在相应的地方加<code>virtual</code>和<code>override</code>关键字即可。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Base1</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">modifier</span> <span class="title">exactDividedBy2And3</span>(<span class="params"><span class="keyword">uint</span> _a</span>) <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="built_in">require</span>(_a <span class="operator">%</span> <span class="number">2</span> <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">&amp;</span><span class="operator">&amp;</span> _a <span class="operator">%</span> <span class="number">3</span> <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">_</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Identifier</span> <span class="keyword">is</span> <span class="title">Base1</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//计算一个数分别被2除和被3除的值，但是传入的参数必须是2和3的倍数</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getExactDividedBy2And3</span>(<span class="params"><span class="keyword">uint</span> _dividend</span>) <span class="title"><span class="keyword">public</span></span> <span class="title">exactDividedBy2And3</span>(<span class="params">_dividend</span>) <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span>, <span class="keyword">uint</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getExactDividedBy2And3WithoutModifier(_dividend);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//计算一个数分别被2除和被3除的值</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getExactDividedBy2And3WithoutModifier</span>(<span class="params"><span class="keyword">uint</span> _dividend</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span>, <span class="keyword">uint</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">uint</span> div2 <span class="operator">=</span> _dividend <span class="operator">/</span> <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">uint</span> div3 <span class="operator">=</span> _dividend <span class="operator">/</span> <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">return</span> (div2, div3);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Identifier</code>合约可以直接在代码中使用父合约中的<code>exactDividedBy2And3</code>修饰器，也可以利用<code>override</code>关键字重写修饰器：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">modifier</span> <span class="title">exactDividedBy2And3</span>(<span class="params"><span class="keyword">uint</span> _a</span>) <span class="title"><span class="keyword">override</span></span> </span>&#123;</span><br><span class="line">    <span class="keyword">_</span>;</span><br><span class="line">    <span class="built_in">require</span>(_a <span class="operator">%</span> <span class="number">2</span> <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">&amp;</span><span class="operator">&amp;</span> _a <span class="operator">%</span> <span class="number">3</span> <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126214328979.png" alt="image-20250126214328979" loading="lazy" decoding="async"></p>
+<p>完整的测试代码<code>Base1.sol</code>，代码如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.4;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Base1</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">modifier</span> <span class="title">exactDividedBy2And3</span>(<span class="params"><span class="keyword">uint</span> _a</span>) <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="built_in">require</span>(_a <span class="operator">%</span> <span class="number">2</span> <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">&amp;</span><span class="operator">&amp;</span> _a <span class="operator">%</span> <span class="number">3</span> <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">_</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Identifier</span> <span class="keyword">is</span> <span class="title">Base1</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//计算一个数分别被2除和被3除的值，但是传入的参数必须是2和3的倍数</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getExactDividedBy2And3</span>(<span class="params"><span class="keyword">uint</span> _dividend</span>) <span class="title"><span class="keyword">public</span></span> <span class="title">exactDividedBy2And3</span>(<span class="params">_dividend</span>) <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span>, <span class="keyword">uint</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getExactDividedBy2And3WithoutModifier(_dividend);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//计算一个数分别被2除和被3除的值</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getExactDividedBy2And3WithoutModifier</span>(<span class="params"><span class="keyword">uint</span> _dividend</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span>, <span class="keyword">uint</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">uint</span> div2 <span class="operator">=</span> _dividend <span class="operator">/</span> <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">uint</span> div3 <span class="operator">=</span> _dividend <span class="operator">/</span> <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">return</span> (div2, div3);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="构造函数的继承" tabindex="-1"><a class="headerlink" href="#构造函数的继承" aria-hidden="true"></a> 构造函数的继承</h3>
+<p>子合约有两种方法继承父合约的构造函数。举个简单的例子，父合约<code>A</code>里面有一个状态变量<code>a</code>，并由构造函数的参数来确定：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造函数的继承</span></span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">contract</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint</span> <span class="keyword">public</span> a;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"><span class="keyword">uint</span> _a</span>) </span>&#123;</span><br><span class="line">        a <span class="operator">=</span> _a;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>在继承时声明父构造函数的参数，例如：<code>contract B is A(6)</code></li>
+<li>在子合约的构造函数中声明构造函数的参数，例如：</li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">C</span> <span class="keyword">is</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"><span class="keyword">uint</span> _c</span>) <span class="title">A</span>(<span class="params">_c * _c</span>) </span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完整的测试代码<code>A.sol</code>如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.4;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">uint</span> <span class="keyword">public</span> a;</span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"><span class="keyword">uint</span> _a</span>) </span>&#123;</span><br><span class="line">        a <span class="operator">=</span> _a;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">C</span> <span class="keyword">is</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"><span class="keyword">uint</span> _c</span>) <span class="title">A</span>(<span class="params">_c * _c</span>) </span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126214956006.png" alt="image-20250126214956006" loading="lazy" decoding="async"></p>
+<h3 id="调用父合约的函数" tabindex="-1"><a class="headerlink" href="#调用父合约的函数" aria-hidden="true"></a> 调用父合约的函数</h3>
+<p>子合约有两种方式调用父合约的函数，直接调用和利用<code>super</code>关键字。</p>
+<ol>
+<li>直接调用：子合约可以直接用<code>父合约名.函数名()</code>的方式来调用父合约函数，例如<code>Yeye.pop()</code></li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">callParent</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span></span>&#123;</span><br><span class="line">    Yeye.<span class="built_in">pop</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><code>super</code>关键字：子合约可以利用<code>super.函数名()</code>来调用最近的父合约函数。<code>Solidity</code>继承关系按声明时从右到左的顺序是：<code>contract Erzi is Yeye, Baba</code>，那么<code>Baba</code>是最近的父合约，<code>super.pop()</code>将调用<code>Baba.pop()</code>而不是<code>Yeye.pop()</code>：</li>
+</ol>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">callParentSuper</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span></span>&#123;</span><br><span class="line">    <span class="comment">// 将调用最近的父合约函数，Baba.pop()</span></span><br><span class="line">    <span class="built_in">super</span>.<span class="built_in">pop</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="钻石继承" tabindex="-1"><a class="headerlink" href="#钻石继承" aria-hidden="true"></a> 钻石继承</h3>
+<p>在面向对象编程中，钻石继承（菱形继承）指一个派生类同时有两个或两个以上的基类。</p>
+<p>在多重+菱形继承链条上使用<code>super</code>关键字时，需要注意的是使用<code>super</code>会调用继承链条上的每一个合约的相关函数，而不是只调用最近的父合约。</p>
+<p>我们先写一个合约<code>God</code>，再写<code>Adam</code>和<code>Eve</code>两个合约继承<code>God</code>合约，最后让创建合约<code>people</code>继承自<code>Adam</code>和<code>Eve</code>，每个合约都有<code>foo</code>和<code>bar</code>两个函数。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.13;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 继承树：</span></span><br><span class="line"><span class="comment">  God</span></span><br><span class="line"><span class="comment"> /  \</span></span><br><span class="line"><span class="comment">Adam Eve</span></span><br><span class="line"><span class="comment"> \  /</span></span><br><span class="line"><span class="comment">people</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">God</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">string</span> message</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;God.foo called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">bar</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;God.bar called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Adam</span> <span class="keyword">is</span> <span class="title">God</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Adam.foo called&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.foo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">bar</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Adam.bar called&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.bar();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Eve</span> <span class="keyword">is</span> <span class="title">God</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Eve.foo called&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.foo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">bar</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">override</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Eve.bar called&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.bar();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">people</span> <span class="keyword">is</span> <span class="title">Adam</span>, <span class="title">Eve</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">override</span></span>(<span class="params">Adam, Eve</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">super</span>.foo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">bar</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">override</span></span>(<span class="params">Adam, Eve</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">super</span>.bar();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，调用合约<code>people</code>中的<code>super.bar()</code>会依次调用<code>Eve</code>、<code>Adam</code>，最后是<code>God</code>合约。</p>
+<p>虽然<code>Eve</code>、<code>Adam</code>都是<code>God</code>的子合约，但整个过程中<code>God</code>合约只会被调用一次。原因是<code>Solidity</code>借鉴了Python的方式，强制一个由基类构成的DAG（有向无环图）使其保证一个特定的顺序。更多细节你可以查阅<a target="_blank" rel="noopener" href="https://solidity-cn.readthedocs.io/zh/develop/contracts.html?highlight=%E7%BB%A7%E6%89%BF#index-16">Solidity的官方文档</a>。</p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250126223941045.png" alt="image-20250126223941045" loading="lazy" decoding="async"></p>
+<h2 id="抽象合约和接口" tabindex="-1"><a class="headerlink" href="#抽象合约和接口" aria-hidden="true"></a> 抽象合约和接口</h2>
+<p>这一讲，我们用<code>ERC721</code>的接口合约为例介绍<code>Solidity</code>中的抽象合约（<code>abstract</code>）和接口（<code>interface</code>），帮助大家更好的理解<code>ERC721</code>标准。</p>
+<p><code>ERC-721</code>是以太坊网络上用于<strong>实现非同质化代币（NFT）的标准。它定义了一组规则，允许创建具有唯一性的数字资产或代币。与ERC-20标准的同质化代币不同</strong>，<code>ERC-721</code>代币每一个都是独一无二的，可以用来表示艺术作品、收藏品、游戏道具、房地产等独特的资产。</p>
+<h3 id="抽象合约" tabindex="-1"><a class="headerlink" href="#抽象合约" aria-hidden="true"></a> 抽象合约</h3>
+<p>如果一个智能合约里至少有一个未实现的函数，即某个函数缺少主体<code>{}</code>中的内容，则必须将该合约标为<code>abstract</code>，不然编译会报错；另外，未实现的函数需要加<code>virtual</code>，以便子合约重写。如果我们还没想好具体怎么实现某个函数，那么可以把合约标为<code>abstract</code>，之后让别人补写上。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">contract</span> <span class="title">InsertionSort</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">insertionSort</span>(<span class="params"><span class="keyword">uint</span>[] <span class="keyword">memory</span> a</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span>[] <span class="keyword">memory</span></span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试抽象合约的代码<code>Abstract.sol</code>，如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.4;</span></span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">contract</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="keyword">string</span> <span class="keyword">public</span> name <span class="operator">=</span> <span class="string">&quot;Base&quot;</span>;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getAlias</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">virtual</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">BaseImpl</span> <span class="keyword">is</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getAlias</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">override</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;BaseImpl&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试结果如下：</p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250127032832688.png" alt="image-20250127032832688" loading="lazy" decoding="async"></p>
+<h3 id="接口" tabindex="-1"><a class="headerlink" href="#接口" aria-hidden="true"></a> 接口</h3>
+<p>接口类似于抽象合约，但它不实现任何功能。接口的规则：</p>
+<ol>
+<li><strong>不能包含状态变量</strong></li>
+<li><strong>不能包含构造函数</strong></li>
+<li><strong>不能继承除接口外的其他合约</strong></li>
+<li><strong>所有函数都必须是external且不能有函数体</strong></li>
+<li><strong>继承接口的非抽象合约必须实现接口定义的所有功能</strong></li>
+</ol>
+<p>虽然接口不实现任何功能，但它非常重要。接口是智能合约的骨架，定义了合约的功能以及如何触发它们。</p>
+<p>如果智能合约实现了某种接口（比如<code>ERC20</code>或<code>ERC721</code>），其他Dapps和智能合约就知道如何与它交互。</p>
+<p>因为接口提供了两个重要的信息：</p>
+<ol>
+<li>合约里每个函数的<code>bytes4</code>选择器，以及函数签名<code>函数名(每个参数类型）</code>。</li>
+<li>接口id（更多信息见<a target="_blank" rel="noopener" href="https://eips.ethereum.org/EIPS/eip-165">EIP165</a>）</li>
+</ol>
+<p>另外，接口与合约<code>ABI</code>（Application Binary Interface）等价，可以相互转换：编译接口可以得到合约的<code>ABI</code>，利用<a target="_blank" rel="noopener" href="https://gnidan.github.io/abi-to-sol/">abi-to-sol工具</a>，也可以将<code>ABI json</code>文件转换为<code>接口sol</code>文件。</p>
+<p>我们以<code>ERC721</code>接口合约<code>IERC721</code>为例，它定义了3个<code>event</code>和9个<code>function</code>，所有<code>ERC721</code>标准的NFT都实现了这些函数。我们可以看到，接口和常规合约的区别在于每个函数都以<code>;</code>代替函数体<code>{ }</code>结尾。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">IERC721</span> <span class="keyword">is</span> <span class="title">IERC165</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Transfer</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">indexed</span> <span class="keyword">from</span>, <span class="keyword">address</span> <span class="keyword">indexed</span> to, <span class="keyword">uint256</span> <span class="keyword">indexed</span> tokenId</span>)</span>;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Approval</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">indexed</span> owner, <span class="keyword">address</span> <span class="keyword">indexed</span> approved, <span class="keyword">uint256</span> <span class="keyword">indexed</span> tokenId</span>)</span>;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">ApprovalForAll</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">indexed</span> owner, <span class="keyword">address</span> <span class="keyword">indexed</span> operator, <span class="keyword">bool</span> approved</span>)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">balanceOf</span>(<span class="params"><span class="keyword">address</span> owner</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">uint256</span> balance</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">ownerOf</span>(<span class="params"><span class="keyword">uint256</span> tokenId</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">address</span> owner</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">safeTransferFrom</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">from</span>, <span class="keyword">address</span> to, <span class="keyword">uint256</span> tokenId</span>) <span class="title"><span class="keyword">external</span></span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">transferFrom</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">from</span>, <span class="keyword">address</span> to, <span class="keyword">uint256</span> tokenId</span>) <span class="title"><span class="keyword">external</span></span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">approve</span>(<span class="params"><span class="keyword">address</span> to, <span class="keyword">uint256</span> tokenId</span>) <span class="title"><span class="keyword">external</span></span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getApproved</span>(<span class="params"><span class="keyword">uint256</span> tokenId</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">address</span> operator</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">setApprovalForAll</span>(<span class="params"><span class="keyword">address</span> operator, <span class="keyword">bool</span> _approved</span>) <span class="title"><span class="keyword">external</span></span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">isApprovedForAll</span>(<span class="params"><span class="keyword">address</span> owner, <span class="keyword">address</span> operator</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">bool</span></span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">safeTransferFrom</span>(<span class="params"> <span class="keyword">address</span> <span class="keyword">from</span>, <span class="keyword">address</span> to, <span class="keyword">uint256</span> tokenId, <span class="keyword">bytes</span> <span class="keyword">calldata</span> data</span>) <span class="title"><span class="keyword">external</span></span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试接口的代码<code>Interface.sol</code>，如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.4;</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getFirstName</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getLastName</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">BaseImpl</span> <span class="keyword">is</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getFirstName</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">override</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Amazing&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getLastName</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">override</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Ang&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250127121544577.png" alt="image-20250127121544577" loading="lazy" decoding="async"></p>
+<h3 id="ierc721事件" tabindex="-1"><a class="headerlink" href="#ierc721事件" aria-hidden="true"></a> IERC721事件</h3>
+<p><code>IERC721</code>包含3个事件，其中<code>Transfer</code>和<code>Approval</code>事件在<code>ERC20</code>中也有。</p>
+<ul>
+<li><code>Transfer</code>事件：在转账时被释放，记录代币的发出地址<code>from</code>，接收地址<code>to</code>和<code>tokenId</code>。</li>
+<li><code>Approval</code>事件：在授权时被释放，记录授权地址<code>owner</code>，被授权地址<code>approved</code>和<code>tokenId</code>。</li>
+<li><code>ApprovalForAll</code>事件：在批量授权时被释放，记录批量授权的发出地址<code>owner</code>，被授权地址<code>operator</code>和授权与否的<code>approved</code>。</li>
+</ul>
+<h3 id="ierc721函数" tabindex="-1"><a class="headerlink" href="#ierc721函数" aria-hidden="true"></a> IERC721函数</h3>
+<ul>
+<li><code>balanceOf</code>：返回某地址的NFT持有量<code>balance</code>。</li>
+<li><code>ownerOf</code>：返回某<code>tokenId</code>的主人<code>owner</code>。</li>
+<li><code>transferFrom</code>：普通转账，参数为转出地址<code>from</code>，接收地址<code>to</code>和<code>tokenId</code>。</li>
+<li><code>safeTransferFrom</code>：安全转账（如果接收方是合约地址，会要求实现<code>ERC721Receiver</code>接口）。参数为转出地址<code>from</code>，接收地址<code>to</code>和<code>tokenId</code>。</li>
+<li><code>approve</code>：授权另一个地址使用你的NFT。参数为被授权地址<code>approve</code>和<code>tokenId</code>。</li>
+<li><code>getApproved</code>：查询<code>tokenId</code>被批准给了哪个地址。</li>
+<li><code>setApprovalForAll</code>：将自己持有的该系列NFT批量授权给某个地址<code>operator</code>。</li>
+<li><code>isApprovedForAll</code>：查询某地址的NFT是否批量授权给了另一个<code>operator</code>地址。</li>
+<li><code>safeTransferFrom</code>：安全转账的重载函数，参数里面包含了<code>data</code>。</li>
+</ul>
+<h3 id="什么时候使用接口？" tabindex="-1"><a class="headerlink" href="#什么时候使用接口？" aria-hidden="true"></a> 什么时候使用接口？</h3>
+<p>如果我们知道一个合约实现了<code>IERC721</code>接口，我们不需要知道它具体代码实现，就可以与它交互。</p>
+<p>无聊猿<code>BAYC</code>属于<code>ERC721</code>代币，实现了<code>IERC721</code>接口的功能。我们不需要知道它的源代码，只需知道它的合约地址，用<code>IERC721</code>接口就可以与它交互，比如用<code>balanceOf()</code>来查询某个地址的<code>BAYC</code>余额，用<code>safeTransferFrom()</code>来转账<code>BAYC</code>。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">interactBAYC</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 利用BAYC地址创建接口合约变量（ETH主网）</span></span><br><span class="line">    IERC721 BAYC <span class="operator">=</span> IERC721(<span class="number">0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过接口调用BAYC的balanceOf()查询持仓量</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">balanceOfBAYC</span>(<span class="params"><span class="keyword">address</span> owner</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">uint256</span> balance</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> BAYC.balanceOf(owner);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过接口调用BAYC的safeTransferFrom()安全转账</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">safeTransferFromBAYC</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">from</span>, <span class="keyword">address</span> to, <span class="keyword">uint256</span> tokenId</span>) <span class="title"><span class="keyword">external</span></span></span>&#123;</span><br><span class="line">        BAYC.safeTransferFrom(<span class="keyword">from</span>, to, tokenId);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="异常" tabindex="-1"><a class="headerlink" href="#异常" aria-hidden="true"></a> 异常</h2>
+<p>这一讲，我们介绍<code>Solidity</code>三种抛出异常的方法：<code>error</code>，<code>require</code>和<code>assert</code>，并比较三种方法的<code>gas</code>消耗。</p>
+<h3 id="异常-1" tabindex="-1"><a class="headerlink" href="#异常-1" aria-hidden="true"></a> 异常</h3>
+<p>写智能合约经常会出<code>bug</code>，<code>Solidity</code>中的异常命令帮助我们<code>debug</code>。</p>
+<p>测试代码<code>Error.sol</code>，如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Gas cost在Remix中测试得到 使用0.8.26版本编译</span></span><br><span class="line"><span class="comment">// 参数使用 tokenId = 123, address = &#123;any address&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义error</span></span><br><span class="line"><span class="comment">//error TransferNotOwner();</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">TransferNotOwner</span>(<span class="params"><span class="keyword">address</span> sender</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Errors</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 一组映射，记录每个TokenId的Owner</span></span><br><span class="line">    <span class="keyword">mapping</span>(<span class="keyword">uint256</span> <span class="operator">=</span><span class="operator">&gt;</span> <span class="keyword">address</span>) <span class="keyword">private</span> _owners;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Error方法: gas cost 24095</span></span><br><span class="line">    <span class="comment">// Error方法: gas cost 24113</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">transferOwner1</span>(<span class="params"><span class="keyword">uint256</span> tokenId, <span class="keyword">address</span> newOwner</span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (_owners[tokenId] <span class="operator">!</span><span class="operator">=</span> <span class="built_in">msg</span>.<span class="built_in">sender</span>) &#123;</span><br><span class="line">            <span class="comment">//revert TransferNotOwner();</span></span><br><span class="line">            <span class="keyword">revert</span> TransferNotOwner(<span class="built_in">msg</span>.<span class="built_in">sender</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        _owners[tokenId] <span class="operator">=</span> newOwner;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// require方法: gas cost 24211</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">transferOwner2</span>(<span class="params"><span class="keyword">uint256</span> tokenId, <span class="keyword">address</span> newOwner</span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">        <span class="built_in">require</span>(_owners[tokenId] <span class="operator">=</span><span class="operator">=</span> <span class="built_in">msg</span>.<span class="built_in">sender</span>, <span class="string">&quot;Transfer Not Owner&quot;</span>);</span><br><span class="line">        _owners[tokenId] <span class="operator">=</span> newOwner;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// assert方法: gas cost 24109</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">transferOwner3</span>(<span class="params"><span class="keyword">uint256</span> tokenId, <span class="keyword">address</span> newOwner</span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">        <span class="built_in">assert</span>(_owners[tokenId] <span class="operator">=</span><span class="operator">=</span> <span class="built_in">msg</span>.<span class="built_in">sender</span>);</span><br><span class="line">        _owners[tokenId] <span class="operator">=</span> newOwner;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="error" tabindex="-1"><a class="headerlink" href="#error" aria-hidden="true"></a> Error</h3>
+<p><code>error</code>是<code>solidity 0.8.4版本</code>新加的内容，方便且高效（省<code>gas</code>）地向用户解释操作失败的原因，同时还可以在抛出异常的同时携带参数，帮助开发者更好地调试。人们可以在<code>contract</code>之外定义异常。下面，我们定义一个<code>TransferNotOwner</code>异常，当用户不是代币<code>owner</code>的时候尝试转账，会抛出错误：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">TransferNotOwner</span>(<span class="params"></span>)</span>; <span class="comment">// 自定义error</span></span><br></pre></td></tr></table></figure>
+<p>我们也可以定义一个携带参数的异常，来提示尝试转账的账户地址</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">TransferNotOwner</span>(<span class="params"><span class="keyword">address</span> sender</span>)</span>; <span class="comment">// 自定义的带参数的error</span></span><br></pre></td></tr></table></figure>
+<p>在执行当中，<code>error</code>必须搭配<code>revert</code>（回退）命令使用。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transferOwner1</span>(<span class="params"><span class="keyword">uint256</span> tokenId, <span class="keyword">address</span> newOwner</span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(_owners[tokenId] <span class="operator">!</span><span class="operator">=</span> <span class="built_in">msg</span>.<span class="built_in">sender</span>)&#123;</span><br><span class="line">        <span class="keyword">revert</span> TransferNotOwner();</span><br><span class="line">        <span class="comment">// revert TransferNotOwner(msg.sender);</span></span><br><span class="line">    &#125;</span><br><span class="line">    _owners[tokenId] <span class="operator">=</span> newOwner;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们定义了一个<code>transferOwner1()</code>函数，它会检查代币的<code>owner</code>是不是发起人，如果不是，就会抛出<code>TransferNotOwner</code>异常；如果是的话，就会转账。</p>
+<p>不带参数的<code>error</code>，消耗<code>gas</code>量为<code>24095</code></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250127123837474.png" alt="image-20250127123837474" loading="lazy" decoding="async"></p>
+<p>带参数的<code>error</code>，消耗<code>gas</code>量为<code>24113</code></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250127124300009.png" alt="image-20250127124300009" loading="lazy" decoding="async"></p>
+<h3 id="require" tabindex="-1"><a class="headerlink" href="#require" aria-hidden="true"></a> Require</h3>
+<p><code>require</code>命令是<code>solidity 0.8版本</code>之前抛出异常的常用方法，目前很多主流合约仍然还在使用它。它很好用，唯一的缺点就是<code>gas</code>随着描述异常的字符串长度增加，比<code>error</code>命令要高。使用方法：<code>require(检查条件，&quot;异常的描述&quot;)</code>，<strong>当检查条件不成立的时候，就会抛出异常。</strong></p>
+<p>我们用<code>require</code>命令重写一下上面的<code>transferOwner1</code>函数：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transferOwner2</span>(<span class="params"><span class="keyword">uint256</span> tokenId, <span class="keyword">address</span> newOwner</span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">    <span class="built_in">require</span>(_owners[tokenId] <span class="operator">=</span><span class="operator">=</span> <span class="built_in">msg</span>.<span class="built_in">sender</span>, <span class="string">&quot;Transfer Not Owner&quot;</span>);</span><br><span class="line">    _owners[tokenId] <span class="operator">=</span> newOwner;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>require</code>消耗<code>gas</code>的量为<code>24211</code></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250127125601300.png" alt="image-20250127125601300" loading="lazy" decoding="async"></p>
+<h3 id="assert" tabindex="-1"><a class="headerlink" href="#assert" aria-hidden="true"></a> Assert</h3>
+<p><code>assert</code>命令一般用于程序员写程序<code>debug</code>，因为它不能解释抛出异常的原因（比<code>require</code>少个字符串）。它的用法很简单，<code>assert(检查条件）</code>，<strong>当检查条件不成立的时候，就会抛出异常。</strong></p>
+<p>我们用<code>assert</code>命令重写一下上面的<code>transferOwner1</code>函数：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transferOwner3</span>(<span class="params"><span class="keyword">uint256</span> tokenId, <span class="keyword">address</span> newOwner</span>) <span class="title"><span class="keyword">public</span></span> </span>&#123;</span><br><span class="line">    <span class="built_in">assert</span>(_owners[tokenId] <span class="operator">=</span><span class="operator">=</span> <span class="built_in">msg</span>.<span class="built_in">sender</span>);</span><br><span class="line">    _owners[tokenId] <span class="operator">=</span> newOwner;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>assert</code>消耗<code>gas</code>的量为<code>24109</code></p>
+<p><img src="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/image-20250127130047597.png" alt="image-20250127130047597" loading="lazy" decoding="async"></p>
+<h3 id="三种方法的gas比较" tabindex="-1"><a class="headerlink" href="#三种方法的gas比较" aria-hidden="true"></a> 三种方法的gas比较</h3>
+<p>我们比较一下三种抛出异常的<code>gas</code>消耗，查询<code>gas</code>的消耗 （使用0.8.26版本编译）</p>
+<ol>
+<li><code>error</code>方法<code>gas</code>消耗：24095 (加入参数后<code>gas</code>消耗：24113)</li>
+<li><code>require</code>方法<code>gas</code>消耗：24211</li>
+<li><code>assert</code>方法<code>gas</code>消耗：24109</li>
+</ol>
+<p>我们可以看到，<code>error</code>方法<code>gas</code>最少，其次是<code>assert</code>，<code>require</code>方法消耗<code>gas</code>最多！因此，<code>error</code>既可以告知用户抛出异常的原因，又能省<code>gas</code>，大家要多用！（注意，由于部署测试时间的不同，每个函数的<code>gas</code>消耗会有所不同，但是比较结果会是一致的。）</p>
+<p><strong>备注:</strong> Solidity 0.8.0之前的版本，<code>assert</code>抛出的是一个 <code>panic exception</code>，会把剩余的 <code>gas</code> 全部消耗，不会返还。更多细节见<a target="_blank" rel="noopener" href="https://docs.soliditylang.org/en/v0.8.17/control-structures.html">官方文档</a>。</p>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<p><a target="_blank" rel="noopener" href="https://www.wtf.academy/docs/solidity-101/HelloWeb3">https://www.wtf.academy/docs/solidity-101/HelloWeb3</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/AmazingAng/WTF-Solidity">https://github.com/AmazingAng/WTF-Solidity</a></p>
+<p><a target="_blank" rel="noopener" href="https://learnblockchain.cn/docs/ethers.js/api.html">https://learnblockchain.cn/docs/ethers.js/api.html</a></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/01/22/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%80/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-09-30 13:04:35
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" title="以太坊">
+                        #以太坊
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Solidity/" title="Solidity">
+                        #Solidity
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Blockchain/" title="Blockchain">
+                        #Blockchain
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web3/" title="Web3">
+                        <b>#</b> Web3
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="toc-text"> 控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81-1"><span class="toc-text"> 控制流</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E4%BF%AE%E9%A5%B0%E5%99%A8"><span class="toc-text"> 构造函数和修饰器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-text"> 构造函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E9%A5%B0%E5%99%A8"><span class="toc-text"> 修饰器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%B5%8B%E8%AF%95"><span class="toc-text"> 运行测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6"><span class="toc-text"> 事件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6-1"><span class="toc-text"> 事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A3%B0%E6%98%8E%E4%BA%8B%E4%BB%B6"><span class="toc-text"> 声明事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8A%E6%94%BE%E4%BA%8B%E4%BB%B6"><span class="toc-text"> 释放事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#evm%E6%97%A5%E5%BF%97log"><span class="toc-text"> EVM日志(Log)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E9%A2%98topics"><span class="toc-text"> 主题(Topics)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AEdata"><span class="toc-text"> 数据(Data)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF"><span class="toc-text"> 继承</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF-1"><span class="toc-text"> 继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%84%E5%88%99"><span class="toc-text"> 规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E7%BB%A7%E6%89%BF"><span class="toc-text"> 简单继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF"><span class="toc-text"> 多重继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E9%A5%B0%E5%99%A8%E7%9A%84%E7%BB%A7%E6%89%BF"><span class="toc-text"> 修饰器的继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E7%BB%A7%E6%89%BF"><span class="toc-text"> 构造函数的继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E7%94%A8%E7%88%B6%E5%90%88%E7%BA%A6%E7%9A%84%E5%87%BD%E6%95%B0"><span class="toc-text"> 调用父合约的函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%92%BB%E7%9F%B3%E7%BB%A7%E6%89%BF"><span class="toc-text"> 钻石继承</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%BD%E8%B1%A1%E5%90%88%E7%BA%A6%E5%92%8C%E6%8E%A5%E5%8F%A3"><span class="toc-text"> 抽象合约和接口</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%BD%E8%B1%A1%E5%90%88%E7%BA%A6"><span class="toc-text"> 抽象合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3"><span class="toc-text"> 接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ierc721%E4%BA%8B%E4%BB%B6"><span class="toc-text"> IERC721事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ierc721%E5%87%BD%E6%95%B0"><span class="toc-text"> IERC721函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BD%BF%E7%94%A8%E6%8E%A5%E5%8F%A3%EF%BC%9F"><span class="toc-text"> 什么时候使用接口？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8"><span class="toc-text"> 异常</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8-1"><span class="toc-text"> 异常</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#error"><span class="toc-text"> Error</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#require"><span class="toc-text"> Require</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#assert"><span class="toc-text"> Assert</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E6%96%B9%E6%B3%95%E7%9A%84gas%E6%AF%94%E8%BE%83"><span class="toc-text"> 三种方法的gas比较</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%BA%8C) + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F01%2F26%2FSolidity%25E5%2585%25A5%25E9%2597%25A8%25E5%25AD%25A6%25E4%25B9%25A0-%25E4%25BA%258C%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

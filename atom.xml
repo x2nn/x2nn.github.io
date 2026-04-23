@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>X2n</name>
+  </author>
+  <generator uri="https://hexo.io/">Hexo</generator>
+  <icon>https://x2nn.github.io/icon.png</icon>
+  <id>https://x2nn.github.io/</id>
+  <link href="https://x2nn.github.io/" rel="alternate"/>
+  <link href="https://x2nn.github.io/atom.xml" rel="self"/>
+  <rights>All rights reserved 2026, X2n</rights>
+  <subtitle>X2n 的个人技术博客，记录 Web 安全、漏洞挖掘、渗透测试、内网与云安全等方向的学习笔记与实战复盘。</subtitle>
+  <title>Keep your passion for what you love !</title>
+  <updated>2026-04-21T10:27:25.676Z</updated>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
+    <category term="容器逃逸" scheme="https://x2nn.github.io/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"/>
+    <category term="云安全" scheme="https://x2nn.github.io/tags/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
+    <id>https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/</id>
+    <link href="https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/"/>
+    <published>2026-04-04T08:52:05.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>k8s goat靶场下半部分。</p>
+<h2]]>
+    </summary>
+    <title>k8s-goat靶场练习-下</title>
+    <updated>2026-04-21T10:27:25.676Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
+    <category term="容器逃逸" scheme="https://x2nn.github.io/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"/>
+    <category term="云安全" scheme="https://x2nn.github.io/tags/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
+    <id>https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8A/</id>
+    <link href="https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8A/"/>
+    <published>2026-04-04T08:45:15.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>Kubernetes Goat<sup class="footnote-ref"><a]]>
+    </summary>
+    <title>k8s-goat靶场练习-上</title>
+    <updated>2026-04-04T08:48:54.505Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="V8" scheme="https://x2nn.github.io/tags/V8/"/>
+    <category term="JavaScript" scheme="https://x2nn.github.io/tags/JavaScript/"/>
+    <id>https://x2nn.github.io/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/</id>
+    <link href="https://x2nn.github.io/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/"/>
+    <published>2026-03-18T13:43:46.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>英语不错的师傅们，建议直接看<a]]>
+    </summary>
+    <title>Chrome学习-V8和JavaScript内部机制介绍</title>
+    <updated>2026-03-23T13:51:25.622Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
+    <id>https://x2nn.github.io/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</id>
+    <link href="https://x2nn.github.io/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    <published>2026-03-08T14:55:44.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="kubernetes-k8s-学习笔记" tabindex="-1"><a class="headerlink" href="#kubernetes-k8s-学习笔记" aria-hidden="true"></a> Kubernetes (K8s)]]>
+    </summary>
+    <title>Kubernetes(K8s)学习笔记</title>
+    <updated>2026-03-12T02:12:39.322Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="CTF" scheme="https://x2nn.github.io/categories/CTF/"/>
+    <category term="heap Overflow" scheme="https://x2nn.github.io/tags/heap-Overflow/"/>
+    <category term="bins" scheme="https://x2nn.github.io/tags/bins/"/>
+    <category term="UAF" scheme="https://x2nn.github.io/tags/UAF/"/>
+    <id>https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/</id>
+    <link href="https://x2nn.github.io/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/"/>
+    <published>2026-02-28T08:16:19.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="fmtstr_uaf" tabindex="-1"><a class="headerlink" href="#fmtstr_uaf" aria-hidden="true"></a>]]>
+    </summary>
+    <title>二进制堆的练习题</title>
+    <updated>2026-03-17T09:27:50.435Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="bins" scheme="https://x2nn.github.io/tags/bins/"/>
+    <category term="Heap" scheme="https://x2nn.github.io/tags/Heap/"/>
+    <id>https://x2nn.github.io/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/</id>
+    <link href="https://x2nn.github.io/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/"/>
+    <published>2026-01-24T18:29:52.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="bin是什么？" tabindex="-1"><a class="headerlink" href="#bin是什么？" aria-hidden="true"></a> bin是什么？</h2>
+<p>在 Glibc 的]]>
+    </summary>
+    <title>堆中的bin</title>
+    <updated>2026-03-12T02:20:23.420Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="Tools" scheme="https://x2nn.github.io/categories/Tools/"/>
+    <category term="windbg" scheme="https://x2nn.github.io/tags/windbg/"/>
+    <id>https://x2nn.github.io/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</id>
+    <link href="https://x2nn.github.io/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
+    <published>2026-01-17T17:23:49.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>刚开始学习二进制安全，尝试搭建windbg调试vmware的windows7]]>
+    </summary>
+    <title>windbg调试windows环境搭建</title>
+    <updated>2026-01-18T16:53:14.453Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="Heap Overflow" scheme="https://x2nn.github.io/tags/Heap-Overflow/"/>
+    <category term="Glibc" scheme="https://x2nn.github.io/tags/Glibc/"/>
+    <id>https://x2nn.github.io/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/</id>
+    <link href="https://x2nn.github.io/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/"/>
+    <published>2026-01-16T18:23:40.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="什么是堆（heap）？" tabindex="-1"><a class="headerlink" href="#什么是堆（heap）？" aria-hidden="true"></a>]]>
+    </summary>
+    <title>堆溢出漏洞学习</title>
+    <updated>2026-01-24T18:24:14.462Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="栈迁移" scheme="https://x2nn.github.io/tags/%E6%A0%88%E8%BF%81%E7%A7%BB/"/>
+    <category term="格式化字符串" scheme="https://x2nn.github.io/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2/"/>
+    <id>https://x2nn.github.io/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/</id>
+    <link href="https://x2nn.github.io/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/"/>
+    <published>2026-01-11T16:00:47.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="栈迁移介绍" tabindex="-1"><a class="headerlink" href="#栈迁移介绍" aria-hidden="true"></a> 栈迁移介绍</h2>
+<p>栈迁移（stack Privoting/Stack]]>
+    </summary>
+    <title>栈迁移和格式化字符串学习</title>
+    <updated>2026-01-16T17:57:22.325Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="CTF" scheme="https://x2nn.github.io/categories/CTF/"/>
+    <category term="Stack Overflow" scheme="https://x2nn.github.io/tags/Stack-Overflow/"/>
+    <id>https://x2nn.github.io/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/</id>
+    <link href="https://x2nn.github.io/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/"/>
+    <published>2025-12-14T11:39:11.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="level0-pwn0" tabindex="-1"><a class="headerlink" href="#level0-pwn0" aria-hidden="true"></a> level0:]]>
+    </summary>
+    <title>二进制栈的练习题</title>
+    <updated>2026-01-17T09:37:56.641Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="生活杂谈" scheme="https://x2nn.github.io/categories/%E7%94%9F%E6%B4%BB%E6%9D%82%E8%B0%88/"/>
+    <category term="生活杂谈" scheme="https://x2nn.github.io/tags/%E7%94%9F%E6%B4%BB%E6%9D%82%E8%B0%88/"/>
+    <id>https://x2nn.github.io/2025/11/28/%E6%8A%8A%E5%BF%83%E6%94%BE%E5%AE%BD%EF%BC%8C%E6%8A%8A%E4%BA%8B%E7%9C%8B%E8%BF%9C%EF%BC%8C%E6%B4%BB%E5%BE%97%E8%88%92%E5%9D%A6/</id>
+    <link href="https://x2nn.github.io/2025/11/28/%E6%8A%8A%E5%BF%83%E6%94%BE%E5%AE%BD%EF%BC%8C%E6%8A%8A%E4%BA%8B%E7%9C%8B%E8%BF%9C%EF%BC%8C%E6%B4%BB%E5%BE%97%E8%88%92%E5%9D%A6/"/>
+    <published>2025-11-28T11:24:01.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="把心放宽，把事看远，活得舒坦" tabindex="-1"><a class="headerlink" href="#把心放宽，把事看远，活得舒坦" aria-hidden="true"></a> 把心放宽，把事看远，活得舒坦</h2>
+<h3]]>
+    </summary>
+    <title>把心放宽，把事看远，活得舒坦</title>
+    <updated>2026-01-15T01:43:06.261Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="内网渗透" scheme="https://x2nn.github.io/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/"/>
+    <category term="NTML" scheme="https://x2nn.github.io/tags/NTML/"/>
+    <category term="Kerberos" scheme="https://x2nn.github.io/tags/Kerberos/"/>
+    <category term="身份认证" scheme="https://x2nn.github.io/tags/%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/"/>
+    <category term="黄金票据" scheme="https://x2nn.github.io/tags/%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE/"/>
+    <category term="白银票据" scheme="https://x2nn.github.io/tags/%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE/"/>
+    <id>https://x2nn.github.io/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/</id>
+    <link href="https://x2nn.github.io/2025/11/06/NTLM%E5%8D%8F%E8%AE%AE%E5%92%8CKerberos%E5%8D%8F%E8%AE%AE/"/>
+    <published>2025-11-06T14:30:16.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a>]]>
+    </summary>
+    <title>NTLM协议和Kerberos协议</title>
+    <updated>2025-11-23T07:05:11.601Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    <category term="FastJson" scheme="https://x2nn.github.io/tags/FastJson/"/>
+    <id>https://x2nn.github.io/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/</id>
+    <link href="https://x2nn.github.io/2025/10/26/FastJson%E4%B8%8D%E5%87%BA%E7%BD%91%E7%9A%84%E5%88%A9%E7%94%A8/"/>
+    <published>2025-10-26T04:34:24.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="简介" tabindex="-1"><a class="headerlink" href="#简介" aria-hidden="true"></a> 简介</h2>
+<p>现实环境中可能会遇到fastjson不出网的情况，下面打两个不出网的靶场<sup]]>
+    </summary>
+    <title>FastJson不出网的利用</title>
+    <updated>2025-11-01T12:59:04.229Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="漏洞复现" scheme="https://x2nn.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"/>
+    <category term="Java" scheme="https://x2nn.github.io/tags/Java/"/>
+    <category term="FastJson" scheme="https://x2nn.github.io/tags/FastJson/"/>
+    <id>https://x2nn.github.io/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/</id>
+    <link href="https://x2nn.github.io/2025/10/24/FastJson%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/"/>
+    <published>2025-10-24T05:09:11.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="fastjson各版本漏洞测试" tabindex="-1"><a class="headerlink" href="#fastjson各版本漏洞测试" aria-hidden="true"></a>]]>
+    </summary>
+    <title>FastJson漏洞学习</title>
+    <updated>2026-01-11T16:11:30.215Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="客户端安全" scheme="https://x2nn.github.io/categories/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AE%89%E5%85%A8/"/>
+    <category term="RCE" scheme="https://x2nn.github.io/tags/RCE/"/>
+    <category term="Electron" scheme="https://x2nn.github.io/tags/Electron/"/>
+    <id>https://x2nn.github.io/2025/09/07/Electron%E4%B8%ADpreload%E4%BD%BF%E7%94%A8%E7%9B%B8%E5%85%B3%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/</id>
+    <link href="https://x2nn.github.io/2025/09/07/Electron%E4%B8%ADpreload%E4%BD%BF%E7%94%A8%E7%9B%B8%E5%85%B3%E7%9A%84%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98/"/>
+    <published>2025-09-07T12:34:26.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>对于另一篇文章<sup class="footnote-ref"><a]]>
+    </summary>
+    <title>Electron中preload中的安全问题</title>
+    <updated>2025-09-07T14:35:16.309Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="动态链接" scheme="https://x2nn.github.io/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/"/>
+    <category term="ROP" scheme="https://x2nn.github.io/tags/ROP/"/>
+    <category term="Stack Overflow" scheme="https://x2nn.github.io/tags/Stack-Overflow/"/>
+    <id>https://x2nn.github.io/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/</id>
+    <link href="https://x2nn.github.io/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/"/>
+    <published>2025-09-02T14:43:44.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>前面我们分析了ELF动态链接的整个过程<sup]]>
+    </summary>
+    <title>动态链接中的ROP</title>
+    <updated>2026-01-17T09:38:09.259Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="动态链接" scheme="https://x2nn.github.io/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/"/>
+    <id>https://x2nn.github.io/2025/08/30/ELF%E6%96%87%E4%BB%B6%E4%B8%AD%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E5%87%BD%E6%95%B0%E7%9A%84%E8%BF%87%E7%A8%8B/</id>
+    <link href="https://x2nn.github.io/2025/08/30/ELF%E6%96%87%E4%BB%B6%E4%B8%AD%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E5%87%BD%E6%95%B0%E7%9A%84%E8%BF%87%E7%A8%8B/"/>
+    <published>2025-08-30T12:25:56.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a>]]>
+    </summary>
+    <title>ELF文件中动态链接的过程</title>
+    <updated>2026-03-17T09:03:10.934Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="ROP" scheme="https://x2nn.github.io/tags/ROP/"/>
+    <category term="Stack Overflow" scheme="https://x2nn.github.io/tags/Stack-Overflow/"/>
+    <id>https://x2nn.github.io/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/</id>
+    <link href="https://x2nn.github.io/2025/08/19/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%B9%8BROP%E6%8A%80%E5%B7%A7%E5%AD%A6%E4%B9%A0/"/>
+    <published>2025-08-19T12:36:28.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="防止栈溢出的保护措施" tabindex="-1"><a class="headerlink" href="#防止栈溢出的保护措施" aria-hidden="true"></a> 防止栈溢出的保护措施</h2>
+<p>根据之前写过的文章<sup]]>
+    </summary>
+    <title>二进制之ROP技巧学习</title>
+    <updated>2026-01-17T09:37:34.945Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="ELF" scheme="https://x2nn.github.io/tags/ELF/"/>
+    <category term="栈溢出" scheme="https://x2nn.github.io/tags/%E6%A0%88%E6%BA%A2%E5%87%BA/"/>
+    <id>https://x2nn.github.io/2025/08/17/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E5%92%8C%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E/</id>
+    <link href="https://x2nn.github.io/2025/08/17/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E5%92%8C%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E/"/>
+    <published>2025-08-17T09:04:41.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>本节来介绍一下最基础的漏洞，栈溢出漏洞，以及如何去构造ROP链<sup]]>
+    </summary>
+    <title>C语言函数调用栈和栈溢出漏洞</title>
+    <updated>2025-08-19T12:45:47.217Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="ELF" scheme="https://x2nn.github.io/tags/ELF/"/>
+    <category term="汇编语言" scheme="https://x2nn.github.io/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/"/>
+    <category term="虚拟地址" scheme="https://x2nn.github.io/tags/%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80/"/>
+    <id>https://x2nn.github.io/2025/08/16/pwn%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E9%83%A8%E5%88%86/</id>
+    <link href="https://x2nn.github.io/2025/08/16/pwn%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E9%83%A8%E5%88%86/"/>
+    <published>2025-08-16T11:53:31.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>本章节主要介绍pwn学习中涉及到的基础知识部分<sup]]>
+    </summary>
+    <title>pwn基础知识部分</title>
+    <updated>2025-08-17T09:07:24.188Z</updated>
+  </entry>
+</feed>

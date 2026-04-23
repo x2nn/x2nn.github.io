@@ -1,0 +1,55 @@
+/* =============================================
+   配色方案：墨水极简 (Ink Minimal)
+   灵感：GitHub Docs / Stripe Blog
+   设计原则：
+     - 高对比度、纯功能性，长篇技术文档友好
+     - 正文用墨灰 (#24292F)、标题更深 (#0E1116)，阅读层级清晰
+     - 链接/强调色统一用 GitHub Blue，重点内容天然跳出
+     - inline code 用 GitHub 风格红色，和正文分隔明确
+============================================= */
+
+/* light scheme */
+:root[color-mode="light"] {
+  --bg-body: #FFFFFF;
+  --color-text-base: #24292F;
+  --color-text-a: #24292F;
+  --color-text-a-hover: #0969DA;
+  --color-text-a-active: #0E1116;
+  --color-text-sub: #57606A;
+  --color-text-md-title: #0E1116;
+  --color-text-md-content: #24292F;
+  --color-text-md-code: #CF222E;
+  --bg-text-md-code: #F6F8FA;
+  --bg-block-md-quote: #F6F8FA;
+  --color-block-md-quote: #57606A;
+  --color-divider-md-border: #D0D7DE;
+  --bg-content-search: rgb(246 248 250 / 90%);
+  --bg-block-md-pre: #F6F8FA;
+  --color-text-md-pre: #24292F;
+  --bg-block-md-table: #FFFFFF;
+  --bg-block-md-table-2: #F6F8FA;
+  --color-border-md-table: #D0D7DE;
+}
+
+/* dark scheme */
+:root[color-mode="dark"] {
+  --bg-body: #0D1117;
+  --color-text-base: #C9D1D9;
+  --color-text-a: #C9D1D9;
+  --color-text-a-hover: #58A6FF;
+  --color-text-a-active: #F0F6FC;
+  --color-text-sub: #8B949E;
+  --color-text-md-title: #F0F6FC;
+  --color-text-md-content: #C9D1D9;
+  --color-text-md-code: #FF7B72;
+  --bg-text-md-code: #161B22;
+  --bg-block-md-quote: #161B22;
+  --color-block-md-quote: #8B949E;
+  --color-divider-md-border: #30363D;
+  --bg-content-search: rgb(22 27 34 / 80%);
+  --bg-block-md-pre: #161B22;
+  --color-text-md-pre: #C9D1D9;
+  --bg-block-md-table: #0D1117;
+  --bg-block-md-table-2: #161B22;
+  --color-border-md-table: #30363D;
+}

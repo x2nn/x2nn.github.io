@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="重载 Solidity 中允许函数进行重载（ overloading ），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意， Solidity 不允许修饰器（ modifier ）重载。 测试代码 Overloading.sol ，如下： 1 2 3 4 5 6 7 8 9 10 11 12 …" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      Solidity入门学习(三) 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2025/02/03/Solidity入门学习-三/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="Solidity入门学习(三) | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="重载 Solidity 中允许函数进行重载（ overloading ），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意， Solidity 不允许修饰器（ modifier ）重载。 测试代码 Overloading.sol ，如下： 1 2 3 4 5 6 7 8 9 10 11 12 …" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2025/02/03/Solidity入门学习-三/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2025-02-02T18:20:13.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2025-09-30T05:04:42.636Z" />
+    
+    
+      <meta property="article:tag" content="以太坊" />
+    
+      <meta property="article:tag" content="Solidity" />
+    
+      <meta property="article:tag" content="Blockchain" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Solidity入门学习(三) | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="重载 Solidity 中允许函数进行重载（ overloading ），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意， Solidity 不允许修饰器（ modifier ）重载。 测试代码 Overloading.sol ，如下： 1 2 3 4 5 6 7 8 9 10 11 12 …" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Solidity入门学习(三)</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-09-30 13:04:42
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" title="以太坊">
+                    #以太坊
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Solidity/" title="Solidity">
+                    #Solidity
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Blockchain/" title="Blockchain">
+                    #Blockchain
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web3/" title="Web3">
+                    <b>#</b> Web3
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="重载" tabindex="-1"><a class="headerlink" href="#重载" aria-hidden="true"></a> 重载</h2>
+<p><code>Solidity</code>中允许函数进行重载（<code>overloading</code>），即名字相同但输入参数类型不同的函数可以同时存在，他们被视为不同的函数。注意，<strong><code>Solidity</code>不允许修饰器（<code>modifier</code>）重载。</strong></p>
+<p>测试代码<code>Overloading.sol</code>，如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Overloading</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">saySomething</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="string">&quot;Nothing&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">saySomething</span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span> something</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span>(something);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"><span class="keyword">uint8</span> _in</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">uint8</span> out</span>) </span>&#123;</span><br><span class="line">        out <span class="operator">=</span> _in;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"><span class="keyword">uint256</span> _in</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">uint256</span> out</span>) </span>&#123;</span><br><span class="line">        out <span class="operator">=</span> _in;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="函数重载" tabindex="-1"><a class="headerlink" href="#函数重载" aria-hidden="true"></a> 函数重载</h3>
+<p>我们可以定义两个都叫<code>saySomething()</code>的函数，一个没有任何参数，输出<code>&quot;Nothing&quot;</code>；另一个接收一个<code>string</code>参数，输出这个<code>string</code>。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">saySomething</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="string">&quot;Nothing&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">saySomething</span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span> something</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span>(something);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>最终重载函数在经过编译器编译后，由于不同的参数类型，都变成了不同的函数选择器（selector）。</p>
+<p>以 <code>Overloading.sol</code> 合约为例，在 Remix 上编译部署后，分别调用重载函数 <code>saySomething()</code> 和 <code>saySomething(string memory something)</code>，可以看到他们返回了不同的结果，被区分为不同的函数。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204032523893.png" alt="image-20250204032523893" loading="lazy" decoding="async"></p>
+<h3 id="参数匹配（argument-matching）" tabindex="-1"><a class="headerlink" href="#参数匹配（argument-matching）" aria-hidden="true"></a> 参数匹配（Argument Matching）</h3>
+<p>在调用重载函数时，会把输入的实际参数和函数参数的变量类型做匹配。 如果出现多个匹配的重载函数，则会报错。下面这个例子有两个叫<code>f()</code>的函数，一个参数为<code>uint8</code>，另一个为<code>uint256</code>：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"><span class="keyword">uint8</span> _in</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">uint8</span> out</span>) </span>&#123;</span><br><span class="line">    out <span class="operator">=</span> _in;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"><span class="keyword">uint256</span> _in</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">uint256</span> out</span>) </span>&#123;</span><br><span class="line">    out <span class="operator">=</span> _in;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们调用<code>f(50)</code>，因为<code>50</code>既可以被转换为<code>uint8</code>，也可以被转换为<code>uint256</code>，因此会报错。</p>
+<h2 id="库合约" tabindex="-1"><a class="headerlink" href="#库合约" aria-hidden="true"></a> 库合约</h2>
+<p>这一讲，我们用<code>ERC721</code>的引用的库合约<code>Strings</code>为例介绍<code>Solidity</code>中的库合约（<code>Library</code>），并总结了常用的库合约。</p>
+<p>完整的测试代码<code>Library.sol</code>如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">library</span> <span class="title">Strings</span> </span>&#123;</span><br><span class="line">    <span class="keyword">bytes16</span> <span class="keyword">private</span> <span class="keyword">constant</span> _HEX_SYMBOLS <span class="operator">=</span> <span class="string">&quot;0123456789abcdef&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @dev Converts a `uint256` to its ASCII `string` decimal representation.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">toString</span>(<span class="params"><span class="keyword">uint256</span> value</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// Inspired by OraclizeAPI&#x27;s implementation - MIT licence</span></span><br><span class="line">        <span class="comment">// https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (value <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;0&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">uint256</span> temp <span class="operator">=</span> value;</span><br><span class="line">        <span class="keyword">uint256</span> digits;</span><br><span class="line">        <span class="keyword">while</span> (temp <span class="operator">!</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            digits<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">            temp <span class="operator">/</span><span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">bytes</span> <span class="keyword">memory</span> buffer <span class="operator">=</span> <span class="keyword">new</span> <span class="keyword">bytes</span>(digits);</span><br><span class="line">        <span class="keyword">while</span> (value <span class="operator">!</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            digits <span class="operator">-</span><span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">            buffer[digits] <span class="operator">=</span> <span class="keyword">bytes1</span>(<span class="keyword">uint8</span>(<span class="number">48</span> <span class="operator">+</span> <span class="keyword">uint256</span>(value <span class="operator">%</span> <span class="number">10</span>)));</span><br><span class="line">            value <span class="operator">/</span><span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">string</span>(buffer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">toHexString</span>(<span class="params"><span class="keyword">uint256</span> value</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (value <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;0x00&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">uint256</span> temp <span class="operator">=</span> value;</span><br><span class="line">        <span class="keyword">uint256</span> length <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (temp <span class="operator">!</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            length<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">            temp <span class="operator">&gt;</span><span class="operator">&gt;</span><span class="operator">=</span> <span class="number">8</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> toHexString(value, length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">toHexString</span>(<span class="params"><span class="keyword">uint256</span> value, <span class="keyword">uint256</span> length</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">bytes</span> <span class="keyword">memory</span> buffer <span class="operator">=</span> <span class="keyword">new</span> <span class="keyword">bytes</span>(<span class="number">2</span> <span class="operator">*</span> length <span class="operator">+</span> <span class="number">2</span>);</span><br><span class="line">        buffer[<span class="number">0</span>] <span class="operator">=</span> <span class="string">&quot;0&quot;</span>;</span><br><span class="line">        buffer[<span class="number">1</span>] <span class="operator">=</span> <span class="string">&quot;x&quot;</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">uint256</span> i <span class="operator">=</span> <span class="number">2</span> <span class="operator">*</span> length <span class="operator">+</span> <span class="number">1</span>; i <span class="operator">&gt;</span> <span class="number">1</span>; <span class="operator">-</span><span class="operator">-</span>i) &#123;</span><br><span class="line">            buffer[i] <span class="operator">=</span> _HEX_SYMBOLS[value <span class="operator">&amp;</span> <span class="number">0xf</span>];</span><br><span class="line">            value <span class="operator">&gt;</span><span class="operator">&gt;</span><span class="operator">=</span> <span class="number">4</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">require</span>(value <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>, <span class="string">&quot;Strings: hex length insufficient&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">string</span>(buffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 用函数调用另一个库合约</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">UseLibrary</span></span>&#123;    </span><br><span class="line">    <span class="comment">// 利用using for操作使用库</span></span><br><span class="line">    <span class="keyword">using</span> <span class="title">Strings</span> <span class="title"><span class="keyword">for</span></span> <span class="title"><span class="keyword">uint256</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getString1</span>(<span class="params"><span class="keyword">uint256</span> _number</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="comment">// 库函数会自动添加为uint256型变量的成员</span></span><br><span class="line">        <span class="keyword">return</span> _number.toHexString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 直接通过库合约名调用</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getString2</span>(<span class="params"><span class="keyword">uint256</span> _number</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Strings.toHexString(_number);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="库合约-1" tabindex="-1"><a class="headerlink" href="#库合约-1" aria-hidden="true"></a> 库合约</h3>
+<p>库合约是一种特殊的合约，为了提升<code>Solidity</code>代码的复用性和减少<code>gas</code>而存在。库合约是一系列的函数合集，由大神或者项目方创作，咱们站在巨人的肩膀上，会用就行了。</p>
+<p>他和普通合约主要有以下几点不同：</p>
+<ol>
+<li>不能存在状态变量</li>
+<li>不能够继承或被继承</li>
+<li>不能接收以太币</li>
+<li>不可以被销毁</li>
+</ol>
+<p>需要注意的是，库合约中的函数可见性如果被设置为<code>public</code>或者<code>external</code>，则在调用函数时会触发一次<code>delegatecall</code>。而如果被设置为<code>internal</code>，则不会引起。对于设置为<code>private</code>可见性的函数来说，其仅能在库合约中可见，在其他合约中不可用。</p>
+<h3 id="strings库合约" tabindex="-1"><a class="headerlink" href="#strings库合约" aria-hidden="true"></a> Strings库合约</h3>
+<p><code>Strings库合约</code>是将<code>uint256</code>类型转换为相应的<code>string</code>类型的代码库，样例代码如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">library</span> <span class="title">Strings</span> </span>&#123;</span><br><span class="line">    <span class="keyword">bytes16</span> <span class="keyword">private</span> <span class="keyword">constant</span> _HEX_SYMBOLS <span class="operator">=</span> <span class="string">&quot;0123456789abcdef&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @dev Converts a `uint256` to its ASCII `string` decimal representation.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">toString</span>(<span class="params"><span class="keyword">uint256</span> value</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="comment">// Inspired by OraclizeAPI&#x27;s implementation - MIT licence</span></span><br><span class="line">        <span class="comment">// https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (value <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;0&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">uint256</span> temp <span class="operator">=</span> value;</span><br><span class="line">        <span class="keyword">uint256</span> digits;</span><br><span class="line">        <span class="keyword">while</span> (temp <span class="operator">!</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            digits<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">            temp <span class="operator">/</span><span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">bytes</span> <span class="keyword">memory</span> buffer <span class="operator">=</span> <span class="keyword">new</span> <span class="keyword">bytes</span>(digits);</span><br><span class="line">        <span class="keyword">while</span> (value <span class="operator">!</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            digits <span class="operator">-</span><span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">            buffer[digits] <span class="operator">=</span> <span class="keyword">bytes1</span>(<span class="keyword">uint8</span>(<span class="number">48</span> <span class="operator">+</span> <span class="keyword">uint256</span>(value <span class="operator">%</span> <span class="number">10</span>)));</span><br><span class="line">            value <span class="operator">/</span><span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">string</span>(buffer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">toHexString</span>(<span class="params"><span class="keyword">uint256</span> value</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (value <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;0x00&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">uint256</span> temp <span class="operator">=</span> value;</span><br><span class="line">        <span class="keyword">uint256</span> length <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (temp <span class="operator">!</span><span class="operator">=</span> <span class="number">0</span>) &#123;</span><br><span class="line">            length<span class="operator">+</span><span class="operator">+</span>;</span><br><span class="line">            temp <span class="operator">&gt;</span><span class="operator">&gt;</span><span class="operator">=</span> <span class="number">8</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> toHexString(value, length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">toHexString</span>(<span class="params"><span class="keyword">uint256</span> value, <span class="keyword">uint256</span> length</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span> (<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">bytes</span> <span class="keyword">memory</span> buffer <span class="operator">=</span> <span class="keyword">new</span> <span class="keyword">bytes</span>(<span class="number">2</span> <span class="operator">*</span> length <span class="operator">+</span> <span class="number">2</span>);</span><br><span class="line">        buffer[<span class="number">0</span>] <span class="operator">=</span> <span class="string">&quot;0&quot;</span>;</span><br><span class="line">        buffer[<span class="number">1</span>] <span class="operator">=</span> <span class="string">&quot;x&quot;</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">uint256</span> i <span class="operator">=</span> <span class="number">2</span> <span class="operator">*</span> length <span class="operator">+</span> <span class="number">1</span>; i <span class="operator">&gt;</span> <span class="number">1</span>; <span class="operator">-</span><span class="operator">-</span>i) &#123;</span><br><span class="line">            buffer[i] <span class="operator">=</span> _HEX_SYMBOLS[value <span class="operator">&amp;</span> <span class="number">0xf</span>];</span><br><span class="line">            value <span class="operator">&gt;</span><span class="operator">&gt;</span><span class="operator">=</span> <span class="number">4</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">require</span>(value <span class="operator">=</span><span class="operator">=</span> <span class="number">0</span>, <span class="string">&quot;Strings: hex length insufficient&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">string</span>(buffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它主要包含两个函数，<code>toString()</code>将<code>uint256</code>转换为10进制的<code>string</code>，<code>toHexString()</code>将<code>uint256</code>转换为16进制的<code>string</code>。</p>
+<h3 id="如何使用库合约？" tabindex="-1"><a class="headerlink" href="#如何使用库合约？" aria-hidden="true"></a> 如何使用库合约？</h3>
+<p>我们用<code>Strings</code>库合约的<code>toHexString()</code>来演示两种使用库合约中函数的办法。</p>
+<ul>
+<li>利用using for指令，指令<code>using A for B;</code>可用于附加库合约（从库<code> A</code>）到任何类型（<code>B</code>）。添加完指令后，库<code>A</code>中的函数会自动添加为<code>B</code>类型变量的成员，可以直接调用。注意：在调用的时候，这个变量会被当作第一个参数传递给函数：</li>
+</ul>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 利用using for指令</span></span><br><span class="line"><span class="keyword">using</span> <span class="title">Strings</span> <span class="title"><span class="keyword">for</span></span> <span class="title"><span class="keyword">uint256</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getString1</span>(<span class="params"><span class="keyword">uint256</span> _number</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">    <span class="comment">// 库合约中的函数会自动添加为uint256型变量的成员</span></span><br><span class="line">    <span class="keyword">return</span> _number.toHexString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>通过库合约名称调用函数</li>
+</ul>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 直接通过库合约名调用</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getString2</span>(<span class="params"><span class="keyword">uint256</span> _number</span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">pure</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">string</span> <span class="keyword">memory</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Strings.toHexString(_number);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们部署合约并输入<code>130</code>测试一下，两种方法均能返回正确的16进制string <code>0x82</code>。证明我们调用库合约成功！</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204035623180.png" alt="image-20250204035623180" loading="lazy" decoding="async"></p>
+<p>常见的库合约有：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Strings.sol">Strings</a>：将<code>uint256</code>转换为<code>String</code></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Address.sol">Address</a>：判断某个地址是否为合约地址</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Create2.sol">Create2</a>：更安全的使用<code>Create2 EVM opcode</code></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4a9cc8b4918ef3736229a5cc5a310bdc17bf759f/contracts/utils/Arrays.sol">Arrays</a>：跟数组相关的库合约</li>
+</ol>
+<h2 id="import" tabindex="-1"><a class="headerlink" href="#import" aria-hidden="true"></a> Import</h2>
+<p>在Solidity中，<code>import</code>语句可以帮助我们在一个文件中引用另一个文件的内容，提高代码的可重用性和组织性。本教程将向你介绍如何在Solidity中使用<code>import</code>语句。</p>
+<h3 id="import用法" tabindex="-1"><a class="headerlink" href="#import用法" aria-hidden="true"></a> <code>Import</code>用法</h3>
+<ul>
+<li>通过源文件相对位置导入，例子：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">文件结构</span><br><span class="line">├── Import.sol</span><br><span class="line">└── Yeye.sol</span><br><span class="line"></span><br><span class="line">// 通过文件相对位置import</span><br><span class="line">import &#x27;./Yeye.sol&#x27;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>通过源文件网址导入网上的合约的全局符号，例子：</li>
+</ul>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过网址引用</span></span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>通过<code>npm</code>的目录导入，例子：</li>
+</ul>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;@openzeppelin/contracts/access/Ownable.sol&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>通过指定<code>全局符号</code>导入合约特定的全局符号，例子：</li>
+</ul>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;<span class="title">Yeye</span>&#125; <span class="title"><span class="keyword">from</span></span> <span class="string">&#x27;./Yeye.sol&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>引用(<code>import</code>)在代码中的位置为：在声明版本号之后，在其余代码之前。</li>
+</ul>
+<h3 id="测试导入结果" tabindex="-1"><a class="headerlink" href="#测试导入结果" aria-hidden="true"></a> 测试导入结果</h3>
+<p>我们可以用下面这段代码测试是否成功导入了外部源代码：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过文件相对位置import</span></span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;./Yeye.sol&#x27;</span>;</span><br><span class="line"><span class="comment">// 通过`全局符号`导入特定的合约</span></span><br><span class="line"><span class="keyword">import</span> &#123;<span class="title">Yeye</span>&#125; <span class="title"><span class="keyword">from</span></span> <span class="string">&#x27;./Yeye.sol&#x27;</span>;</span><br><span class="line"><span class="comment">// 通过网址引用</span></span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol&#x27;</span>;</span><br><span class="line"><span class="comment">// 引用OpenZeppelin合约</span></span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;@openzeppelin/contracts/access/Ownable.sol&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Import</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 成功导入Address库</span></span><br><span class="line">    <span class="keyword">using</span> <span class="title">Address</span> <span class="title"><span class="keyword">for</span></span> <span class="title"><span class="keyword">address</span></span>;</span><br><span class="line">    <span class="comment">// 声明yeye变量</span></span><br><span class="line">    Yeye yeye <span class="operator">=</span> <span class="keyword">new</span> Yeye();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 测试是否能调用yeye的函数</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span></span>&#123;</span><br><span class="line">        yeye.hip();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Yeye.sol</code>代码如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 第10讲合约继承中的Yeye合约</span></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Yeye</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">string</span> <span class="built_in">msg</span></span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 定义3个function: hip(), pop(), yeye()，Log值为Yeye。</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">hip</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye hip&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">pop</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye pop&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">yeye</span>(<span class="params"></span>) <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">virtual</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="string">&quot;Yeye&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试结果如下：</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204041504259.png" alt="image-20250204041504259" loading="lazy" decoding="async"></p>
+<h2 id="接收和发送eth" tabindex="-1"><a class="headerlink" href="#接收和发送eth" aria-hidden="true"></a> 接收和发送ETH</h2>
+<p>本讲主要介绍ETH的接收和发送。</p>
+<h3 id="接收eth" tabindex="-1"><a class="headerlink" href="#接收eth" aria-hidden="true"></a> 接收ETH</h3>
+<p><code>Solidity</code>支持两种特殊的回调函数，<code>receive()</code>和<code>fallback()</code>，他们主要在两种情况下被使用：</p>
+<ul>
+<li>接收ETH</li>
+<li>处理合约中不存在的函数调用（代理合约proxy contract）</li>
+</ul>
+<p><strong>注意⚠️</strong>：在Solidity 0.6.x版本之前，语法上只有 <code>fallback()</code> 函数，用来接收用户发送的ETH时调用以及在被调用函数签名没有匹配到时，来调用。 0.6版本之后，Solidit才将 <code>fallback()</code> 函数拆分成 <code>receive()</code> 和 <code>fallback()</code> 两个函数。</p>
+<h4 id="接收eth函数receive" tabindex="-1"><a class="headerlink" href="#接收eth函数receive" aria-hidden="true"></a> 接收ETH函数<code>receive</code></h4>
+<p><code>receive()</code>函数是在合约收到<code>ETH</code>转账时被调用的函数。</p>
+<p>一个合约最多有一个<code>receive()</code>函数，声明方式与一般函数不一样，不需要<code>function</code>关键字：<code>receive() external payable { ... }</code>。<code>receive()</code>函数不能有任何的参数，不能返回任何值，<strong>必须包含<code>external</code>和<code>payable</code>。</strong></p>
+<p>当合约接收ETH的时候，<code>receive()</code>会被触发。<code>receive()</code>最好不要执行太多的逻辑因为如果别人用<code>send</code>和<code>transfer</code>方法发送<code>ETH</code>的话，<code>gas</code>会限制在<code>2300</code>，<code>receive()</code>太复杂可能会触发<code>Out of Gas</code>报错；如果用<code>call</code>就可以自定义<code>gas</code>执行更复杂的逻辑（这三种发送ETH的方法我们之后会讲到）。</p>
+<p>我们可以在<code>receive()</code>里发送一个<code>event</code>，例如：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义事件</span></span><br><span class="line"><span class="function"><span class="keyword">event</span> <span class="title">Received</span>(<span class="params"><span class="keyword">address</span> Sender, <span class="keyword">uint</span> Value</span>)</span>;</span><br><span class="line"><span class="comment">// 接收ETH时释放Received事件</span></span><br><span class="line"><span class="function"><span class="keyword">receive</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span> </span>&#123;</span><br><span class="line">    <span class="keyword">emit</span> Received(<span class="built_in">msg</span>.<span class="built_in">sender</span>, <span class="built_in">msg</span>.<span class="built_in">value</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有些恶意合约，会在<code>receive()</code> 函数（老版本的话，就是 <code>fallback()</code> 函数）嵌入恶意消耗<code>gas</code>的内容或者使得执行故意失败的代码，导致一些包含退款和转账逻辑的合约不能正常工作，因此写包含退款等逻辑的合约时候，一定要注意这种情况。</p>
+<h4 id="回退eth函数fallback" tabindex="-1"><a class="headerlink" href="#回退eth函数fallback" aria-hidden="true"></a> 回退ETH函数<code>fallback</code></h4>
+<p><code>fallback()</code>函数会在调用合约不存在的函数时被触发。可用于接收ETH，也可以用于代理合约<code>proxy contract</code>。</p>
+<p><code>fallback()</code>声明时不需要<code>function</code>关键字，<strong>必须由<code>external</code>修饰，一般也会用<code>payable</code>修饰</strong>，用于接收ETH:<code>fallback() external payable { ... }</code>。</p>
+<p>我们定义一个<code>fallback()</code>函数，被触发时候会释放<code>fallbackCalled</code>事件，并输出<code>msg.sender</code>，<code>msg.value</code>和<code>msg.data</code>:</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">event</span> <span class="title">fallbackCalled</span>(<span class="params"><span class="keyword">address</span> Sender, <span class="keyword">uint</span> Value, <span class="keyword">bytes</span> Data</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// fallback</span></span><br><span class="line"><span class="function"><span class="keyword">fallback</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">    <span class="keyword">emit</span> fallbackCalled(<span class="built_in">msg</span>.<span class="built_in">sender</span>, <span class="built_in">msg</span>.<span class="built_in">value</span>, <span class="built_in">msg</span>.<span class="built_in">data</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="receive和fallback的区别" tabindex="-1"><a class="headerlink" href="#receive和fallback的区别" aria-hidden="true"></a> <code>receive</code>和<code>fallback</code>的区别</h4>
+<p><code>receive</code>和<code>fallback</code>都能够用于接收<code>ETH</code>，他们触发的规则如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">触发fallback() 还是 receive()?</span><br><span class="line">           接收ETH</span><br><span class="line">              |</span><br><span class="line">         msg.data是空？</span><br><span class="line">            /  \</span><br><span class="line">          是    否</span><br><span class="line">          /      \</span><br><span class="line">receive()存在?   fallback()</span><br><span class="line">        / \</span><br><span class="line">       是  否</span><br><span class="line">      /     \</span><br><span class="line">receive()   fallback()</span><br></pre></td></tr></table></figure>
+<p>简单来说，合约接收<code>ETH</code>时，<code>msg.data</code>为空且存在<code>receive()</code>时，会触发<code>receive()</code>；<code>msg.data</code>不为空或不存在<code>receive()</code>时，会触发<code>fallback()</code>，此时<code>fallback()</code>必须为<code>payable</code>。</p>
+<p><code>receive()</code>和<code>payable fallback()</code>均不存在的时候，向合约<strong>直接</strong>发送<code>ETH</code>将会报错（你仍可以通过带有<code>payable</code>的函数向合约发送<code>ETH</code>）。</p>
+<h4 id="测试代码演示" tabindex="-1"><a class="headerlink" href="#测试代码演示" aria-hidden="true"></a> 测试代码演示</h4>
+<p>完整的测试代码<code>Fallback.sol</code>，如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">Fallback</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* 触发fallback() 还是 receive()?</span></span><br><span class="line"><span class="comment">           接收ETH</span></span><br><span class="line"><span class="comment">              |</span></span><br><span class="line"><span class="comment">         msg.data是空？</span></span><br><span class="line"><span class="comment">            /  \</span></span><br><span class="line"><span class="comment">          是    否</span></span><br><span class="line"><span class="comment">          /      \</span></span><br><span class="line"><span class="comment">receive()存在?   fallback()</span></span><br><span class="line"><span class="comment">        / \</span></span><br><span class="line"><span class="comment">       是  否</span></span><br><span class="line"><span class="comment">      /     \</span></span><br><span class="line"><span class="comment">receive()  fallback   </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 定义事件</span></span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">receivedCalled</span>(<span class="params"><span class="keyword">address</span> Sender, <span class="keyword">uint</span> Value</span>)</span>;</span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">fallbackCalled</span>(<span class="params"><span class="keyword">address</span> Sender, <span class="keyword">uint</span> Value, <span class="keyword">bytes</span> Data</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 接收ETH时释放Received事件</span></span><br><span class="line">    <span class="function"><span class="keyword">receive</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span> </span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> receivedCalled(<span class="built_in">msg</span>.<span class="built_in">sender</span>, <span class="built_in">msg</span>.<span class="built_in">value</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// fallback</span></span><br><span class="line">    <span class="function"><span class="keyword">fallback</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> fallbackCalled(<span class="built_in">msg</span>.<span class="built_in">sender</span>, <span class="built_in">msg</span>.<span class="built_in">value</span>, <span class="built_in">msg</span>.<span class="built_in">data</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>部署并执行代码，<code>VALUE</code>栏中输入要发送到合约中的金额，<code>CALLDATA</code>留空，点击<code>Transact</code>，成功触发到<code>receivedCalled</code>事件。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204160942747.png" alt="image-20250204160942747" loading="lazy" decoding="async"></p>
+<p>同样，<code>VALUE</code>栏中输入要发送到合约中的金额，<code>CALLDATA</code>输入任意编写的<code>0xabcd</code>，点击<code>Transact</code>，成功触发到<code>fallbackCalled</code>事件。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204161621064.png" alt="image-20250204161621064" loading="lazy" decoding="async"></p>
+<h3 id="发送eth" tabindex="-1"><a class="headerlink" href="#发送eth" aria-hidden="true"></a> 发送ETH</h3>
+<p><code>Solidity</code>有三种方法向其他合约发送<code>ETH</code>，他们是：<code>transfer()</code>，<code>send()</code>和<code>call()</code>，其中<code>call()</code>是被鼓励的用法。</p>
+<p>完整的测试代码<code>SendETH.sol</code>如下：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SPDX-License-Identifier: MIT</span></span><br><span class="line"><span class="meta"><span class="keyword">pragma</span> <span class="keyword">solidity</span> ^0.8.21;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 3种方法发送ETH</span></span><br><span class="line"><span class="comment">// transfer: 2300 gas, revert</span></span><br><span class="line"><span class="comment">// send: 2300 gas, return bool</span></span><br><span class="line"><span class="comment">// call: all gas, return (bool, data)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">SendFailed</span>(<span class="params"></span>)</span>; <span class="comment">// 用send发送ETH失败error</span></span><br><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">CallFailed</span>(<span class="params"></span>)</span>; <span class="comment">// 用call发送ETH失败error</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">SendETH</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 构造函数，payable使得部署的时候可以转eth进去</span></span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"></span>) <span class="title"><span class="keyword">payable</span></span></span>&#123;&#125;</span><br><span class="line">    <span class="comment">// receive方法，接收eth时被触发</span></span><br><span class="line">    <span class="function"><span class="keyword">receive</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 用transfer()发送ETH</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">transferETH</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">payable</span> _to, <span class="keyword">uint256</span> amount</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">        _to.<span class="built_in">transfer</span>(amount);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// send()发送ETH</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">sendETH</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">payable</span> _to, <span class="keyword">uint256</span> amount</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">        <span class="comment">// 处理下send的返回值，如果失败，revert交易并发送error</span></span><br><span class="line">        <span class="keyword">bool</span> success <span class="operator">=</span> _to.<span class="built_in">send</span>(amount);</span><br><span class="line">        <span class="keyword">if</span>(<span class="operator">!</span>success)&#123;</span><br><span class="line">            <span class="keyword">revert</span> SendFailed();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// call()发送ETH</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">callETH</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">payable</span> _to, <span class="keyword">uint256</span> amount</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">        <span class="comment">// 处理下call的返回值，如果失败，revert交易并发送error</span></span><br><span class="line">        (<span class="keyword">bool</span> success,) <span class="operator">=</span> _to.<span class="built_in">call</span>&#123;<span class="built_in">value</span>: amount&#125;(<span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span>(<span class="operator">!</span>success)&#123;</span><br><span class="line">            <span class="keyword">revert</span> CallFailed();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">ReceiveETH</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 收到eth事件，记录amount和gas</span></span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">uint</span> amount, <span class="keyword">uint</span> gas</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// receive方法，接收eth时被触发</span></span><br><span class="line">    <span class="function"><span class="keyword">receive</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="built_in">msg</span>.<span class="built_in">value</span>, <span class="built_in">gasleft</span>());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 返回合约ETH余额</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getBalance</span>(<span class="params"></span>) <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">address</span>(<span class="built_in">this</span>).<span class="built_in">balance</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="接收eth合约" tabindex="-1"><a class="headerlink" href="#接收eth合约" aria-hidden="true"></a> 接收ETH合约</h4>
+<p>我们先部署一个接收<code>ETH</code>合约<code>ReceiveETH</code>。<code>ReceiveETH</code>合约里有一个事件<code>Log</code>，记录收到的<code>ETH</code>数量和<code>gas</code>剩余。还有两个函数，一个是<code>receive()</code>函数，收到<code>ETH</code>被触发，并发送<code>Log</code>事件；另一个是查询合约<code>ETH</code>余额的<code>getBalance()</code>函数。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">ReceiveETH</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 收到eth事件，记录amount和gas</span></span><br><span class="line">    <span class="function"><span class="keyword">event</span> <span class="title">Log</span>(<span class="params"><span class="keyword">uint</span> amount, <span class="keyword">uint</span> gas</span>)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// receive方法，接收eth时被触发</span></span><br><span class="line">    <span class="function"><span class="keyword">receive</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">        <span class="keyword">emit</span> Log(<span class="built_in">msg</span>.<span class="built_in">value</span>, <span class="built_in">gasleft</span>());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 返回合约ETH余额</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">getBalance</span>(<span class="params"></span>) <span class="title"><span class="keyword">view</span></span> <span class="title"><span class="keyword">public</span></span> <span class="title"><span class="keyword">returns</span></span>(<span class="params"><span class="keyword">uint</span></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">address</span>(<span class="built_in">this</span>).<span class="built_in">balance</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>部署<code>ReceiveETH</code>合约后，运行<code>getBalance()</code>函数，可以看到当前合约的<code>ETH</code>余额为<code>0</code>。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204164248838.png" alt="image-20250204164248838" loading="lazy" decoding="async"></p>
+<h4 id="发送eth合约" tabindex="-1"><a class="headerlink" href="#发送eth合约" aria-hidden="true"></a> 发送ETH合约</h4>
+<p>我们将实现三种方法向<code>ReceiveETH</code>合约发送<code>ETH</code>。首先，先在发送ETH合约<code>SendETH</code>中实现<code>payable</code>的<code>构造函数</code>和<code>receive()</code>，让我们能够在部署时和部署后向合约转账。</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">contract</span> <span class="title">SendETH</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 构造函数，payable使得部署的时候可以转eth进去</span></span><br><span class="line">    <span class="function"><span class="keyword">constructor</span>(<span class="params"></span>) <span class="title"><span class="keyword">payable</span></span></span>&#123;&#125;</span><br><span class="line">    <span class="comment">// receive方法，接收eth时被触发</span></span><br><span class="line">    <span class="function"><span class="keyword">receive</span>(<span class="params"></span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="transfer用法次优" tabindex="-1"><a class="headerlink" href="#transfer用法次优" aria-hidden="true"></a> Transfer用法(次优)</h4>
+<ul>
+<li>
+<p>用法是<code>接收方地址.transfer(发送ETH数额)</code>。</p>
+</li>
+<li>
+<p><code>transfer()</code>的<code>gas</code>限制是<code>2300</code>，足够用于转账，但对方合约的<code>fallback()</code>或<code>receive()</code>函数不能实现太复杂的逻辑。</p>
+</li>
+<li>
+<p><code>transfer()</code>如果转账失败，会自动<code>revert</code>（回滚交易）。</p>
+</li>
+</ul>
+<p>代码样例，注意里面的<code>_to</code>填<code>ReceiveETH</code><strong>合约的地址</strong>，<code>amount</code>是<code>ETH</code>转账金额：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用transfer()发送ETH</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transferETH</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">payable</span> _to, <span class="keyword">uint256</span> amount</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">    _to.<span class="built_in">transfer</span>(amount);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>部署<code>SendETH</code>合约后，对<code>ReceiveETH</code>合约发送ETH。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172302122.png" alt="image-20250204172302122" loading="lazy" decoding="async"></p>
+<p><code>ReceiveETH</code>合约成功接收到转账的ETH。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172327987.png" alt="image-20250204172327987" loading="lazy" decoding="async"></p>
+<p><code>amount</code>&gt;<code>value</code>，转账失败，发生<code>revert</code>。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172500152.png" alt="image-20250204172500152" loading="lazy" decoding="async"></p>
+<h4 id="send用法" tabindex="-1"><a class="headerlink" href="#send用法" aria-hidden="true"></a> Send用法</h4>
+<p>用法是<code>接收方地址.send(发送ETH数额)</code>。</p>
+<ul>
+<li><code>send()</code>的<code>gas</code>限制是<code>2300</code>，足够用于转账，但对方合约的<code>fallback()</code>或<code>receive()</code>函数不能实现太复杂的逻辑。</li>
+<li><code>send()</code>如果转账失败，不会<code>revert</code>。</li>
+<li><code>send()</code>的返回值是<code>bool</code>，代表着转账成功或失败，需要额外代码处理一下。</li>
+</ul>
+<p>代码样例：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">SendFailed</span>(<span class="params"></span>)</span>; <span class="comment">// 用send发送ETH失败error</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// send()发送ETH</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sendETH</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">payable</span> _to, <span class="keyword">uint256</span> amount</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">    <span class="comment">// 处理下send的返回值，如果失败，revert交易并发送error</span></span><br><span class="line">    <span class="keyword">bool</span> success <span class="operator">=</span> _to.<span class="built_in">send</span>(amount);</span><br><span class="line">    <span class="keyword">if</span>(<span class="operator">!</span>success)&#123;</span><br><span class="line">        <span class="keyword">revert</span> SendFailed();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>amount</code>&gt;<code>value</code>，转账失败，发生<code>revert</code>。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204172829438.png" alt="image-20250204172829438" loading="lazy" decoding="async"></p>
+<h4 id="call用法提倡使用" tabindex="-1"><a class="headerlink" href="#call用法提倡使用" aria-hidden="true"></a> Call用法(提倡使用)</h4>
+<p>用法是<code>接收方地址.call{value: 发送ETH数额}(&quot;&quot;)</code>。</p>
+<ul>
+<li><code>call()</code>没有<code>gas</code>限制，可以支持对方合约<code>fallback()</code>或<code>receive()</code>函数实现复杂逻辑。</li>
+<li><code>call()</code>如果转账失败，不会<code>revert</code>。</li>
+<li><code>call()</code>的返回值是<code>(bool, bytes)</code>，其中<code>bool</code>代表着转账成功或失败，需要额外代码处理一下。</li>
+</ul>
+<p>代码样例：</p>
+<figure class="highlight solidity"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">error</span> <span class="title">CallFailed</span>(<span class="params"></span>)</span>; <span class="comment">// 用call发送ETH失败error</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// call()发送ETH</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">callETH</span>(<span class="params"><span class="keyword">address</span> <span class="keyword">payable</span> _to, <span class="keyword">uint256</span> amount</span>) <span class="title"><span class="keyword">external</span></span> <span class="title"><span class="keyword">payable</span></span></span>&#123;</span><br><span class="line">    <span class="comment">// 处理下call的返回值，如果失败，revert交易并发送error</span></span><br><span class="line">    (<span class="keyword">bool</span> success,) <span class="operator">=</span> _to.<span class="built_in">call</span>&#123;<span class="built_in">value</span>: amount&#125;(<span class="string">&quot;&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(<span class="operator">!</span>success)&#123;</span><br><span class="line">        <span class="keyword">revert</span> CallFailed();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>部署<code>SendETH</code>合约后，对<code>ReceiveETH</code>合约发送ETH。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204165726035.png" alt="image-20250204165726035" loading="lazy" decoding="async"></p>
+<p><code>ReceiveETH</code>合约成功接收到转账的ETH。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204165840188.png" alt="image-20250204165840188" loading="lazy" decoding="async"></p>
+<p><code>amount</code>&gt;<code>value</code>，转账失败，发生<code>revert</code>。</p>
+<p><img src="/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/image-20250204170920553.png" alt="image-20250204170920553" loading="lazy" decoding="async"></p>
+<h4 id="总结" tabindex="-1"><a class="headerlink" href="#总结" aria-hidden="true"></a> 总结</h4>
+<p>这一讲，我们介绍<code>Solidity</code>三种发送<code>ETH</code>的方法：<code>transfer</code>，<code>send</code>和<code>call</code>。</p>
+<ul>
+<li><strong><code>call</code>没有<code>gas</code>限制，最为灵活，是最提倡的方法！！！</strong>⚠️⚠️⚠️</li>
+<li><code>transfer</code>有<code>2300 gas</code>限制，但是发送失败会自动<code>revert</code>交易，是次优选择；</li>
+<li><code>send</code>有<code>2300 gas</code>限制，而且发送失败不会自动<code>revert</code>交易，几乎没有人用它。</li>
+</ul>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<p><a target="_blank" rel="noopener" href="https://www.wtf.academy/zh/course/solidity102/Fallback">https://www.wtf.academy/zh/course/solidity102/Fallback</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.wtf.academy/zh/course/solidity102/SendETH">https://www.wtf.academy/zh/course/solidity102/SendETH</a></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/01/26/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-09-30 13:04:42
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/" title="以太坊">
+                        #以太坊
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Solidity/" title="Solidity">
+                        #Solidity
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Blockchain/" title="Blockchain">
+                        #Blockchain
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web3/" title="Web3">
+                        <b>#</b> Web3
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/02/06/%E5%81%9A%E4%B8%AA%E5%83%8FPump-fun%E4%B8%80%E6%A0%B7%E7%9A%84Memecoin%E5%90%AF%E5%8A%A8%E5%8F%B0/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E8%BD%BD"><span class="toc-text"> 重载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="toc-text"> 函数重载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%EF%BC%88argument-matching%EF%BC%89"><span class="toc-text"> 参数匹配（Argument Matching）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-text"> 库合约</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%93%E5%90%88%E7%BA%A6-1"><span class="toc-text"> 库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#strings%E5%BA%93%E5%90%88%E7%BA%A6"><span class="toc-text"> Strings库合约</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%BA%93%E5%90%88%E7%BA%A6%EF%BC%9F"><span class="toc-text"> 如何使用库合约？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#import"><span class="toc-text"> Import</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#import%E7%94%A8%E6%B3%95"><span class="toc-text"> Import用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AF%BC%E5%85%A5%E7%BB%93%E6%9E%9C"><span class="toc-text"> 测试导入结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E5%92%8C%E5%8F%91%E9%80%81eth"><span class="toc-text"> 接收和发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6eth"><span class="toc-text"> 接收ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6eth%E5%87%BD%E6%95%B0receive"><span class="toc-text"> 接收ETH函数receive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9E%E9%80%80eth%E5%87%BD%E6%95%B0fallback"><span class="toc-text"> 回退ETH函数fallback</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#receive%E5%92%8Cfallback%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text"> receive和fallback的区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="toc-text"> 测试代码演示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81eth"><span class="toc-text"> 发送ETH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6eth%E5%90%88%E7%BA%A6"><span class="toc-text"> 接收ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%91%E9%80%81eth%E5%90%88%E7%BA%A6"><span class="toc-text"> 发送ETH合约</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#transfer%E7%94%A8%E6%B3%95%E6%AC%A1%E4%BC%98"><span class="toc-text"> Transfer用法(次优)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#send%E7%94%A8%E6%B3%95"><span class="toc-text"> Send用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#call%E7%94%A8%E6%B3%95%E6%8F%90%E5%80%A1%E4%BD%BF%E7%94%A8"><span class="toc-text"> Call用法(提倡使用)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text"> 总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%89) + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F02%2F03%2FSolidity%25E5%2585%25A5%25E9%2597%25A8%25E5%25AD%25A6%25E4%25B9%25A0-%25E4%25B8%2589%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/02/03/Solidity%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0-%E4%B8%89/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

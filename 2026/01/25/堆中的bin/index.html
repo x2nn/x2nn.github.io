@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="bin是什么？ 在 Glibc 的 ptmalloc 分配器中， Bin 是用于管理空闲内存块（Free Chunk）的核心数据结构。 从实现角度来看，Bin 并非物理容器，而是维护在 malloc_state （也称为 Arena）结构体中的 指针数组 。这些指针指向由空闲 Chunk 组成的 链表（Linked L…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      堆中的bin 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2026/01/25/堆中的bin/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="堆中的bin | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="bin是什么？ 在 Glibc 的 ptmalloc 分配器中， Bin 是用于管理空闲内存块（Free Chunk）的核心数据结构。 从实现角度来看，Bin 并非物理容器，而是维护在 malloc_state （也称为 Arena）结构体中的 指针数组 。这些指针指向由空闲 Chunk 组成的 链表（Linked L…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2026/01/25/堆中的bin/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2026-01-24T18:29:52.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-03-12T02:20:23.420Z" />
+    
+    
+      <meta property="article:tag" content="bins" />
+    
+      <meta property="article:tag" content="Heap" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="堆中的bin | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="bin是什么？ 在 Glibc 的 ptmalloc 分配器中， Bin 是用于管理空闲内存块（Free Chunk）的核心数据结构。 从实现角度来看，Bin 并非物理容器，而是维护在 malloc_state （也称为 Arena）结构体中的 指针数组 。这些指针指向由空闲 Chunk 组成的 链表（Linked L…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">堆中的bin</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2026-03-12 10:20:23
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/bins/" title="bins">
+                    #bins
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Heap/" title="Heap">
+                    #Heap
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                    <b>#</b> 二进制安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="bin是什么？" tabindex="-1"><a class="headerlink" href="#bin是什么？" aria-hidden="true"></a> bin是什么？</h2>
+<p>在 Glibc 的 <code>ptmalloc</code> 分配器中，<strong>Bin</strong> 是用于管理空闲内存块（Free Chunk）的核心数据结构。</p>
+<p>从实现角度来看，Bin 并非物理容器，而是维护在 <code>malloc_state</code>（也称为 Arena）结构体中的<strong>指针数组</strong>。这些指针指向由空闲 Chunk 组成的<strong>链表（Linked List）</strong>。</p>
+<p>当用户通过 <code>free()</code> 释放内存时，分配器会根据 Chunk 的大小将其插入（Link）到对应的 Bin 链表中；当用户 <code>malloc()</code> 时，分配器从 Bin 中取出（Unlink）合适的 Chunk 并返回给用户。</p>
+<h2 id="malloc_state" tabindex="-1"><a class="headerlink" href="#malloc_state" aria-hidden="true"></a> Malloc_state</h2>
+<p>在 glibc 的内存管理器（ptmalloc）中，<strong><code>malloc_state</code></strong> 是一个至关重要的结构体，它被通俗地称为 <strong>Arena（分配区）</strong>。</p>
+<p>简单来说，<code>malloc_state</code> 记录了一个分配区内所有内存管理的核心信息，包括<strong>空闲块的链表、Top Chunk 的位置以及统计数据</strong>。</p>
+<p>glic-2.35的malloc_state结构体源代码<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">malloc_state</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* Serialize access.  */</span></span><br><span class="line">  __libc_lock_define (, mutex);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Flags (formerly in max_fast).  */</span></span><br><span class="line">  <span class="type">int</span> flags;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Set if the fastbin chunks contain recently inserted free blocks.  */</span></span><br><span class="line">  <span class="comment">/* Note this is a bool but not all targets support atomics on booleans.  */</span></span><br><span class="line">  <span class="type">int</span> have_fastchunks;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Fastbins */</span></span><br><span class="line">  mfastbinptr fastbinsY[NFASTBINS];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Base of the topmost chunk -- not otherwise kept in a bin */</span></span><br><span class="line">  mchunkptr top;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The remainder from the most recent split of a small request */</span></span><br><span class="line">  mchunkptr last_remainder;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Normal bins packed as described above */</span></span><br><span class="line">  mchunkptr bins[NBINS * <span class="number">2</span> - <span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Bitmap of bins */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> binmap[BINMAPSIZE];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Linked list */</span></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">malloc_state</span> *next;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Linked list for free arenas.  Access to this field is serialized</span></span><br><span class="line"><span class="comment">     by free_list_lock in arena.c.  */</span></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">malloc_state</span> *next_free;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Number of threads attached to this arena.  0 if the arena is on</span></span><br><span class="line"><span class="comment">     the free list.  Access to this field is serialized by</span></span><br><span class="line"><span class="comment">     free_list_lock in arena.c.  */</span></span><br><span class="line">  INTERNAL_SIZE_T attached_threads;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Memory allocated from the system in this arena.  */</span></span><br><span class="line">  INTERNAL_SIZE_T system_mem;</span><br><span class="line">  INTERNAL_SIZE_T max_system_mem;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="arena的分类：主和从" tabindex="-1"><a class="headerlink" href="#arena的分类：主和从" aria-hidden="true"></a> Arena的分类：主和从</h3>
+<p>在一个多线程程序中，为了减少锁竞争，glibc 会创建多个 Arena：</p>
+<p>（1）<strong>Main Arena (主分配区):</strong> 进程中只有一个。它直接管理通过 <code>sbrk</code>（堆区扩展）和 <code>mmap</code> 分配的内存。它是一个全局变量。</p>
+<p>（2）<strong>Thread Arena (从分配区):</strong> 当多个线程竞争内存分配时，glibc 会为新线程创建额外的 Arena。这些从分配区主要通过 <code>mmap</code> 分配的一块被称为 <code>heap_info</code> 的大内存中切分。</p>
+<h3 id="malloc_state核心结构解析" tabindex="-1"><a class="headerlink" href="#malloc_state核心结构解析" aria-hidden="true"></a> malloc_state核心结构解析</h3>
+<p>以下是 <code>malloc.c</code> 中该结构体的主要成员及其功能：</p>
+<table>
+<thead>
+<tr>
+<th><strong>成员名称</strong></th>
+<th><strong>功能描述</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>mutex</code></strong></td>
+<td><strong>互斥锁</strong>。每个 Arena 都有自己的锁，保证在多线程环境下对该分配区的操作是原子性的。</td>
+</tr>
+<tr>
+<td><strong><code>fastbinsY</code></strong></td>
+<td><strong>Fast Bins 数组</strong>。存储小块内存（16B-80B）的单向链表头指针。</td>
+</tr>
+<tr>
+<td><strong><code>top</code></strong></td>
+<td><strong>Top Chunk 指针</strong>。指向当前 Arena 顶部的空闲空间，如果所有 Bin 都找不到合适的块，就从这里切割。</td>
+</tr>
+<tr>
+<td><strong><code>last_remainder</code></strong></td>
+<td><strong>剩余块指针</strong>。当一个小的申请从一个大的空闲块中切出后，剩余部分如果不能进 Bin，就存放在这里以备下次快速分配。</td>
+</tr>
+<tr>
+<td><strong><code>bins</code></strong></td>
+<td><strong>常规 Bins 数组</strong>。存储 Unsorted Bin、Small Bins 和 Large Bins 的双向链表。</td>
+</tr>
+<tr>
+<td><strong><code>binmap</code></strong></td>
+<td><strong>位图</strong>。用于快速查找哪个 Bin 索引下存在空闲块，提高搜索效率。</td>
+</tr>
+<tr>
+<td><strong><code>next</code></strong></td>
+<td><strong>链表指针</strong>。将进程中所有的 <code>malloc_state</code> 实例连接成一个循环链表，方便分配器寻找空闲的 Arena。</td>
+</tr>
+<tr>
+<td><strong><code>system_mem</code></strong></td>
+<td><strong>统计量</strong>。记录该 Arena 从系统中获取的总内存量。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="工作流程概览" tabindex="-1"><a class="headerlink" href="#工作流程概览" aria-hidden="true"></a> 工作流程概览</h3>
+<p>当你调用 <code>malloc(size)</code> 时，分配器会经历以下关于 <code>malloc_state</code> 的查找过程：</p>
+<p>（1）<strong>寻找 Arena:</strong> 线程首先尝试获取它最后一次使用的那个 Arena 的锁。如果被占用，它会遍历 Arena 链表（通过 <code>next</code> 指针）寻找一个未上锁的。</p>
+<p>（2）<strong>检查 Fastbins:</strong> 如果申请的大小属于 Fast Bin 范围，直接查看 <code>fastbinsY</code> 数组。</p>
+<p>（3）<strong>检查 Bins:</strong> 如果 Fast Bin 没命中，则查找 <code>bins</code> 数组（Unsorted -&gt; Small -&gt; Large）。</p>
+<p>（4）<strong>使用 Top Chunk:</strong> 如果所有 Bin 都空了，则计算 <code>top</code> 指针指向的剩余空间。</p>
+<p>（5）<strong>系统调用:</strong> 如果连 Top Chunk 都不够了，则通过 <code>sbrk</code> (Main Arena) 或 <code>mmap</code> (Thread Arena) 向内核申请更多物理内存。</p>
+<h3 id="安全意义" tabindex="-1"><a class="headerlink" href="#安全意义" aria-hidden="true"></a> 安全意义</h3>
+<p>在二进制漏洞利用中，<code>malloc_state</code> 对于攻击者来说非常重要。</p>
+<ul>
+<li><strong>libc 地址泄露:</strong> 由于 <code>main_arena</code> 是 <a target="_blank" rel="noopener" href="http://libc.so">libc.so</a> 中的一个全局变量，泄露了 <code>malloc_state</code> 的地址（比如泄露了 Unsorted Bin 的指针）就能绕过 <strong>ASLR</strong>，计算出 libc 的基地址。</li>
+<li><strong>控制流篡改:</strong> 攻击者通过堆溢出伪造 <code>malloc_state</code> 中的指针，可以诱导 <code>malloc</code> 返回任意地址（如栈地址或 GOT 表地址），实现任意代码执行。</li>
+</ul>
+<h2 id="核心单元：malloc_chunk" tabindex="-1"><a class="headerlink" href="#核心单元：malloc_chunk" aria-hidden="true"></a> 核心单元：malloc_chunk</h2>
+<p>Bin管理的对象是<code>malloc_chunk</code>。理解其字段是理解 Bin 运作机制的前提。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line">  INTERNAL_SIZE_T      mchunk_prev_size;  <span class="comment">/* 前一 Chunk 大小（仅当前一 Chunk 空闲时有效） */</span></span><br><span class="line">  INTERNAL_SIZE_T      mchunk_size;       <span class="comment">/* 当前 Chunk 大小（包含 AMP 标志位） */</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>                <span class="comment">/* Forward pointer: 指向链表中下一个 Chunk */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span>                <span class="comment">/* Backward pointer: 指向链表中上一个 Chunk */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 仅用于 Large Bin 的扩展字段 */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd_nextsize</span>;</span>       <span class="comment">/* 指向下一个不同大小的 Chunk */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk_nextsize</span>;</span>       <span class="comment">/* 指向前一个不同大小的 Chunk */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>复用机制：</strong> 这里的 <code>fd</code>、<code>bk</code> 等指针仅在 Chunk 处于 <strong>Free（空闲）</strong> 状态并存在于 Bin 中时才有意义。当 Chunk 被分配给用户时，这些内存空间被用作 User Data。</p>
+<h2 id="bin的分类与数据结构特性" tabindex="-1"><a class="headerlink" href="#bin的分类与数据结构特性" aria-hidden="true"></a> Bin的分类与数据结构特性</h2>
+<p><code>ptmalloc</code> 根据 chunk 的大小（Size）和操作策略（Policy），将 Bin 划分为四类。</p>
+<p><strong>Fast Bins、Unsorted Bin、Small Bins、Large Bins。</strong></p>
+<h3 id="fast-bins" tabindex="-1"><a class="headerlink" href="#fast-bins" aria-hidden="true"></a> Fast Bins</h3>
+<p>这是为了优化小内存分配性能而设计的结构。</p>
+<ul>
+<li><strong>数据结构：</strong> <strong>单向链表 (Singly Linked List)</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.fastbinsY</code> 数组。</li>
+<li><strong>操作策略：</strong> <strong>LIFO (Last In, First Out)</strong>。最近释放的 chunk 会被插入链表头部，下次申请时最先被取出。</li>
+<li><strong>合并策略 (Coalescing)：</strong> <strong>不执行合并</strong>。即使两个 Fast Bin chunk 物理相邻，它们也不会合并成一个更大的 chunk。这通过保持 chunk 的 <code>P</code> (PREV_INUSE) 标志位为 1 来实现。</li>
+<li><strong>范围：</strong> 默认覆盖 16 到 80 字节（32位系统）或 16 到 160 字节（64位系统），具体取决于 <code>SIZE_SZ</code>。</li>
+<li><strong>技术细节：</strong> 由于是单向链表，Fast Bin chunk 只有 <code>fd</code> 指针指向下一个节点，<code>bk</code> 指针无定义。</li>
+</ul>
+<p><img src="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/image-20260202234907703.png" alt="image-20260202234907703" loading="lazy" decoding="async"></p>
+<h3 id="unsorted-bin" tabindex="-1"><a class="headerlink" href="#unsorted-bin" aria-hidden="true"></a> Unsorted Bin</h3>
+<p>这是 chunk 被释放后的第一个缓冲区，也是唯一的非分类容器。</p>
+<ul>
+<li><strong>数据结构：</strong> <strong>双向环形链表 (Doubly Linked Circular List)</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.bins[1]</code>。</li>
+<li><strong>功能逻辑：</strong> 当一个 chunk 被释放（且大小超出 Fast Bin 范围）时，它首先被插入 Unsorted Bin 的头部。</li>
+<li><strong>遍历逻辑：</strong> 在 <code>malloc</code> 过程中，如果 Fast Bin 无法满足请求，分配器会遍历 Unsorted Bin。在遍历过程中，分配器会将每个遇到的 chunk <strong>重新分类（Resort）</strong> 并放入对应的 Small Bin 或 Large Bin 中。</li>
+<li><strong>利用价值：</strong> 利用了<strong>时间局部性原理</strong>。如果程序释放了一个 chunk 随后立即申请相同大小的 chunk，可以直接从这里复用，避免了复杂的查找逻辑。</li>
+</ul>
+<p><img src="/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/image-20260203014103804.png" alt="image-20260203014103804" loading="lazy" decoding="async"></p>
+<h3 id="small-bins" tabindex="-1"><a class="headerlink" href="#small-bins" aria-hidden="true"></a> Small Bins</h3>
+<p>用于管理固定大小的中小块内存，采用精确匹配策略。</p>
+<ul>
+<li><strong>数据结构：</strong> <strong>双向环形链表</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.bins[2]</code> 到 <code>malloc_state.bins[63]</code>。</li>
+<li><strong>大小映射：</strong> 每个 Small Bin 对应一个精确的固定大小，步长为 16 字节。例如，Bin 2 存储 32 字节，Bin 3 存储 48 字节，依此类推。</li>
+<li><strong>操作策略：</strong> <strong>FIFO (First In, First Out)</strong>。插入到头部，从尾部摘取。</li>
+<li><strong>合并策略：</strong> <strong>不执行合并</strong>。Small Bins 中的 chunk 都是固定大小的，相邻的空闲 chunk 不会被合并，它们保持各自独立的状态。这样可以确保分配时的效率，避免额外的合并开销。</li>
+</ul>
+<p><strong>Small Bins 结构示意图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">malloc_state.bins[] 数组:</span><br><span class="line">  bins[0]: (未使用)</span><br><span class="line">  bins[1]: Unsorted Bin</span><br><span class="line">  bins[2]: Small Bin 2 (32字节) → [Chunk A] ↔ [Chunk B] ↔ [Chunk C] ↔ (环回)</span><br><span class="line">  bins[3]: Small Bin 3 (48字节) → [Chunk D] ↔ [Chunk E] ↔ (环回)</span><br><span class="line">  bins[4]: Small Bin 4 (64字节) → [Chunk F] ↔ (环回)</span><br><span class="line">  bins[5]: Small Bin 5 (80字节) → (空)</span><br><span class="line">  ...</span><br><span class="line">  bins[63]: Small Bin 63 (1008字节)</span><br><span class="line"></span><br><span class="line">详细的双向环形链表结构:</span><br><span class="line">Small Bin 2 (32字节):</span><br><span class="line">  HEAD → Chunk A ↔ Chunk B ↔ Chunk C → BACK</span><br><span class="line">         ↑                           ↓</span><br><span class="line">         └───────────────────────────┘</span><br><span class="line">         (环形链表)</span><br><span class="line"></span><br><span class="line">FIFO 操作示意:</span><br><span class="line">初始状态: HEAD → [A] ↔ [B] ↔ [C] → BACK</span><br><span class="line">插入新chunk D: HEAD → [D] ↔ [A] ↔ [B] ↔ [C] → BACK  (插入头部)</span><br><span class="line">摘取chunk: HEAD → [D] ↔ [A] ↔ [B] → BACK, 返回 [C]  (从尾部摘取)</span><br></pre></td></tr></table></figure>
+<h3 id="large-bins" tabindex="-1"><a class="headerlink" href="#large-bins" aria-hidden="true"></a> Large Bins</h3>
+<p>用于管理大块内存，支持范围分配和最佳匹配策略。</p>
+<ul>
+<li><strong>数据结构：</strong> <strong>双向环形链表</strong> + <strong>跳表逻辑 (Skip-list logic)</strong>。</li>
+<li><strong>存储位置：</strong> <code>malloc_state.bins[64]</code> 到 <code>malloc_state.bins[126]</code>。</li>
+<li><strong>大小映射：</strong> <strong>范围映射 (Range Mapping)</strong>。每个 Large Bin 存储一定范围大小的 chunks。例如，Bin 64 存储 1024 字节及以上的 chunk（具体范围取决于复杂的计算公式）。</li>
+<li><strong>排序机制：</strong> 链表中的 chunk 按照<strong>大小（Size）从大到小</strong>排序。</li>
+<li><strong>性能优化：</strong> 为了避免在长链表中线性查找合适的大小，Large Bin chunk 使用了 <code>fd_nextsize</code> 和 <code>bk_nextsize</code> 字段。这两个指针构成了一个子链表，仅连接大小不同的 chunk。这允许分配器快速跳过相同大小的 chunk，直接定位到满足大小需求的 chunk。</li>
+</ul>
+<p><strong>Large Bins 结构示意图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">malloc_state.bins[] 数组 (Large Bins 部分):</span><br><span class="line">  bins[64]: Large Bin 64 → [Chunk A(2048B)] ↔ [Chunk B(1536B)] ↔ [Chunk C(1024B)] ↔ (环回)</span><br><span class="line">  bins[65]: Large Bin 65 → [Chunk D(3072B)] ↔ [Chunk E(2560B)] ↔ (环回)</span><br><span class="line">  bins[66]: Large Bin 66 → (空)</span><br><span class="line">  ...</span><br><span class="line">  bins[126]: Large Bin 126 → [Chunk Z(大尺寸)] ↔ (环回)</span><br><span class="line"></span><br><span class="line">双向链表 + 跳表结构详细示意:</span><br><span class="line">Large Bin 64:</span><br><span class="line">  主链表 (fd/bk):    [2048B] ↔ [1536B] ↔ [1024B]  (按大小降序)</span><br><span class="line">  跳表链表 (fd_nextsize/bk_nextsize): </span><br><span class="line">                     [2048B] → [1536B] → [1024B]  (仅连接不同大小)</span><br><span class="line"></span><br><span class="line">跳表工作原理:</span><br><span class="line">查找 1500B chunk 时:</span><br><span class="line">  [2048B] → 太大，跳到 [1536B] → 太大，跳到 [1024B] → 太小</span><br><span class="line">  最终选择最合适的 [1536B] 进行分割</span><br></pre></td></tr></table></figure>
+<h2 id="现代架构补充：tcache（thread-local-cache）" tabindex="-1"><a class="headerlink" href="#现代架构补充：tcache（thread-local-cache）" aria-hidden="true"></a> 现代架构补充：Tcache（Thread Local Cache）</h2>
+<p>自 Glibc 2.26 版本引入，Tcache 位于 <code>malloc_state</code> 之外，是线程私有的堆缓存结构。</p>
+<ul>
+<li><strong>并发控制：</strong> <strong>无锁 (Lock-free)</strong>。每个线程拥有独立的 <code>tcache_perthread_struct</code>，通过线程局部存储 (TLS) 实现，完全避免锁竞争。</li>
+<li><strong>数据结构：</strong> <strong>单向链表</strong>，LIFO 策略（结构上类似 Fast Bin，但独立于 Fast Bin）。</li>
+<li><strong>优先级：</strong> 最高。<code>malloc</code> 时最先检查 Tcache，<code>free</code> 时最先放入 Tcache。</li>
+<li><strong>限制：</strong> 有容量限制（默认每个 size 链表最多存 7 个 chunk，可通过 <code>tcache_count</code> 宏调整）。</li>
+<li><strong>尺寸范围：</strong> 覆盖小块内存（24-1032字节，64位系统），与 Fast Bin 部分重叠但优先级更高。</li>
+</ul>
+<p><strong>Tcache 结构示意图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">线程私有 Tcache (tcache_perthread_struct):</span><br><span class="line">  counts[TCACHE_MAX_BINS]: 记录每个bin中的chunk数量</span><br><span class="line"></span><br><span class="line">  entries[TCACHE_MAX_BINS]: 单向链表数组</span><br><span class="line">    entries[0]: 24字节 → [Chunk A] → [Chunk B] → [Chunk C] → NULL  (3个chunk)</span><br><span class="line">    entries[1]: 32字节 → [Chunk D] → [Chunk E] → NULL                (2个chunk)</span><br><span class="line">    entries[2]: 40字节 → [Chunk F] → [Chunk G] → [Chunk H] → [Chunk I] → [Chunk J] → [Chunk K] → [Chunk L] → NULL  (7个chunk, 已满)</span><br><span class="line">    entries[3]: 48字节 → NULL                                         (0个chunk, 空)</span><br><span class="line">    ...</span><br><span class="line">    entries[TCACHE_MAX_BINS-1]: 最大尺寸</span><br><span class="line"></span><br><span class="line">LIFO 操作示意:</span><br><span class="line">初始状态: entries[1] → [D] → [E] → NULL</span><br><span class="line">释放新chunk F: entries[1] → [F] → [D] → [E] → NULL  (插入头部)</span><br><span class="line">分配请求: 返回 [F], entries[1] → [D] → [E] → NULL   (从头部取出)</span><br><span class="line"></span><br><span class="line">多线程独立性:</span><br><span class="line">线程1 Tcache: entries[0] → [A] → [B] → NULL</span><br><span class="line">线程2 Tcache: entries[0] → [C] → [D] → NULL</span><br><span class="line">线程3 Tcache: entries[0] → NULL</span><br><span class="line">(每个线程完全独立，无需锁竞争)</span><br></pre></td></tr></table></figure>
+<h2 id="技术参数对比表" tabindex="-1"><a class="headerlink" href="#技术参数对比表" aria-hidden="true"></a> 技术参数对比表</h2>
+<table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>Tcache</strong></th>
+<th><strong>Fast Bin</strong></th>
+<th><strong>Small Bin</strong></th>
+<th><strong>Large Bin</strong></th>
+<th><strong>Unsorted Bin</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>链表拓扑</strong></td>
+<td>单向 (fd)</td>
+<td>单向 (fd)</td>
+<td>双向环形 (fd/bk)</td>
+<td>双向环形 (fd/bk) + NextSize</td>
+<td>双向环形 (fd/bk)</td>
+</tr>
+<tr>
+<td><strong>分配顺序</strong></td>
+<td>LIFO</td>
+<td>LIFO</td>
+<td>FIFO</td>
+<td>Sorted Best-Fit</td>
+<td>遍历过程中的 Exact Fit</td>
+</tr>
+<tr>
+<td><strong>尺寸精度</strong></td>
+<td>精确大小</td>
+<td>精确大小</td>
+<td>精确大小</td>
+<td><strong>范围大小</strong></td>
+<td>混合大小</td>
+</tr>
+<tr>
+<td><strong>合并逻辑</strong></td>
+<td>不合并 (P=1)</td>
+<td>不合并 (P=1)</td>
+<td><strong>不合并</strong></td>
+<td>自动合并</td>
+<td>自动合并</td>
+</tr>
+<tr>
+<td><strong>索引计算</strong></td>
+<td>直接尺寸映射 (size/16)</td>
+<td>显式索引转换</td>
+<td>$$Index = Size / 16$$</td>
+<td>复杂的范围分段函数</td>
+<td>固定 Index 1</td>
+</tr>
+<tr>
+<td><strong>并发控制</strong></td>
+<td>无锁 (Thread-Local)</td>
+<td>有锁</td>
+<td>有锁</td>
+<td>有锁</td>
+<td>有锁</td>
+</tr>
+<tr>
+<td><strong>优先级</strong></td>
+<td>最高 (先检查/后释放)</td>
+<td>中等</td>
+<td>低</td>
+<td>低</td>
+<td>中等</td>
+</tr>
+<tr>
+<td><strong>容量限制</strong></td>
+<td>默认7个/chunk (可配置)</td>
+<td>无限制</td>
+<td>无限制</td>
+<td>无限制</td>
+<td>无限制</td>
+</tr>
+<tr>
+<td><strong>存储位置</strong></td>
+<td>线程私有 (TLS)</td>
+<td>malloc_state.fastbinsY</td>
+<td>malloc_state.bins[2-63]</td>
+<td>malloc_state.bins[64-126]</td>
+<td>malloc_state.bins[1]</td>
+</tr>
+<tr>
+<td><strong>安全特性</strong></td>
+<td>双重释放检测 (Double Free)</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+<td>无</td>
+</tr>
+</tbody>
+</table>
+<h2 id="内存布局视角的安全影响" tabindex="-1"><a class="headerlink" href="#内存布局视角的安全影响" aria-hidden="true"></a> 内存布局视角的安全影响</h2>
+<p>在二进制安全领域，Bin 的链表结构特性直接导致了特定的漏洞利用原语（Primitives）：</p>
+<ol>
+<li><strong>单向链表攻击 (Fastbin/Tcache):</strong> 由于只校验 <code>fd</code>，攻击者可以通过篡改 <code>fd</code> 指针，将其指向任意地址（如 Stack 或 GOT 表），下次 <code>malloc</code> 时即可获得该地址的控制权。</li>
+<li><strong>双向链表解链 (Unlink Exploit):</strong> 在 Small/Large Bin 中，当一个 chunk 被取出时，会执行 <code>FD-&gt;bk = BK</code> 和 <code>BK-&gt;fd = FD</code>。如果攻击者控制了 <code>fd</code> 和 <code>bk</code>，这实际上是一个<strong>任意地址写（Arbitrary Write）</strong> 操作。</li>
+<li><strong>Unsorted Bin 泄露:</strong> 由于 Unsorted Bin 是双向循环链表，链表头部的 <code>bk</code> 指针指向 <code>main_arena</code> 结构体内部。通过读取未被清空的 <code>bk</code> 指针，攻击者可以计算出 libc 的基地址（ASLR Bypass）。</li>
+</ol>
+<h2 id="参考文献" tabindex="-1"><a class="headerlink" href="#参考文献" aria-hidden="true"></a> 参考文献</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>Glibc 2.35 malloc_state 结构体定义：<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830">https://elixir.bootlin.com/glibc/glibc-2.35/source/malloc/malloc.c#L1830</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-03-12 10:20:23
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/bins/" title="bins">
+                        #bins
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Heap/" title="Heap">
+                        #Heap
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                        <b>#</b> 二进制安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2026/02/28/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%A0%86%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#bin%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> bin是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#malloc_state"><span class="toc-text"> Malloc_state</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#arena%E7%9A%84%E5%88%86%E7%B1%BB%EF%BC%9A%E4%B8%BB%E5%92%8C%E4%BB%8E"><span class="toc-text"> Arena的分类：主和从</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc_state%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90"><span class="toc-text"> malloc_state核心结构解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E6%A6%82%E8%A7%88"><span class="toc-text"> 工作流程概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%84%8F%E4%B9%89"><span class="toc-text"> 安全意义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8D%95%E5%85%83%EF%BC%9Amalloc_chunk"><span class="toc-text"> 核心单元：malloc_chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bin%E7%9A%84%E5%88%86%E7%B1%BB%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%89%B9%E6%80%A7"><span class="toc-text"> Bin的分类与数据结构特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#fast-bins"><span class="toc-text"> Fast Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#unsorted-bin"><span class="toc-text"> Unsorted Bin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#small-bins"><span class="toc-text"> Small Bins</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#large-bins"><span class="toc-text"> Large Bins</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E4%BB%A3%E6%9E%B6%E6%9E%84%E8%A1%A5%E5%85%85%EF%BC%9Atcache%EF%BC%88thread-local-cache%EF%BC%89"><span class="toc-text"> 现代架构补充：Tcache（Thread Local Cache）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%8F%82%E6%95%B0%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-text"> 技术参数对比表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E8%A7%86%E8%A7%92%E7%9A%84%E5%AE%89%E5%85%A8%E5%BD%B1%E5%93%8D"><span class="toc-text"> 内存布局视角的安全影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text"> 参考文献</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%A0%86%E4%B8%AD%E7%9A%84bin + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F01%2F25%2F%25E5%25A0%2586%25E4%25B8%25AD%25E7%259A%2584bin%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/01/25/%E5%A0%86%E4%B8%AD%E7%9A%84bin/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

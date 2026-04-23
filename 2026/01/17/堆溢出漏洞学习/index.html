@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="什么是堆（heap）？ 从操作系统和虚拟内存管理的视角来看，堆是一个 被动的内存资源 。 定义与位置 物理形态： 进程虚拟地址空间 (Virtual Address Space) 中的一个特定 段 (Segment) 。 内存布局： 通常位于 Data Segment (.bss) 的末端之后， Stack Segme…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      堆溢出漏洞学习 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2026/01/17/堆溢出漏洞学习/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="堆溢出漏洞学习 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="什么是堆（heap）？ 从操作系统和虚拟内存管理的视角来看，堆是一个 被动的内存资源 。 定义与位置 物理形态： 进程虚拟地址空间 (Virtual Address Space) 中的一个特定 段 (Segment) 。 内存布局： 通常位于 Data Segment (.bss) 的末端之后， Stack Segme…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2026/01/17/堆溢出漏洞学习/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2026-01-16T18:23:40.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-01-24T18:24:14.462Z" />
+    
+    
+      <meta property="article:tag" content="Heap Overflow" />
+    
+      <meta property="article:tag" content="Glibc" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="堆溢出漏洞学习 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="什么是堆（heap）？ 从操作系统和虚拟内存管理的视角来看，堆是一个 被动的内存资源 。 定义与位置 物理形态： 进程虚拟地址空间 (Virtual Address Space) 中的一个特定 段 (Segment) 。 内存布局： 通常位于 Data Segment (.bss) 的末端之后， Stack Segme…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">堆溢出漏洞学习</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2026-01-25 02:24:14
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Heap-Overflow/" title="Heap Overflow">
+                    #Heap Overflow
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Glibc/" title="Glibc">
+                    #Glibc
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                    <b>#</b> 二进制安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="什么是堆（heap）？" tabindex="-1"><a class="headerlink" href="#什么是堆（heap）？" aria-hidden="true"></a> 什么是堆（heap）？</h2>
+<p>从操作系统和虚拟内存管理的视角来看，堆是一个<strong>被动的内存资源</strong>。</p>
+<h3 id="定义与位置" tabindex="-1"><a class="headerlink" href="#定义与位置" aria-hidden="true"></a> 定义与位置</h3>
+<ul>
+<li><strong>物理形态：</strong>进程虚拟地址空间 (Virtual Address Space) 中的一个特定<strong>段 (Segment)</strong>。</li>
+<li><strong>内存布局：</strong> 通常位于 <strong>Data Segment (.bss)</strong> 的末端之后，<strong>Stack Segment</strong> 之前（低地址在前，高地址在后）。</li>
+<li><strong>生长方向：</strong> <strong>向上生长 (Upward Growth)</strong>，即从低地址向高地址扩展。</li>
+</ul>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260120211128506.png" alt="image-20260120211128506" loading="lazy" decoding="async"></p>
+<h3 id="边界控制" tabindex="-1"><a class="headerlink" href="#边界控制" aria-hidden="true"></a> 边界控制</h3>
+<p>堆的大小并非固定，而是由内核维护的边界指针控制：</p>
+<ul>
+<li><strong>Program Break (<code>brk</code>):</strong> 定义了堆段的当前顶部（End of Heap）。</li>
+<li><strong>扩展机制：</strong> 进程通过 <code>brk()</code> 或 <code>sbrk()</code> 系统调用提升 Program Break 的位置，从而向内核申请更多的物理页映射到该虚拟地址范围。</li>
+<li><strong>Mmap 区域：</strong> 对于超大块内存（大于阈值 <code>M_MMAP_THRESHOLD</code>），通常不使用 <code>brk</code> 扩展的主堆，而是使用 <code>mmap()</code> 在堆栈中间的文件映射区分配独立段。</li>
+</ul>
+<h2 id="什么是堆管理器（the-heap-manager）" tabindex="-1"><a class="headerlink" href="#什么是堆管理器（the-heap-manager）" aria-hidden="true"></a> 什么是堆管理器（The Heap Manager）?</h2>
+<p>堆管理器是一个<strong>主动的软件算法</strong>，属于用户态运行时库（User-space Runtime Library，如 Linux 下的 <strong>glibc ptmalloc</strong>）的一部分。</p>
+<p>各种堆管理器：</p>
+<ul>
+<li>
+<p>dlmalloc：General purpose allocator</p>
+</li>
+<li>
+<p>ptmalloc2：glibc</p>
+</li>
+<li>
+<p>jemalloc：free BSD and Firefox</p>
+</li>
+<li>
+<p>tcmalloc：Google</p>
+</li>
+<li>
+<p>libumem：Solaris</p>
+</li>
+</ul>
+<h3 id="核心职责" tabindex="-1"><a class="headerlink" href="#核心职责" aria-hidden="true"></a> 核心职责</h3>
+<p>它是应用程序与操作系统内核之间的<strong>中间层 (Abstraction Layer)</strong>。</p>
+<ul>
+<li><strong>对下 (Kernel):</strong> 通过 <code>brk/mmap</code> 系统调用，以“页 <strong>(Page, 4KB</strong>)”为单位向内核批发大块内存。</li>
+<li><strong>对上 (Application):</strong> 提供 <code>malloc/free</code> 标准接口，实现“任意字节大小”的精细化分配与回收。</li>
+</ul>
+<h3 id="内部数据结构-以-glibc-为例" tabindex="-1"><a class="headerlink" href="#内部数据结构-以-glibc-为例" aria-hidden="true"></a> 内部数据结构 (以 glibc 为例)</h3>
+<p>堆管理器不视内存为连续的字节流，而是将其格式化为特定的数据结构：</p>
+<ul>
+<li><strong>Chunk (堆块):</strong> 内存管理的最小单元。
+<ul>
+<li>包含 <strong>Metadata (元数据)</strong>：<code>size</code>, <code>prev_size</code>, <code>flags (AMP)</code>, <code>fd/bk</code> 指针。</li>
+<li>包含 <strong>User Data (用户数据)</strong>：<code>malloc</code> 返回的实际载荷。</li>
+</ul>
+</li>
+<li><strong>Bins (空闲链表):</strong> 用于索引 Free Chunks 的<strong>指针数组</strong>（Fastbin, Smallbin, Largebin, Unsorted Bin）。</li>
+<li><strong>Arena (分配区):</strong> 用于多线程并发控制的独立内存池，每个 Arena 维护自己的一套 Bins 和 Top Chunk。</li>
+</ul>
+<h2 id="交互流程" tabindex="-1"><a class="headerlink" href="#交互流程" aria-hidden="true"></a> 交互流程</h2>
+<p>1、<strong>初始化：</strong> 程序启动，堆管理器初始化数据结构（Arena/Bins）。</p>
+<p>2、<strong>申请 (Malloc):</strong></p>
+<ul>
+<li>用户请求 <code>malloc(size)</code>。</li>
+<li><strong>堆管理器</strong> 检索 Bins 寻找合适的 Free Chunk。</li>
+<li>若无，<strong>堆管理器</strong> 切割 Top Chunk。</li>
+<li>若 Top Chunk 不足，<strong>堆管理器</strong> 调用系统调用 (<code>sbrk</code>) 扩展 <strong>堆</strong> 的边界。</li>
+</ul>
+<p>3、<strong>释放 (Free):</strong></p>
+<ul>
+<li>用户请求 <code>free(ptr)</code>。</li>
+<li><strong>堆管理器</strong> 并不立即将内存归还给操作系统（不缩小 <strong>堆</strong> 的 <code>brk</code>）。</li>
+<li><strong>堆管理器</strong> 将该 Chunk 标记为空闲，合并相邻空闲块，并将其挂入 Bins，留作后用（缓存复用）。</li>
+</ul>
+<h2 id="allocated-chunk和free-chunk" tabindex="-1"><a class="headerlink" href="#allocated-chunk和free-chunk" aria-hidden="true"></a> Allocated Chunk和Free Chunk</h2>
+<p>在 Glibc 的内存分配器（ptmalloc）中，内存并非是一块平坦的画布，而是由无数个被称为 <strong>Chunk (堆块)</strong> 的微小单元拼接而成的。</p>
+<p>理解 Chunk 结构的核心挑战在于：<strong>复用 (Reuse)</strong>。为了节省内存，同一个内存偏移位置，在“使用中”和“空闲中”代表着完全不同的含义。</p>
+<h3 id="allocated-chunk（已分配堆块）" tabindex="-1"><a class="headerlink" href="#allocated-chunk（已分配堆块）" aria-hidden="true"></a> Allocated Chunk（已分配堆块）</h3>
+<p>当用户调用 <code>malloc</code> 拿到一个指针时，他在内存中实际拥有的是一个 Allocated Chunk。</p>
+<h4 id="设计思想" tabindex="-1"><a class="headerlink" href="#设计思想" aria-hidden="true"></a> 设计思想</h4>
+<ul>
+<li>用户视角：只关心存储数据的区域。</li>
+<li>管理器视角：只需要知道这个块多大（Size），以及前一个块是否在使用（以便决定未来释放时是否合并）。</li>
+<li>空间优化：如果<strong>前一个块</strong>也在使用中，当前块的 <code>prev_size</code> 空间是闲置的。<strong>ptmalloc 允许前一个块借用这 8 字节来存它的用户数据。</strong></li>
+</ul>
+<h4 id="内存结构图解" tabindex="-1"><a class="headerlink" href="#内存结构图解" aria-hidden="true"></a> 内存结构图解</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[ 内存低地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              (Current Chunk&#x27;s User Data)              |</span><br><span class="line">|        |            用户正在读写的实际数据区域 (Payload)           |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+ &lt;--- 边界</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        | [!] 特殊机制：如果物理相邻的**前一个块**是 Allocated 状态，  |</span><br><span class="line">|        | 该区域实际上属于**前一个块的用户数据**的一部分。              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |   Chunk 总大小 (含Header)  |  A  |  M  |  P (Flags)    |</span><br><span class="line">+--------+-------------------------------------------------------+&lt;--- malloc 返回的地址</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x10  |              User Data (Buffer Start)                 |</span><br><span class="line">|        | ----------------------------------------------------- |</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |              用户实际写入的数据区域                       |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存高地址 ]</span><br></pre></td></tr></table></figure>
+<h4 id="字段解释" tabindex="-1"><a class="headerlink" href="#字段解释" aria-hidden="true"></a> 字段解释</h4>
+<p>“含Header“，是说size的大小，包括用户申请的内存+Header头（8字节size和8字节prev_size），这才是真正的size的大小。</p>
+<ul>
+<li>
+<p><strong>Offset 0x00 (<code>prev_size</code>):</strong> 仅当前一个块是 Free 状态时，这里才记录前一个块的大小。否则，这里存的是前一个块的数据。</p>
+</li>
+<li>
+<p><strong>Offset 0x08 (<code>size</code>):</strong> 当前块的大小。低 3 位被留作标志位。</p>
+</li>
+<li>
+<p><strong>Offset 0x10 (<code>User Data</code>):</strong> 用户指针指向这里。</p>
+</li>
+</ul>
+<h3 id="free-chunk（空闲堆块）" tabindex="-1"><a class="headerlink" href="#free-chunk（空闲堆块）" aria-hidden="true"></a> Free Chunk（空闲堆块）</h3>
+<p>当 chunk 被释放 (<code>free</code>) 后，它失去了存储用户数据的义务。原本用于存数据的地方，现在被堆管理器征用，用来存储<strong>链表指针</strong>，以便将这个空闲块串起来。</p>
+<p>根据所属 Bin（垃圾回收桶）的不同，Free Chunk 的结构有明显的变体。</p>
+<h4 id="标准free-chunk（small-unsorted-bin）" tabindex="-1"><a class="headerlink" href="#标准free-chunk（small-unsorted-bin）" aria-hidden="true"></a> 标准Free Chunk（Small / Unsorted Bin）</h4>
+<p>这是最标准的空闲块结构，使用双向链表维护。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">|  ...   |           Unused / Padding (未使用/填充数据)            |</span><br><span class="line">|        |                                                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             bk (Backward Pointer) (8 bytes)           |</span><br><span class="line">| +0x18  | ----------------------------------------------------- |</span><br><span class="line">|        |           指向链表中的**下一个**空闲块 (Next Free)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             fd (Forward Pointer) (8 bytes)            |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |           指向链表中的**上一个**空闲块 (Prev Free)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                   size (8 bytes)                      |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |       Chunk 总大小       |  0  |  0  |  1 (P=1)        |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                prev_size (8 bytes)                    |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        |       如果再前一个块也是 Free，这里记录其大小 (用于合并)     |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
+<h4 id="fastbin-tcache-chunk-小块特例" tabindex="-1"><a class="headerlink" href="#fastbin-tcache-chunk-小块特例" aria-hidden="true"></a> Fastbin / Tcache Chunk (小块特例)</h4>
+<p>为了极致的性能，Fastbin 和 Tcache 采用<strong>单向链表</strong>。它们不需要 <code>bk</code> 指针。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                                                       |</span><br><span class="line">| +0x18  |           (Unused / Old Data / Key in Tcache)         |</span><br><span class="line">|        |      Fastbin这里未使用；Tcache这里存放 Key (防Double Free)|</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               fd / next (8 bytes)                     |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |            单向指向链表中的下一个空闲块                    |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               size (8 bytes)                          |</span><br><span class="line">| +0x08  | ----------------------------------------------------- |</span><br><span class="line">|        |          Chunk 总大小    |  A  |  M  |  P              |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |               prev_size (8 bytes)                     |</span><br><span class="line">| +0x00  | ----------------------------------------------------- |</span><br><span class="line">|        |                  (同标准定义)                           |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
+<h4 id="large-bin-chunk（大块堆）" tabindex="-1"><a class="headerlink" href="#large-bin-chunk（大块堆）" aria-hidden="true"></a> Large Bin Chunk（大块堆）</h4>
+<p>Large Bin 存储较大的块，且同一 Bin 内的块大小不一。为了提高检索效率（Best-fit 算法），除了标准的 <code>fd/bk</code> 双向链表外，还额外增加了 <code>fd_nextsize/bk_nextsize</code> 指针，形成第二层跳表。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[ 内存高地址 ]</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| Offset |                 Field / Content                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             bk_nextsize (8 bytes)                     |</span><br><span class="line">| +0x28  | ----------------------------------------------------- |</span><br><span class="line">|        |        指向前一个**大小不同**的空闲块 (Skip List)          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |             fd_nextsize (8 bytes)                     |</span><br><span class="line">| +0x20  | ----------------------------------------------------- |</span><br><span class="line">|        |        指向下一个**大小不同**的空闲块 (Skip List)          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                bk (8 bytes)                           |</span><br><span class="line">| +0x18  | ----------------------------------------------------- |</span><br><span class="line">|        |            标准双向链表指针 (同 Small Bin)               |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">|        |                fd (8 bytes)                           |</span><br><span class="line">| +0x10  | ----------------------------------------------------- |</span><br><span class="line">|        |            标准双向链表指针 (同 Small Bin)               |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| +0x08  |                size (Header)                          |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">| +0x00  |              prev_size (Header)                       |</span><br><span class="line">+--------+-------------------------------------------------------+</span><br><span class="line">[ 内存低地址 ]</span><br></pre></td></tr></table></figure>
+<h3 id="核心标志位（flag）详解" tabindex="-1"><a class="headerlink" href="#核心标志位（flag）详解" aria-hidden="true"></a> 核心标志位（Flag）详解</h3>
+<p>在所有 Chunk 的 <code>size</code> 字段（Offset +0x08）中，由于对齐原因，<strong>最低的 3 个比特位 (Bits 0-2)</strong> 永远不会被用到大小计算中。glibc 利用它们存储当前 Chunk 的属性。</p>
+<table>
+<thead>
+<tr>
+<th><strong>掩码 (Mask)</strong></th>
+<th><strong>标志 (Flag)</strong></th>
+<th><strong>全称</strong></th>
+<th><strong>详细状态定义</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0x1（001）</strong></td>
+<td><strong>P</strong></td>
+<td><strong>PREV_INUSE</strong></td>
+<td><strong>最重要的标志位。</strong><br>● <strong>1 (Set):</strong> 表示物理相邻的<strong>前一个 Chunk</strong> 正在使用中 (Allocated)。此时当前块的 <code>prev_size</code> 字段无效（可能存着前一个块的数据）。<br> ● <strong>0 (Cleared):</strong> 表示物理相邻的<strong>前一个 Chunk</strong> 是空闲的 (Free)。此时 <code>prev_size</code> 记录前块大小，Heap Manager 会利用它找到前块头部并进行合并。</td>
+</tr>
+<tr>
+<td><strong>0x2（010）</strong></td>
+<td><strong>M</strong></td>
+<td><strong>IS_MMAPPED</strong></td>
+<td>● <strong>1 (Set):</strong> 当前 Chunk 是通过 <code>mmap()</code> 系统调用直接分配的独立内存映射，不属于 Main Heap。 <br>● <strong>0 (Cleared):</strong> 当前 Chunk 属于常规 Heap (通过 <code>brk</code> 扩展)。</td>
+</tr>
+<tr>
+<td><strong>0x4（100）</strong></td>
+<td><strong>A</strong></td>
+<td><strong>NON_MAIN_ARENA</strong></td>
+<td>● <strong>1 (Set):</strong> 当前 Chunk 属于子线程的分配区 (Thread Arena)。 <br>● <strong>0 (Cleared):</strong> 当前 Chunk 属于主分配区 (Main Arena)。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="allocated与free的视图切换" tabindex="-1"><a class="headerlink" href="#allocated与free的视图切换" aria-hidden="true"></a> Allocated与Free的视图切换</h3>
+<p>对于同一个内存地址 <code>0x55555555a010</code> (即 Header 之后的第一个字)：</p>
+<ol>
+<li>当 Chunk <strong>Allocated</strong> 时：
+<ul>
+<li>这里是 <code>User Data</code> (buf[0]…buf[7])。</li>
+<li><strong>权限：</strong> 用户可读写。</li>
+</ul>
+</li>
+<li>当 Chunk <strong>Free</strong> (Small Bin) 时：
+<ul>
+<li>这里是 <code>fd</code> 指针。</li>
+<li><strong>权限：</strong> 堆管理器读写，用户（理论上）不可访问。</li>
+</ul>
+</li>
+<li>当 Chunk <strong>Free</strong> (Large Bin) 时：
+<ul>
+<li>这里是 <code>fd</code> 指针，且 <code>+0x10</code> 处变成了 <code>fd_nextsize</code>。</li>
+</ul>
+</li>
+</ol>
+<p>同一块内存在不同生命周期扮演不同角色。</p>
+<h2 id="gdb调试查看" tabindex="-1"><a class="headerlink" href="#gdb调试查看" aria-hidden="true"></a> GDB调试查看</h2>
+<p>以最简单的c语言程序展示堆：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">	<span class="type">void</span>* ptr = <span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line">	<span class="built_in">free</span>(ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译后，使用gdb调试查看。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223743709.png" alt="image-20260124223743709" loading="lazy" decoding="async"></p>
+<p>在未进行执行malloc()的时候查看进程的虚拟内存。此时，发现还没有heap数据。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223759215.png" alt="image-20260124223759215" loading="lazy" decoding="async"></p>
+<p>执行malloc()后。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223923543.png" alt="image-20260124223923543" loading="lazy" decoding="async"></p>
+<p>发现存在了heap数据，heap位置占据的大小为0x21000。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124223845529.png" alt="image-20260124223845529" loading="lazy" decoding="async">此时查看heap。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124224218402.png" alt="image-20260124224218402" loading="lazy" decoding="async"></p>
+<p>发现了有一个allocated chunk，带上flag大小为0x111。</p>
+<p><strong>为什么是0x111？</strong>回想前面C语言代码，malloc(0x100)，用户申请了0x100大小的内存。又因为size的大小是包括prev_size和size的，这两个分别是8字节（64位），0x10字节。又因为size后三位是flag位，为001，0x1。</p>
+<p>所以size的大小就是0x111。</p>
+<p>继续，上图还能看到chunk的起始地址Addr: 0x5b269ce99290</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124230108370.png" alt="image-20260124230108370" loading="lazy" decoding="async"></p>
+<p>调试看到ptr变量指向的地址为0x5b269ce992a0，刚好差了0x10！！，16字节，这是为什么？</p>
+<p>prev_size + size = 0x10字节</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260124230736788.png" alt="image-20260124230736788" loading="lazy" decoding="async"></p>
+<p>继续执行，过free()函数。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260125000353974.png" alt="image-20260125000353974" loading="lazy" decoding="async"></p>
+<p>发现chunk被放到了tcachebins中。</p>
+<p><img src="/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/image-20260125000519309.png" alt="image-20260125000519309" loading="lazy" decoding="async"></p>
+<h2 id="什么是堆溢出？" tabindex="-1"><a class="headerlink" href="#什么是堆溢出？" aria-hidden="true"></a> 什么是堆溢出？</h2>
+<p><strong>堆溢出 (Heap Overflow)</strong> 是指程序向堆内存（Heap）中的缓冲区写入数据时，超出了该缓冲区原本申请的大小，导致数据覆盖了<strong>相邻堆块（Chunk）</strong>的内容。</p>
+<p>与栈溢出（Stack Overflow）不同，堆溢出的破坏力不仅在于覆盖数据，更在于破坏了堆分配器（如 glibc 的 ptmalloc）维护的<strong>管理结构（Metadata）</strong>。</p>
+<blockquote>
+<p><strong>💡 核心逻辑：</strong> 在堆内存中，<strong>用户数据</strong>和<strong>管理数据</strong>是混在一起的。一旦溢出，攻击者就能通过篡改管理数据，欺骗分配器在进行 <code>malloc</code> 或 <code>free</code> 操作时，执行攻击者预期的内存读写操作。</p>
+</blockquote>
+<h2 id="堆块（chunk）的结构" tabindex="-1"><a class="headerlink" href="#堆块（chunk）的结构" aria-hidden="true"></a> 堆块（Chunk）的结构</h2>
+<p>在 Linux (glibc) 环境下，堆内存是以 <strong>Chunk</strong> 为单位进行管理的。理解 Chunk 的结构是利用漏洞的前提。</p>
+<p>一个 allocated（已分配）或 free（空闲）的 chunk 在内存中的布局大致如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line">  <span class="comment">/* Request size + metadata overhead */</span></span><br><span class="line">  INTERNAL_SIZE_T      prev_size;  <span class="comment">/* 前一个空闲块(必须是free chunk)的大小 (如果前一个块是free的) */</span></span><br><span class="line">  INTERNAL_SIZE_T      size;       <span class="comment">/* 当前块的大小 (低3位作为标志位: AMP) */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* User data starts here (malloc返回的指针) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>         <span class="comment">/* Forward pointer (仅限空闲块) */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span>         <span class="comment">/* Backward pointer (仅限空闲块) */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong><code>prev_size</code></strong>: 如果物理相邻的前一个 chunk 是空闲的，这里记录它的大小（用于合并）。</p>
+</li>
+<li>
+<p><strong><code>size</code></strong>: 当前 chunk 的大小。因为堆块大小通常 8/16 字节对齐，低 3 位被用来存储状态标志（如 <code>PREV_INUSE</code> 表示前一个块是否在使用）。</p>
+</li>
+<li>
+<p><strong><code>fd</code> / <code>bk</code></strong>: 双向链表指针。<strong>只有当 Chunk 被释放（Free）后</strong>，这两个位置才会被填入数据，用于指向链表中的前后节点。</p>
+</li>
+</ul>
+<h2 id="堆溢出漏洞的成因" tabindex="-1"><a class="headerlink" href="#堆溢出漏洞的成因" aria-hidden="true"></a> 堆溢出漏洞的成因</h2>
+<p>堆溢出通常源于对用户输入长度的检查缺失。</p>
+<p>例如代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">vulnerable_function</span><span class="params">(<span class="type">char</span> *input)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 申请两个相邻的堆块</span></span><br><span class="line">    <span class="type">char</span> *chunk_A = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">16</span>); </span><br><span class="line">    <span class="type">char</span> *chunk_B = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">16</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 危险操作：strcpy 没有检查 input 的长度</span></span><br><span class="line">    <span class="comment">// 如果 input &gt; 16 字节，多余的数据将“流”入 chunk_B</span></span><br><span class="line">    <span class="built_in">strcpy</span>(chunk_A, input); </span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(chunk_A);</span><br><span class="line">    <span class="built_in">free</span>(chunk_B);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>内存发生了什么？</strong></p>
+<p>当 <code>input</code> 长度过长时，数据会越过 <code>chunk_A</code> 的边界，直接覆盖 <code>chunk_B</code> 的头部（<code>prev_size</code> 和 <code>size</code>），甚至覆盖 <code>chunk_B</code> 的 <code>fd/bk</code> 指针。</p>
+<h2 id="利用原理：从覆盖到劫持（exploitation）" tabindex="-1"><a class="headerlink" href="#利用原理：从覆盖到劫持（exploitation）" aria-hidden="true"></a> 利用原理：从覆盖到劫持（Exploitation）</h2>
+<p>攻击者的最终目标通常是实现 <strong>任意地址写 (Write-What-Where Primitive)</strong>。</p>
+<h3 id="破坏数据（data-corruption）" tabindex="-1"><a class="headerlink" href="#破坏数据（data-corruption）" aria-hidden="true"></a> 破坏数据（Data Corruption）</h3>
+<p>这是最直接的利用方式。如果相邻块 <code>chunk_B</code> 中存储了关键变量（如认证标志 <code>is_admin</code>、函数指针 <code>func_ptr</code>），直接覆盖它们即可改变程序逻辑。</p>
+<h3 id="劫持控制流（unlink-attack）" tabindex="-1"><a class="headerlink" href="#劫持控制流（unlink-attack）" aria-hidden="true"></a> 劫持控制流（Unlink Attack）</h3>
+<p>这是堆利用的精髓。通过篡改空闲块的 <code>fd</code> 和 <code>bk</code> 指针，利用 <code>free()</code> 函数中的脱链（Unlink）操作来修改内存。</p>
+<p>Unlink宏的简化逻辑：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* P 是正在被 Unlink 的块 */</span></span><br><span class="line">FD = P-&gt;fd;</span><br><span class="line">BK = P-&gt;bk;</span><br><span class="line"></span><br><span class="line">FD-&gt;bk = BK; <span class="comment">// 相当于: *(FD + 24) = BK</span></span><br><span class="line">BK-&gt;fd = FD; <span class="comment">// 相当于: *(BK + 16) = FD</span></span><br></pre></td></tr></table></figure>
+<p>攻击步骤：</p>
+<ol>
+<li>伪造指针：利用溢出，将 <code>chunk_B</code> 的 <code>fd</code> 改为 <code>target_addr - 24</code>，<code>bk</code> 改为 <code>expected_value</code>。</li>
+<li>触发Free：当程序调用 <code>free()</code> 并触发合并操作时，执行 Unlink。</li>
+<li>效果：程序会将 <code>expected_value</code> 写入 <code>target_addr</code>。</li>
+</ol>
+<p>实际场景：修改 GOT 表，将 <code>free</code> 或 <code>puts</code> 的地址改为 <code>system</code> 函数的地址。</p>
+<p><strong>下面就是对于逻辑的详细解释：</strong></p>
+<h4 id="1-场景还原" tabindex="-1"><a class="headerlink" href="#1-场景还原" aria-hidden="true"></a> 1. 场景还原</h4>
+<p>想象有三个空闲的堆块连在一起：<code>BK</code>&lt;——&gt;<code>P</code>&lt;——&gt;<code>FD</code></p>
+<p><code>BK</code> (Backward): 后继堆块。</p>
+<p><code>P</code> (Current): 当前堆块。</p>
+<p><code>FD</code> (Forward): 前驱堆块。</p>
+<p><strong>Unlink的目的：</strong>把 <code>P</code> 从链表中拿走，让 <code>BK</code> 和 <code>FD</code> 直接连接在一起。</p>
+<h4 id="2-代码逐行深度解析" tabindex="-1"><a class="headerlink" href="#2-代码逐行深度解析" aria-hidden="true"></a> <strong>2. 代码逐行深度解析</strong></h4>
+<p>在 64 位系统中，一个 <code>malloc_chunk</code> 结构体的前两个字段 <code>prev_size</code> 和 <code>size</code> 各占 8 字节。</p>
+<ul>
+<li><code>fd</code> 指针位于偏移 <strong>0x10 (16)</strong> 处。</li>
+<li><code>bk</code> 指针位于偏移 <strong>0x18 (24)</strong> 处。</li>
+</ul>
+<p>我们详细的一行一行来看：</p>
+<p><strong>第1&amp;2行：获取邻居</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FD = P-&gt;fd; <span class="comment">// 读取 P 的偏移 +16 处的值，赋给 FD</span></span><br><span class="line">BK = P-&gt;bk; <span class="comment">// 读取 P 的偏移 +24 处的值，赋给 BK</span></span><br></pre></td></tr></table></figure>
+<p><strong>正常情况下</strong>：<code>FD</code> 指向前驱堆块的起始地址，<code>BK</code> 指向后驱堆块的起始地址。</p>
+<p><strong>攻击视角</strong>：如果你通过<strong>堆溢出</strong>覆盖了 <code>P</code> 的头部，你可以把 <code>P-&gt;fd</code> 和 <code>P-&gt;bk</code> 改成<strong>任意数值</strong>（任意地址）。</p>
+<p><strong>第3行：修改前驱（The Write）</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FD-&gt;bk = BK;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>实际意思</strong>：找到指针 <code>FD</code> 指向的地址，加上 <code>bk</code> 字段的偏移（24），向这个位置写入 <code>BK</code> 的值。</li>
+<li><strong>实际的计算操作</strong>：<code>*(FD + 24) = BK</code></li>
+<li><strong>攻击利用：</strong>
+<ul>
+<li>假设你想向内存地址 <code>Target_Addr</code> 写入数据。</li>
+<li>你可以控制 <code>FD</code> 的值为 <code>Target_Addr - 24</code>。</li>
+<li>那么 <code>FD + 24</code> 就变成了 <code>Target_Addr - 24 + 24</code> = <strong><code>Target_Addr</code></strong>。</li>
+<li>程序就会把 <code>BK</code> 的值写到 <code>Target_Addr</code> 里。</li>
+</ul>
+</li>
+</ul>
+<p><strong>第4行：修改后继（The Side Effect）</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BK-&gt;fd = FD;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong>实际意思</strong>：找到指针 <code>BK</code> 指向的地址，加上 <code>fd</code> 字段的偏移（16），向这个位置写入 <code>FD</code> 的值。</p>
+</li>
+<li>
+<p><strong>实际的计算操作</strong>：<code>*(BK + 16) = FD</code></p>
+</li>
+<li>
+<p><strong>注意</strong>：这是一个“副作用”，程序会崩溃。在早期的 Unlink 攻击中，这会破坏 <code>Target_Addr</code> 附近的数据，或者需要我们构造一个可写的区域来承载这个写入，防止程序崩溃。</p>
+</li>
+</ul>
+<h5 id="漏洞利用存在的矛盾点！" tabindex="-1"><a class="headerlink" href="#漏洞利用存在的矛盾点！" aria-hidden="true"></a> 漏洞利用存在的矛盾点！</h5>
+<p>这里解释一下前面这个副作用！</p>
+<p><strong>作为攻击者</strong>：我们通常把 <code>BK</code> 视为一个 <strong>“值”</strong>（比如我想把 <code>is_admin</code> 改成 <code>1</code>，那 <code>BK</code> 就是 <code>1</code>；或者我想把 GOT 表改成 shellcode 地址，那 <code>BK</code> 就是 shellcode 的起始地址）。</p>
+<p><strong>作为程序逻辑</strong>：Unlink 宏把 <code>BK</code> 视为一个 <strong>“合法的堆块指针”</strong>。它必须是一个指向<strong>可写内存</strong>的地址。</p>
+<p>场景一：直接 Crash (Segmentation Fault)</p>
+<p>假设你想把内存中某个变量 <code>target</code> 的值改成 <code>1</code>。</p>
+<ul>
+<li>你构造 <code>FD = &amp;target - 24</code>。</li>
+<li>你构造 <code>BK = 0x00000001</code>。</li>
+</ul>
+<p><strong>执行过程：</strong></p>
+<ol>
+<li><strong>第一步（攻击成功）</strong>：<code>FD-&gt;bk = BK</code>。
+<ul>
+<li><code>target</code> 变成了 <code>1</code>。到这里很完美。</li>
+</ul>
+</li>
+<li><strong>第二步（副作用爆发）</strong>：<code>BK-&gt;fd = FD</code>。
+<ul>
+<li>程序试图执行：<code>*(0x00000001 + 16) = FD</code>。</li>
+<li>程序试图往内存地址 <code>0x00000011</code> 写入数据。</li>
+<li><strong>崩溃！</strong> 操作系统会报段错误（Segfault），因为 <code>0x11</code> 不是一个合法的用户可写内存地址。</li>
+</ul>
+</li>
+</ol>
+<p><strong>结论：</strong> 简单的改小数值（如置 1，置 0）在 Unlink 攻击中很难实现，因为小数值加 16 依然是无效地址。</p>
+<p>场景二：破坏数据 (Data Corruption)</p>
+<p>假设你想劫持 GOT 表，把 <code>free</code> 函数的地址改成你的 <strong>Shellcode 地址</strong>（假设 Shellcode 在堆上，地址是 <code>0xHeapAddr</code>）。</p>
+<ul>
+<li>你构造 <code>FD = &amp;GOT_free - 24</code>。</li>
+<li>你构造 <code>BK = 0xHeapAddr</code>。</li>
+</ul>
+<p><strong>执行过程：</strong></p>
+<ol>
+<li><strong>第一步（攻击成功）</strong>：<code>FD-&gt;bk = BK</code>。
+<ul>
+<li><code>GOT_free</code> 变成了 <code>0xHeapAddr</code>。下次调用 <code>free</code> 就会跳到 shellcode。</li>
+</ul>
+</li>
+<li><strong>第二步（副作用爆发）</strong>：<code>BK-&gt;fd = FD</code>。
+<ul>
+<li>程序执行：<code>*(0xHeapAddr + 16) = FD</code>。</li>
+<li>程序把 <code>FD</code> 的值（也就是 <code>&amp;GOT_free - 24</code> 这个巨大的指针数值）写进了你的 Shellcode 的第 16 到 24 字节的位置。</li>
+</ul>
+</li>
+</ol>
+<p><strong>后果：</strong> 你的 Shellcode 本来写得好好的机器码，中间突然被“脏数据”覆盖了 8 个字节。当 CPU 执行到这里时，指令错乱，程序崩溃。</p>
+<h5 id="攻击者如何去解决这个矛盾点呢？" tabindex="-1"><a class="headerlink" href="#攻击者如何去解决这个矛盾点呢？" aria-hidden="true"></a> 攻击者如何去解决这个矛盾点呢？</h5>
+<p>为了应对崩溃的情况，攻击者必须精心构造<code>BK</code>，满足两个条件：</p>
+<p>（1）<strong><code>BK</code> 指向的区域必须是“可写”的</strong>（防止 Segfault）。</p>
+<p>（2）<strong>被破坏的那 8 个字节不能影响后续执行</strong>。</p>
+<p><strong>解决方案A：使用”跳板“指令（Short Jump）</strong></p>
+<p>这是针对 Shellcode 被破坏的经典解法。</p>
+<p>既然我们知道 <strong>Shellcode 的第 16-24 字节会被覆盖掉</strong>，那我们就不要在那儿放重要的代码。</p>
+<p>构造 Shellcode 的布局：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Offset 0:   JMP Offset 30  &lt;-- 第一条指令就是“跳”！</span><br><span class="line">Offset 2:   [垃圾填充]</span><br><span class="line">...</span><br><span class="line">Offset 16:  [这里会被副作用覆盖，变成脏数据] &lt;-- 没关系，CPU不会执行这里</span><br><span class="line">...</span><br><span class="line">Offset 30:  REAL SHELLCODE START &lt;-- 真正的恶意代码从这里开始</span><br></pre></td></tr></table></figure>
+<p><strong>原理：</strong> 当程序跳转到 Shellcode (BK) 时，第一条指令直接跳过了“被污染区域”，完美避开了副作用造成的破坏。</p>
+<p>解决方案B：指向无用数据的可写段**</p>
+<p>如果我们不是为了执行 Shellcode，只是为了修改某个函数指针（比如指向 libc 中的 system 函数），而 <code>system</code> 函数的地址我们没法改（它是代码段，不可写）。这时候怎么办？</p>
+<p>这在传统 Unlink 中很难办到（因为 <code>BK</code> 必须指向可写内存）。所以传统的 Unlink 更多用于：</p>
+<p><strong>（1）堆上的 Shellcode 执行</strong>（堆本身可写）。</p>
+<p><strong>（2）修改指向堆内的指针</strong>。</p>
+<p>如果必须指向不可写区域（如代码段），攻击者通常不会使用 Unlink，而是转向其他利用方式（如 Fastbin Attack 或 Tcache Poisoning，因为它们对反向指针的检查没那么严格）。</p>
+<p><strong>总结</strong></p>
+<p>所谓“构造一个可写的区域来承载这个写入”，意思就是：</p>
+<blockquote>
+<p>我知道你要往 <code>BK + 16</code> 这个地方写脏数据，所以我特意把 <code>BK</code> 设置在一个允许你写脏数据的地方（可写内存），而且我保证我不去执行脏数据那里的代码。</p>
+</blockquote>
+<h4 id="3攻击复盘：如何实现”任意地址写“？" tabindex="-1"><a class="headerlink" href="#3攻击复盘：如何实现”任意地址写“？" aria-hidden="true"></a> 3.攻击复盘：如何实现”任意地址写“？</h4>
+<p>假设我们想把变量 <code>Global_Var</code> 的值修改为 <code>0xDEADBEEF</code>。</p>
+<p>（1）<strong>溢出</strong>：我们通过溢出，控制了堆块 <code>P</code>。</p>
+<p>（2）<strong>伪造 <code>P-&gt;fd</code></strong>：我们将 <code>P-&gt;fd</code> 设置为 <code>&amp;Global_Var - 24</code>。</p>
+<p>（3）<strong>伪造 <code>P-&gt;bk</code></strong>：我们将 <code>P-&gt;bk</code> 设置为 <code>0xDEADBEEF</code> (把它伪装成一个地址)。</p>
+<p>（4）<strong>触发 Unlink</strong>：当 <code>free(P)</code> 发生时，执行逻辑：</p>
+<ul>
+<li><code>FD = &amp;Global_Var - 24</code></li>
+<li><code>BK = 0xDEADBEEF</code></li>
+<li><code>FD-&gt;bk = BK</code>  -&gt;  <code>*(&amp;Global_Var - 24 + 24) = 0xDEADBEEF</code></li>
+<li><strong>结果</strong>： <code>Global_Var = 0xDEADBEEF</code>。</li>
+</ul>
+<p><strong>攻击成功！</strong></p>
+<h4 id="4-现代防御：safe-unlink-glibc-223" tabindex="-1"><a class="headerlink" href="#4-现代防御：safe-unlink-glibc-223" aria-hidden="true"></a> 4. 现代防御：Safe Unlink (glibc 2.23+)</h4>
+<p>glibc后来加上了一个非常简单的效验：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (P-&gt;fd-&gt;bk != P || P-&gt;bk-&gt;fd != P) &#123;</span><br><span class="line">    malloc_printerr(<span class="string">&quot;corrupted double-linked list&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>逻辑是：</strong> 既然 <code>P</code> 说 <code>FD</code> 是它的前驱，那么 <code>FD</code> 的后继（<code>FD-&gt;bk</code>）<strong>必须</strong>指向 <code>P</code>。如果不是，说明有人在撒谎（篡改了指针），程序直接崩溃。</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/01/12/%E6%A0%88%E8%BF%81%E7%A7%BB%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AD%A6%E4%B9%A0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-01-25 02:24:14
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Heap-Overflow/" title="Heap Overflow">
+                        #Heap Overflow
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Glibc/" title="Glibc">
+                        #Glibc
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                        <b>#</b> 二进制安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2026/01/18/windbg%E8%B0%83%E8%AF%95windows%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%EF%BC%88heap%EF%BC%89%EF%BC%9F"><span class="toc-text"> 什么是堆（heap）？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E4%B8%8E%E4%BD%8D%E7%BD%AE"><span class="toc-text"> 定义与位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%8E%A7%E5%88%B6"><span class="toc-text"> 边界控制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%88the-heap-manager%EF%BC%89"><span class="toc-text"> 什么是堆管理器（The Heap Manager）?</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%81%8C%E8%B4%A3"><span class="toc-text"> 核心职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E4%BB%A5-glibc-%E4%B8%BA%E4%BE%8B"><span class="toc-text"> 内部数据结构 (以 glibc 为例)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"><span class="toc-text"> 交互流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#allocated-chunk%E5%92%8Cfree-chunk"><span class="toc-text"> Allocated Chunk和Free Chunk</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#allocated-chunk%EF%BC%88%E5%B7%B2%E5%88%86%E9%85%8D%E5%A0%86%E5%9D%97%EF%BC%89"><span class="toc-text"> Allocated Chunk（已分配堆块）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-text"> 设计思想</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84%E5%9B%BE%E8%A7%A3"><span class="toc-text"> 内存结构图解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E6%AE%B5%E8%A7%A3%E9%87%8A"><span class="toc-text"> 字段解释</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#free-chunk%EF%BC%88%E7%A9%BA%E9%97%B2%E5%A0%86%E5%9D%97%EF%BC%89"><span class="toc-text"> Free Chunk（空闲堆块）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%87%E5%87%86free-chunk%EF%BC%88small-unsorted-bin%EF%BC%89"><span class="toc-text"> 标准Free Chunk（Small &#x2F; Unsorted Bin）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fastbin-tcache-chunk-%E5%B0%8F%E5%9D%97%E7%89%B9%E4%BE%8B"><span class="toc-text"> Fastbin &#x2F; Tcache Chunk (小块特例)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#large-bin-chunk%EF%BC%88%E5%A4%A7%E5%9D%97%E5%A0%86%EF%BC%89"><span class="toc-text"> Large Bin Chunk（大块堆）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A0%87%E5%BF%97%E4%BD%8D%EF%BC%88flag%EF%BC%89%E8%AF%A6%E8%A7%A3"><span class="toc-text"> 核心标志位（Flag）详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#allocated%E4%B8%8Efree%E7%9A%84%E8%A7%86%E5%9B%BE%E5%88%87%E6%8D%A2"><span class="toc-text"> Allocated与Free的视图切换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gdb%E8%B0%83%E8%AF%95%E6%9F%A5%E7%9C%8B"><span class="toc-text"> GDB调试查看</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A0%86%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="toc-text"> 什么是堆溢出？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%EF%BC%88chunk%EF%BC%89%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text"> 堆块（Chunk）的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E7%9A%84%E6%88%90%E5%9B%A0"><span class="toc-text"> 堆溢出漏洞的成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E8%A6%86%E7%9B%96%E5%88%B0%E5%8A%AB%E6%8C%81%EF%BC%88exploitation%EF%BC%89"><span class="toc-text"> 利用原理：从覆盖到劫持（Exploitation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%B4%E5%9D%8F%E6%95%B0%E6%8D%AE%EF%BC%88data-corruption%EF%BC%89"><span class="toc-text"> 破坏数据（Data Corruption）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81%E6%8E%A7%E5%88%B6%E6%B5%81%EF%BC%88unlink-attack%EF%BC%89"><span class="toc-text"> 劫持控制流（Unlink Attack）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%BA%E6%99%AF%E8%BF%98%E5%8E%9F"><span class="toc-text"> 1. 场景还原</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E9%80%90%E8%A1%8C%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-text"> 2. 代码逐行深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE%E7%82%B9%EF%BC%81"><span class="toc-text"> 漏洞利用存在的矛盾点！</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E8%80%85%E5%A6%82%E4%BD%95%E5%8E%BB%E8%A7%A3%E5%86%B3%E8%BF%99%E4%B8%AA%E7%9F%9B%E7%9B%BE%E7%82%B9%E5%91%A2%EF%BC%9F"><span class="toc-text"> 攻击者如何去解决这个矛盾点呢？</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E6%94%BB%E5%87%BB%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E2%80%9D%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E2%80%9C%EF%BC%9F"><span class="toc-text"> 3.攻击复盘：如何实现”任意地址写“？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%8E%B0%E4%BB%A3%E9%98%B2%E5%BE%A1%EF%BC%9Asafe-unlink-glibc-223"><span class="toc-text"> 4. 现代防御：Safe Unlink (glibc 2.23+)</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F01%2F17%2F%25E5%25A0%2586%25E6%25BA%25A2%25E5%2587%25BA%25E6%25BC%258F%25E6%25B4%259E%25E5%25AD%25A6%25E4%25B9%25A0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/01/17/%E5%A0%86%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E%E5%AD%A6%E4%B9%A0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
