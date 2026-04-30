@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="前言 前面的一篇文章 [1] 参考了大佬的英文文章 [2] ，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。 欢迎对v8感兴趣的师傅，一块交流学习！！！ 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      Chrome-v8学习-精简版-1 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2026/04/30/Chrome-v8学习-精简版-1/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="Chrome-v8学习-精简版-1 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="前言 前面的一篇文章 [1] 参考了大佬的英文文章 [2] ，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。 欢迎对v8感兴趣的师傅，一块交流学习！！！ 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2026/04/30/Chrome-v8学习-精简版-1/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2026-04-30T09:36:58.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-04-30T11:27:36.441Z" />
+    
+    
+      <meta property="article:tag" content="V8" />
+    
+      <meta property="article:tag" content="JavaScript" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Chrome-v8学习-精简版-1 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="前言 前面的一篇文章 [1] 参考了大佬的英文文章 [2] ，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。 欢迎对v8感兴趣的师傅，一块交流学习！！！ 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Chrome-v8学习-精简版-1</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2026-04-30 19:27:36
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/V8/" title="V8">
+                    #V8
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/JavaScript/" title="JavaScript">
+                    #JavaScript
+                  </a>
+                </span>
+                
+              </span>
+          
+              <span class="post-categories">
+                <i class="iconfont icon-bookmark" title="分类"></i>
+                
+                <span class="span--category">
+                  <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                    <b>#</b> 二进制安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>前面的一篇文章<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>参考了大佬的英文文章<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。</p>
+<p>欢迎对v8感兴趣的师傅，一块交流学习！！！</p>
+<h2 id="1、javascript引擎基础工作流" tabindex="-1"><a class="headerlink" href="#1、javascript引擎基础工作流" aria-hidden="true"></a> 1、JavaScript引擎基础工作流</h2>
+<h3 id="11-为什么要先学引擎原理？" tabindex="-1"><a class="headerlink" href="#11-为什么要先学引擎原理？" aria-hidden="true"></a> 1.1 为什么要先学引擎原理？</h3>
+<p>所有V8漏洞的本质都是：V8引擎在解析/执行JS代码的过程中，某个步骤的逻辑出现了错误，导致攻击者可以控制内存、执行任意代码。所以我们必须先知道「正常情况下V8是怎么工作的」，才能理解「哪里会出问题」。</p>
+<h3 id="12-常见js引擎对比" tabindex="-1"><a class="headerlink" href="#12-常见js引擎对比" aria-hidden="true"></a> 1.2 常见JS引擎对比</h3>
+<table>
+<thead>
+<tr>
+<th>引擎名称</th>
+<th>所属厂商</th>
+<th>使用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V8</td>
+<td>Google</td>
+<td>Chrome浏览器、Node.js</td>
+</tr>
+<tr>
+<td>SpiderMonkey</td>
+<td>Mozilla</td>
+<td>Firefox浏览器</td>
+</tr>
+<tr>
+<td>JavaScriptCore</td>
+<td>Apple</td>
+<td>Safari浏览器</td>
+</tr>
+</tbody>
+</table>
+<p>所有JS引擎都遵循ECMAScript标准，核心工作逻辑基本一致，学会V8之后其他引擎也可以快速举一反三。</p>
+<h3 id="13-js引擎的编译流水线（核心流程）" tabindex="-1"><a class="headerlink" href="#13-js引擎的编译流水线（核心流程）" aria-hidden="true"></a> 1.3 JS引擎的编译流水线（核心流程）</h3>
+<p>JS最初是纯解释型语言，执行效率很低，现代JS引擎都会引入JIT（即时编译）优化，整体流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">JS代码 → 解析器(Parser) → AST抽象语法树 → Ignition解释器 → 字节码</span><br><span class="line">                                                         ↓</span><br><span class="line">                                        热点代码（反复执行的代码） → TurboFan优化编译器 → 优化后的机器码</span><br></pre></td></tr></table></figure>
+<p><strong>每个步骤的作用：</strong></p>
+<ol>
+<li><strong>解析器(Parser)</strong>：</li>
+</ol>
+<ul>
+<li>
+<p>先把JS代码拆成「Token」（比如<code>var num = 42</code>会拆成<code>var</code>关键字、<code>num</code>标识符、<code>=</code>运算符、<code>42</code>数字四个Token）</p>
+<ul>
+<li>再把Token转换成AST（抽象语法树），同时检查语法错误，有语法错误直接抛出，不会往下执行。</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li><strong>Ignition解释器</strong>：把AST转换成跨平台的字节码，边解释边执行，启动速度快，但执行效率低。</li>
+<li><strong>TurboFan优化编译器</strong>：如果某段代码被反复执行（比如循环里的代码、被频繁调用的函数），就会被标记为「热点代码」，交给TurboFan编译成高度优化的机器码，执行效率可以接近C/C++。</li>
+</ol>
+<ul>
+<li>注意：优化是基于「代码执行时的假设」做的，比如假设函数的参数一直是整数，如果后续参数变成了字符串，优化后的代码就会「去优化」，退回到字节码执行。<strong>很多V8漏洞就是利用了优化过程中的假设错误</strong>，这也是我们后面重点要学的内容。</li>
+</ul>
+<h3 id="14-栈机-vs-寄存器机" tabindex="-1"><a class="headerlink" href="#14-栈机-vs-寄存器机" aria-hidden="true"></a> 1.4 栈机 vs 寄存器机</h3>
+<p>Ignition解释器是基于「栈机」设计的，而TurboFan编译后的机器码是基于「寄存器机」的：</p>
+<ul>
+<li><strong>栈机</strong>：所有操作都基于栈来完成，比如计算<code>1+2</code>，先把1压入栈，再把2压入栈，弹出两个数相加，把结果压回栈。优点是跨平台、实现简单，缺点是执行速度慢。</li>
+<li><strong>寄存器机</strong>：直接操作CPU寄存器来完成计算，执行速度快，但是和平台架构强绑定。</li>
+</ul>
+<h2 id="2、v8对象内存表示" tabindex="-1"><a class="headerlink" href="#2、v8对象内存表示" aria-hidden="true"></a> 2、V8对象内存表示</h2>
+<h3 id="21-为什么v8要做这么多内存优化？" tabindex="-1"><a class="headerlink" href="#21-为什么v8要做这么多内存优化？" aria-hidden="true"></a> 2.1 为什么V8要做这么多内存优化？</h3>
+<p>JavaScript是动态类型语言：你可以随时给对象加属性、删属性、改属性类型，不像C++对象在编译时结构就固定了。如果每次访问对象属性都要哈希查表，JS执行速度会非常慢，所以V8设计了大量优化机制来提升属性访问速度，而这些优化的「边角情况」就是漏洞高发区。</p>
+<h3 id="22-基础概念：smi和堆对象" tabindex="-1"><a class="headerlink" href="#22-基础概念：smi和堆对象" aria-hidden="true"></a> 2.2 基础概念：Smi和堆对象</h3>
+<p>V8把所有JS值分成两大类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+<th>内存特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Smi（Small Integer，小整数）</td>
+<td>范围在<code>-2^30 ~ 2^30-1</code>之间的整数，不需要单独在堆上分配内存</td>
+<td>内存地址最后一位是<code>0(...00)</code>，值直接存在指针里，比如<code>1</code>在内存里存的是<code>2(...10)</code>（左移1位，把最后一位空出来当标记位）</td>
+</tr>
+<tr>
+<td>HeapObject（堆对象）</td>
+<td>除了小整数之外的所有值：对象、数组、字符串、浮点数、函数等，都需要在堆上分配内存</td>
+<td>内存地址最后一位是<code>1(...01)</code>，指针指向堆上的真实对象地址</td>
+</tr>
+</tbody>
+</table>
+<p>✅ 小技巧：你看V8内存里的值，最后一位是0就是数字，是1就是对象指针，这个标记机制后面漏洞利用的时候会经常用到。</p>
+<h3 id="23-核心概念：hidden-class（也叫map，注意和js的map对象区分开）" tabindex="-1"><a class="headerlink" href="#23-核心概念：hidden-class（也叫map，注意和js的map对象区分开）" aria-hidden="true"></a> 2.3 核心概念：Hidden Class（也叫Map，注意和JS的Map对象区分开）</h3>
+<p>V8给每个对象都分配了一个隐藏类（Map），用来描述这个对象的结构：有哪些属性、属性的类型、属性在内存里的偏移位置。<strong>结构相同的对象会共享同一个Map</strong>，这样不需要每个对象都存一份结构信息，大大节省内存和提升访问速度。<br>
+举个例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj1 = &#123;<span class="attr">x</span>:<span class="number">1</span>, <span class="attr">y</span>:<span class="number">2</span>&#125;</span><br><span class="line"><span class="keyword">const</span> obj2 = &#123;<span class="attr">x</span>:<span class="number">3</span>, <span class="attr">y</span>:<span class="number">4</span>&#125;</span><br><span class="line"><span class="comment">// obj1和obj2结构完全一样，会共享同一个Map</span></span><br></pre></td></tr></table></figure>
+<p><strong>Map的过渡规则：</strong></p>
+<p>当你给对象加属性时，Map会按照固定顺序过渡：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;&#125; <span class="comment">// Map A：空对象</span></span><br><span class="line">obj.<span class="property">x</span> = <span class="number">1</span> <span class="comment">// 过渡到Map B：有x属性</span></span><br><span class="line">obj.<span class="property">y</span> = <span class="number">2</span> <span class="comment">// 过渡到Map C：有x、y属性</span></span><br></pre></td></tr></table></figure>
+<p>✅ 重点：</p>
+<ul>
+<li>只有属性添加顺序完全一样的对象，才会共享同一个Map</li>
+<li>如果删除属性、或者添加太多属性，对象会从「快模式」切换到「慢模式（字典模式）」，所有属性存在哈希表里，不再有Map过渡，访问速度会变慢，同时也无法共享Map。</li>
+</ul>
+<h3 id="24-属性的存储方式" tabindex="-1"><a class="headerlink" href="#24-属性的存储方式" aria-hidden="true"></a> 2.4 属性的存储方式</h3>
+<p>V8的对象属性分两大类：</p>
+<ol>
+<li><strong>命名属性</strong>：比如<code>obj.x</code>、<code>obj.name</code>这种通过名字访问的属性</li>
+</ol>
+<ul>
+<li><strong>In-Object属性</strong>：直接存在对象本身的内存里，访问速度最快，数量固定，初始化对象时分配</li>
+<li><strong>快属性</strong>：存在单独的属性数组里，通过Map里的索引来访问，速度稍慢</li>
+<li><strong>慢属性（字典模式）</strong>：存在哈希表里，不需要Map，访问速度最慢，一般是属性太多/删除属性时才会触发</li>
+</ul>
+<ol start="2">
+<li><strong>索引属性（Elements）</strong>：比如<code>arr[0]</code>、<code>arr[1]</code>这种数组索引访问的属性，存在单独的Elements数组里</li>
+</ol>
+<h3 id="25-数组的elements类型" tabindex="-1"><a class="headerlink" href="#25-数组的elements类型" aria-hidden="true"></a> 2.5 数组的Elements类型</h3>
+<p>V8对数组做了非常细的分类，目的是为了优化数组操作的速度，核心有3个维度：</p>
+<h4 id="维度1：元素类型" tabindex="-1"><a class="headerlink" href="#维度1：元素类型" aria-hidden="true"></a> 维度1：元素类型</h4>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PACKED_SMI_ELEMENTS</code></td>
+<td>数组里全是小整数，没有空洞</td>
+</tr>
+<tr>
+<td><code>PACKED_DOUBLE_ELEMENTS</code></td>
+<td>数组里有浮点数，没有空洞</td>
+</tr>
+<tr>
+<td><code>PACKED_ELEMENTS</code></td>
+<td>数组里有对象/字符串等非数字类型，没有空洞</td>
+</tr>
+</tbody>
+</table>
+<h4 id="维度2：是否有孔洞holes" tabindex="-1"><a class="headerlink" href="#维度2：是否有孔洞holes" aria-hidden="true"></a> 维度2：是否有孔洞(holes)</h4>
+<ul>
+<li>
+<p><code>PACKED</code>：数组是连续的，没有空位（比如<code>[1,2,3]</code>）</p>
+</li>
+<li>
+<p><code>HOLEY</code>：数组有空位（比如<code>[1,,3]</code>，索引1是空的），访问的时候需要检查空位，速度更慢</p>
+<p>✅ 重点：Elements类型的过渡是单向的，只能从高级往低级过渡，不能回头：</p>
+</li>
+<li>
+<p>如果你给全是整数的数组加一个浮点数，数组类型就从<code>PACKED_SMI_ELEMENTS</code>变成<code>PACKED_DOUBLE_ELEMENTS</code>，就算你后来把浮点数删掉，也变不回SMI类型了。</p>
+</li>
+<li>
+<p>如果你给数组加了一个空位，就变成<code>HOLEY_*</code>类型，就算你把空位填上，也变不回PACKED类型了。</p>
+</li>
+</ul>
+<p>这里面的概念有点多了，下面详细解释一下。</p>
+<h3 id="思考1：前文提到的孔洞hole是什么意思？" tabindex="-1"><a class="headerlink" href="#思考1：前文提到的孔洞hole是什么意思？" aria-hidden="true"></a> 思考1：前文提到的孔洞(hole)是什么意思？</h3>
+<h4 id="（1）英文原文" tabindex="-1"><a class="headerlink" href="#（1）英文原文" aria-hidden="true"></a> （1）英文原文</h4>
+<p>对应V8官方术语是 <strong>hole</strong>（复数形式holes），教程里对应的数组类型标记是<code>HOLEY_*</code>，和表示「无孔洞数组」的<code>PACKED_*</code>是对应概念。</p>
+<h4 id="（2）具体含义" tabindex="-1"><a class="headerlink" href="#（2）具体含义" aria-hidden="true"></a> （2）具体含义</h4>
+<p>孔洞指数组中<strong>未被实际赋值的空索引位置</strong>，注意和「存储了<code>undefined</code>值的索引」是完全不同的概念：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 有孔洞的数组：索引2的位置是hole，没有实际存储任何值</span></span><br><span class="line"><span class="keyword">const</span> arr1 = [<span class="number">1</span>, <span class="number">2</span>, , <span class="number">4</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr1[<span class="number">2</span>]); <span class="comment">// 输出undefined，但这是访问不存在的索引的默认返回值，不是arr1[2]真的存了undefined</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 无孔洞的数组：索引2的位置确实存了undefined值</span></span><br><span class="line"><span class="keyword">const</span> arr2 = [<span class="number">1</span>, <span class="number">2</span>, <span class="literal">undefined</span>, <span class="number">4</span>];</span><br></pre></td></tr></table></figure>
+<h4 id="（3）为什么v8要专门区分hole？" tabindex="-1"><a class="headerlink" href="#（3）为什么v8要专门区分hole？" aria-hidden="true"></a> （3）为什么V8要专门区分hole？</h4>
+<p>核心是性能优化：</p>
+<ul>
+<li>如果数组是<code>PACKED</code>（无孔洞）的，V8操作数组时不需要额外判断某个索引是否存在，直接按内存偏移量读取即可，速度极快</li>
+<li>如果数组是<code>HOLEY</code>（有孔洞）的，每次访问索引时V8都需要额外做判断：这个索引是不是不存在？是不是要去原型链上查找对应的属性？会带来额外开销</li>
+</ul>
+<p>✅ 重点注意：孔洞的标记是不可逆的，只要数组出现过孔洞，就会一直被标记为<code>HOLEY</code>类型，哪怕你后续把孔洞的位置补上值，也不会变回<code>PACKED</code>类型，性能开销会一直存在。</p>
+<p>这个概念后面学漏洞利用会经常用到：很多V8越界读写漏洞的根源，就是V8对孔洞的校验逻辑出现了错误，导致攻击者可以绕过边界检查，读写数组范围外的内存。</p>
+<h3 id="思考2：快属性和慢属性之间的区别是什么？" tabindex="-1"><a class="headerlink" href="#思考2：快属性和慢属性之间的区别是什么？" aria-hidden="true"></a> 思考2：快属性和慢属性之间的区别是什么？</h3>
+<p>二者之间本质区别：访问方式的差异</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>存储结构</th>
+<th>访问速度</th>
+<th>依赖</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>快属性（Fast Properties）</td>
+<td>线性数组</td>
+<td>极快（O(1)，和C++访问结构体成员速度相当）</td>
+<td>依赖Map的描述符数组</td>
+<td>属性结构稳定、添加顺序固定的对象</td>
+</tr>
+<tr>
+<td>慢属性（Slow Properties / 字典模式）</td>
+<td>哈希表</td>
+<td>表	慢（O(1)平均复杂度，但有哈希计算、冲突处理开销，比快属性慢几倍到几十倍）</td>
+<td>不依赖Map，自包含哈希表</td>
+<td>属性频繁增删、结构非常不规律的对象</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1-快属性详解" tabindex="-1"><a class="headerlink" href="#1-快属性详解" aria-hidden="true"></a> 1. 快属性详解</h4>
+<p>快属性是V8默认的属性存储模式，核心是<strong>用Map的描述符数组记录属性的位置，用线性数组存属性值</strong>：</p>
+<h4 id="（1）核心结构" tabindex="-1"><a class="headerlink" href="#（1）核心结构" aria-hidden="true"></a> （1）核心结构</h4>
+<p>每个对象有三块核心内存：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">对象内存首地址 → [ 指向Map的指针 | 指向Elements数组的指针 | 指向Properties数组的指针 | In-Object属性值... ]</span><br><span class="line">Properties数组 → [ 属性<span class="number">1</span>的值 | 属性<span class="number">2</span>的值 | 属性<span class="number">3</span>的值 ... ]</span><br><span class="line">Map里的Descriptor数组 → [ 属性<span class="number">1</span>的元信息（名字、类型、偏移量） | 属性<span class="number">2</span>的元信息 | 属性<span class="number">3</span>的元信息 ... ]</span><br></pre></td></tr></table></figure>
+<h4 id="（2）两种快属性细分" tabindex="-1"><a class="headerlink" href="#（2）两种快属性细分" aria-hidden="true"></a> （2）两种快属性细分</h4>
+<ul>
+<li><strong>In-Object属性</strong>：属性值直接存在对象本身的内存里，连Properties数组的跳转都不需要，是最快的属性。一般对象初始化时定义的前N个属性（不同V8版本N不同，一般是前几个）会被分配为In-Object属性，数量固定。</li>
+<li><strong>普通快属性</strong>：属性值存在独立的Properties数组里，需要多一次内存跳转，速度稍慢，但可以动态扩展容量。</li>
+</ul>
+<h4 id="（3）访问流程示例" tabindex="-1"><a class="headerlink" href="#（3）访问流程示例" aria-hidden="true"></a> （3）访问流程示例</h4>
+<p>比如要访问<code>obj.x</code>：</p>
+<ol>
+<li>拿到<code>obj</code>的Map，查Map的Descriptor数组，找到<code>x</code>对应的偏移量是0</li>
+<li>如果<code>x</code>是In-Object属性：直接按偏移量读对象本身的内存，拿到值</li>
+<li>如果是普通快属性：去Properties数组读索引0的位置，拿到值<br>
+整个过程不需要任何哈希计算，和C++里<code>obj.x</code>的访问速度几乎一样。</li>
+</ol>
+<h4 id="2-慢属性（字典模式）详解" tabindex="-1"><a class="headerlink" href="#2-慢属性（字典模式）详解" aria-hidden="true"></a> 2. 慢属性（字典模式）详解</h4>
+<p>当对象的属性变化不符合Map的过渡规则时，V8会将对象<strong>不可逆地降级为慢属性模式</strong>，放弃Map优化，改用哈希表存储。</p>
+<h4 id="（1）触发降级的常见条件" tabindex="-1"><a class="headerlink" href="#（1）触发降级的常见条件" aria-hidden="true"></a> （1）触发降级的常见条件</h4>
+<ul>
+<li>动态添加的属性太多（一般超过20个，阈值随V8版本调整）</li>
+<li>删除了非最后添加的属性（比如先加<code>x</code>、再加<code>y</code>，然后删除<code>x</code>，破坏了Map过渡的顺序）</li>
+<li>属性名非常不规律，比如大量随机字符串、数字字符串作为属性名</li>
+</ul>
+<h4 id="（2）核心结构" tabindex="-1"><a class="headerlink" href="#（2）核心结构" aria-hidden="true"></a> （2）核心结构</h4>
+<p>降级后，Map不再维护属性的偏移信息，对象的Properties位置直接指向一个哈希表：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Properties哈希表 → &#123; &quot;x&quot;: 1, &quot;y&quot;: 2, &quot;z&quot;: 3 ... &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="（3）访问流程" tabindex="-1"><a class="headerlink" href="#（3）访问流程" aria-hidden="true"></a> （3）访问流程</h4>
+<p>访问<code>obj.x</code>时，需要对<code>x</code>做哈希计算、处理哈希冲突、查表才能拿到值，速度比快属性慢很多，优点是不需要维护Map过渡链，适合属性频繁增删的场景，内存开销更低。</p>
+<p><strong>✅ 验证方式</strong></p>
+<p>你可以在V8的d8 shell里用<code>%DebugPrint(obj)</code>直接看到对象的属性模式：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 快属性模式的对象输出会有这个标记</span><br><span class="line">- <span class="built_in">map</span>: <span class="number">0x025300259735</span> &lt;Map[<span class="number">20</span>](HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"></span><br><span class="line"># 慢属性模式的对象输出会有这个标记</span><br><span class="line">- <span class="built_in">map</span>: <span class="number">0x025300259735</span> &lt;Map[<span class="number">20</span>](HOLEY_ELEMENTS)&gt; [DictionaryProperties]</span><br></pre></td></tr></table></figure>
+<p><strong>为什么漏洞利用会关注这个？</strong></p>
+<p>很多V8类型混淆漏洞的核心原理就是：攻击者通过特殊构造的JS代码，让V8错误地判断对象是快属性/慢属性模式，从而计算出错误的内存偏移，最终实现越界读写内存。</p>
+<h2 id="3、map的完整结构" tabindex="-1"><a class="headerlink" href="#3、map的完整结构" aria-hidden="true"></a> 3、Map的完整结构</h2>
+<p>我们首先明确：这里的<strong>Map是V8内部的HiddenClass（隐藏类），也叫Shape</strong>，和JavaScript原生的<code>Map</code>对象是完全不同的概念，后面提到的Map默认都指V8内部的隐藏类。</p>
+<p>Map是V8用来描述堆对象内存布局的「元数据」，是所有属性访问、类型判断的核心依据，完整结构如下：</p>
+<h3 id="31-map核心字段（通用结构，不同v8版本字段顺序数量略有差异）" tabindex="-1"><a class="headerlink" href="#31-map核心字段（通用结构，不同v8版本字段顺序数量略有差异）" aria-hidden="true"></a> 3.1 Map核心字段（通用结构，不同V8版本字段顺序/数量略有差异）</h3>
+<p>你可以在d8调试时用<code>%DebugPrint(obj)</code>直接看到Map的所有字段，对应教程里的调试输出例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0000025300259735</span>: [Map] in OldSpace</span><br><span class="line"> - type: JS_OBJECT_TYPE</span><br><span class="line"> - instance size: <span class="number">20</span></span><br><span class="line"> - inobject properties: <span class="number">2</span></span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: <span class="number">0</span></span><br><span class="line"> - <span class="class"><span class="keyword">enum</span> <span class="title">length</span>:</span> invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - back pointer: <span class="number">0x0253002596ed</span> &lt;Map[<span class="number">20</span>](HOLEY_ELEMENTS)&gt;</span><br><span class="line"> - prototype_validity cell: <span class="number">0x0253002043cd</span> &lt;Cell value= <span class="number">1</span>&gt;</span><br><span class="line"> - instance descriptors (own) #<span class="number">2</span>: <span class="number">0x02530010a539</span> &lt;DescriptorArray[<span class="number">2</span>]&gt;</span><br><span class="line"> - prototype: <span class="number">0x025300244669</span> &lt;Object <span class="built_in">map</span> = <span class="number">0000025300243</span>D25&gt;</span><br><span class="line"> - constructor: <span class="number">0x02530024422d</span> &lt;JSFunction Object (sfi = <span class="number">000002530021B</span>A25)&gt;</span><br><span class="line"> - dependent code: <span class="number">0x0253000021e1</span> &lt;Other heap object (WEAK_ARRAY_LIST_TYPE)&gt;</span><br><span class="line"> - construction counter: <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>每个核心字段的含义：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>type</strong></td>
+<td>对象类型标记，比如<code>JS_OBJECT_TYPE</code>普通对象、<code>JS_ARRAY_TYPE</code>数组、<code>JS_FUNCTION_TYPE</code>函数等，V8通过这个字段判断对象的基础类型</td>
+</tr>
+<tr>
+<td><strong>instance size</strong></td>
+<td>该类型对象在堆上占用的总字节数，V8分配内存时会按这个大小分配</td>
+</tr>
+<tr>
+<td><strong>inobject properties</strong></td>
+<td>In-Object快属性的数量，也就是对象本身内存里直接能存多少个属性，超过这个数量的属性会存到独立的Properties数组里</td>
+</tr>
+<tr>
+<td><strong>elements kind</strong></td>
+<td>数组/对象的索引属性类型，就是我们之前讲的<code>PACKED_SMI_ELEMENTS</code>/<code>HOLEY_ELEMENTS</code>等21种类型，是V8优化数组操作的核心依据</td>
+</tr>
+<tr>
+<td><strong>back pointer</strong></td>
+<td>反向过渡指针，指向当前Map是从哪个Map过渡来的（比如给空对象加x属性后生成新Map，新Map的back pointer就指向空对象的Map）</td>
+</tr>
+<tr>
+<td><strong>instance descriptors</strong></td>
+<td>指向<strong>描述符数组（DescriptorArray）</strong>，是快属性的核心：数组每个元素对应一个属性的元信息：属性名、属性类型（数据属性/访问器属性）、属性在In-Object/Properties数组里的偏移量、可写/可枚举/可配置标记</td>
+</tr>
+<tr>
+<td><strong>prototype</strong></td>
+<td>指向该类型对象的原型对象（对应JS的<code>__proto__</code>）</td>
+</tr>
+<tr>
+<td><strong>constructor</strong></td>
+<td>指向创建该对象的构造函数（对应JS的<code>constructor</code>）</td>
+</tr>
+<tr>
+<td><strong>dependent code</strong></td>
+<td>指向依赖这个Map的优化后的机器码：如果这个Map被废弃（比如对象结构发生变化），所有依赖它的优化代码都会被标记为无效，触发去优化(deoptimize)</td>
+</tr>
+<tr>
+<td><strong>stable_map标记</strong></td>
+<td>表示当前Map是稳定的，TurboFan可以基于这个Map做优化，如果后续Map结构发生变化，这个标记会被清除</td>
+</tr>
+</tbody>
+</table>
+<h3 id="📌-map的过渡树结构" tabindex="-1"><a class="headerlink" href="#📌-map的过渡树结构" aria-hidden="true"></a> 📌 Map的过渡树结构</h3>
+<p>Map不是孤立存在的，V8会把所有通过「顺序添加属性」生成的Map连成一个过渡树，相同结构的对象会复用同一个Map，避免重复创建：</p>
+<p><strong>举个例子：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 空对象，对应Map A</span></span><br><span class="line"><span class="keyword">const</span> a = &#123;&#125;</span><br><span class="line"><span class="comment">// 2. 加x属性，过渡到Map B（back pointer指向Map A）</span></span><br><span class="line">a.<span class="property">x</span> = <span class="number">1</span></span><br><span class="line"><span class="comment">// 3. 加y属性，过渡到Map C（back pointer指向Map B）</span></span><br><span class="line">a.<span class="property">y</span> = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 4. 新建另一个空对象，还是用Map A</span></span><br><span class="line"><span class="keyword">const</span> b = &#123;&#125;</span><br><span class="line"><span class="comment">// 5. 同样先加x再加y，不会新建Map，直接复用之前的Map B、Map C</span></span><br><span class="line">b.<span class="property">x</span> = <span class="number">100</span></span><br><span class="line">b.<span class="property">y</span> = <span class="number">200</span></span><br></pre></td></tr></table></figure>
+<p><strong>重要规则！！！：</strong></p>
+<ol>
+<li>只有属性添加顺序完全一致，结构才会复用同一个Map。如果先加y再加x，会生成完全独立的另一条过渡链，不会复用上面的Map。</li>
+<li>一旦删除非最后添加的属性、或者添加太多属性，对象会降级到字典模式，脱离过渡树，不再共享Map。</li>
+</ol>
+<p><strong>✅ 为什么Map是漏洞利用的核心？</strong></p>
+<p>V8完全依赖Map来判断对象的结构、计算属性的内存偏移，如果攻击者能<strong>篡改某个对象的Map指针</strong>，就可以欺骗V8：</p>
+<ul>
+<li>比如把一个普通对象的Map改成数组的Map，V8就会把这个对象当成数组来解析，从而可以越界读写对象外的内存</li>
+<li>比如把一个只读属性的Map描述符改成可写，就可以修改原本不能修改的内存区域<br>
+大部分V8类型混淆漏洞的本质，就是通过特殊构造的JS代码，让V8错误地给对象分配了不符合预期的Map，或者让攻击者有机会篡改对象的Map指针。</li>
+</ul>
+<h2 id="4-指针标记（pointer-tagging）" tabindex="-1"><a class="headerlink" href="#4-指针标记（pointer-tagging）" aria-hidden="true"></a> 4. 指针标记（Pointer Tagging）</h2>
+<h3 id="41-为什么需要指针标记？" tabindex="-1"><a class="headerlink" href="#41-为什么需要指针标记？" aria-hidden="true"></a> 4.1 为什么需要指针标记？</h3>
+<p>前面我们提过，V8里Smi小整数是直接存在指针里的，不需要单独在堆上分配，这就带来一个问题：<strong>V8怎么区分一个值到底是Smi整数，还是指向堆对象的指针？</strong> 指针标记就是用来解决这个问题的，利用的是x86/x64系统的内存对齐特性：堆上分配的对象都是按4/8字节对齐的，所以内存地址的最低两位一定是0，V8就用这两位来做标记。</p>
+<h3 id="42-x64架构下的标记规则" tabindex="-1"><a class="headerlink" href="#42-x64架构下的标记规则" aria-hidden="true"></a> 4.2 x64架构下的标记规则</h3>
+<table>
+<thead>
+<tr>
+<th>值类型</th>
+<th>最低位标记</th>
+<th>存储规则</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Smi（小整数）</td>
+<td><code>0</code></td>
+<td>整数左移1位，把最低位空出来写0</td>
+<td>真实值是<code>1</code>，内存里存的是<code>2</code>（二进制<code>10</code>，最后一位是<code>0</code>）</td>
+</tr>
+<tr>
+<td>强指针（指向堆对象，GC需要引用计数）</td>
+<td><code>1</code>，次低位是<code>0</code></td>
+<td>真实的内存地址，最低位强制设为1</td>
+<td>真实的对象地址是<code>0x123456780</code>，内存里存的是<code>0x123456781</code></td>
+</tr>
+<tr>
+<td>弱指针（指向堆对象，GC不需要引用计数）</td>
+<td><code>1</code>，次低位是<code>1</code></td>
+<td>真实的内存地址，最低两位设为<code>11</code></td>
+<td>真实的对象地址是<code>0x123456780</code>，内存里存的是<code>0x123456783</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-强调实战技巧" tabindex="-1"><a class="headerlink" href="#43-强调实战技巧" aria-hidden="true"></a> 4.3 强调实战技巧</h3>
+<p>你在WinDBG/GDB里看V8内存的时候，看到一个值：</p>
+<ul>
+<li>如果最后一位是0 → 右移1位就是真实的整数值</li>
+<li>如果最后一位是1 → 减1就是真实的堆对象内存地址</li>
+</ul>
+<p>对应教程例的例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">root@x2n:/home/x2n/Documents/v8/v8/out/x64_.release# ./d8 --allow-natives-syntax</span><br><span class="line">V8 version <span class="number">9.6</span>.<span class="number">180.6</span></span><br><span class="line">d8&gt; var obj = &#123;x:<span class="number">1</span>, y:<span class="number">2</span>&#125;;    </span><br><span class="line">undefined</span><br><span class="line">d8&gt; %DebugPrint(obj)</span><br><span class="line">DebugPrint: <span class="number">0x3791080498ed</span>: [JS_OBJECT_TYPE]</span><br><span class="line"> - <span class="built_in">map</span>: <span class="number">0x379108207aa1</span> &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: <span class="number">0x3791081c41f5</span> &lt;Object <span class="built_in">map</span> = <span class="number">0x3791082021b9</span>&gt;</span><br><span class="line"> - elements: <span class="number">0x37910800222d</span> &lt;FixedArray[<span class="number">0</span>]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - properties: <span class="number">0x37910800222d</span> &lt;FixedArray[<span class="number">0</span>]&gt;</span><br><span class="line"> - All own properties (excluding elements): &#123;</span><br><span class="line">    <span class="number">0x3791081d3111</span>: [String] in OldSpace: <span class="meta">#x: 1 (const data field 0), location: in-object</span></span><br><span class="line">    <span class="number">0x3791081d3121</span>: [String] in OldSpace: <span class="meta">#y: 2 (const data field 1), location: in-object</span></span><br><span class="line"> &#125;</span><br><span class="line"><span class="number">0x379108207aa1</span>: [Map]</span><br><span class="line"> - type: JS_OBJECT_TYPE</span><br><span class="line"> - instance size: <span class="number">20</span></span><br><span class="line"> - inobject properties: <span class="number">2</span></span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: <span class="number">0</span></span><br><span class="line"> - <span class="keyword">enum</span> length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - back pointer: <span class="number">0x379108207a79</span> &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line"> - prototype_validity cell: <span class="number">0x379108142405</span> &lt;Cell value= <span class="number">1</span>&gt;</span><br><span class="line"> - instance descriptors (own) #<span class="number">2</span>: <span class="number">0x37910804991d</span> &lt;DescriptorArray[<span class="number">2</span>]&gt;</span><br><span class="line"> - prototype: <span class="number">0x3791081c41f5</span> &lt;Object <span class="built_in">map</span> = <span class="number">0x3791082021b9</span>&gt;</span><br><span class="line"> - constructor: <span class="number">0x3791081c3e2d</span> &lt;JSFunction Object (sfi = <span class="number">0x37910814474d</span>)&gt;</span><br><span class="line"> - dependent code: <span class="number">0x3791080021b9</span> &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: <span class="number">0</span></span><br><span class="line"></span><br><span class="line">&#123;x: <span class="number">1</span>, y: <span class="number">2</span>&#125;</span><br></pre></td></tr></table></figure>
+<p>直接查看<code>0x3791080498ed</code>，发现内容是乱的。</p>
+<p><img src="/2026/04/30/Chrome-v8%E5%AD%A6%E4%B9%A0-%E7%B2%BE%E7%AE%80%E7%89%88-1/image-20260323191204748.png" alt="image-20260323191204748" loading="lazy" decoding="async"></p>
+<p><strong>调试输出里的对象地址是<code>0x3791080498ed</code>，最后一位是<code>d</code>，二进制表示为<code>1101</code>，去掉最后一位1，就是<code>1100</code>是<code>c</code>，所以真实地址为真实地址是<code>0x3791080498ec</code></strong></p>
+<p><img src="/2026/04/30/Chrome-v8%E5%AD%A6%E4%B9%A0-%E7%B2%BE%E7%AE%80%E7%89%88-1/image-20260323195426610.png" alt="image-20260323195426610" loading="lazy" decoding="async"></p>
+<p>⚠️这里的黄色箭头我指错了，我想指真实地址中的内容，后面仔细看了文章才发现指错了！。我想指<code>x/10wx 0x3791080498ed-1</code>地址中的内容，这里<code>0x37910800222d</code>和<code>0x2d080022</code>明显对不上，下面的<code>0x0800222d</code>才是对的，这也正说明了<code>x/10wx 0x3791080498ed-1</code>才是真实的地址。</p>
+<p>然后我们看绿色箭头部分。对象中x属性值是2，右移1位得到真实值1，y属性值是4，右移1位得到真实值2。</p>
+<p>我们看内存中的值<code>0x00000002</code>和<code>0x00000004</code>，最后2和4分别为<code>0010</code>和<code>0100</code>，分别右移一位，就是<code>0001</code>和<code>0010</code>，就是真实的1和2值！！！。</p>
+<p><img src="/2026/04/30/Chrome-v8%E5%AD%A6%E4%B9%A0-%E7%B2%BE%E7%AE%80%E7%89%88-1/image-20260323200046224.png" alt="image-20260323200046224" loading="lazy" decoding="async"></p>
+<p>✅ 漏洞利用注意：你构造任意地址读写的时候，读出来的Smi值需要右移1位才是真实值；写Smi值的时候需要左移1位，把最后一位设成0，否则V8会把它当成指针处理。</p>
+<h2 id="5-指针压缩（pointer-compression）" tabindex="-1"><a class="headerlink" href="#5-指针压缩（pointer-compression）" aria-hidden="true"></a> 5. 指针压缩（Pointer Compression）</h2>
+<h3 id="51-为什么需要指针压缩？" tabindex="-1"><a class="headerlink" href="#51-为什么需要指针压缩？" aria-hidden="true"></a> 5.1 为什么需要指针压缩？</h3>
+<p>x64架构下指针是8字节的，而V8堆上大部分对象里都存了大量指针，导致内存开销非常大。V8团队发现，V8的堆内存一般不会超过4GB，而且堆上的对象地址的<strong>高32位都是相同的</strong>，所以可以只存低32位的地址，高32位存在一个固定的寄存器（R13寄存器，叫Isolate Root指针）里，这样指针就从8字节压缩到了4字节，内存开销直接减少一半。</p>
+<p><strong>这里也可以在上面的调试中看出来，调试值只有后八位！例如：<code>0x37910800222d</code>，在查看内存中的内容时候，只有<code>0x0800222d</code>！！！</strong>。</p>
+<h3 id="52-压缩规则" tabindex="-1"><a class="headerlink" href="#52-压缩规则" aria-hidden="true"></a> 5.2 压缩规则</h3>
+<ul>
+<li>V8的整个堆内存会被映射到同一个4GB的虚拟内存区域，所有堆对象的高32位地址都相同，这个高32位的基地址存在R13寄存器里</li>
+<li>对象里存的指针只有低32位，访问的时候，用<code>基地址 + 低32位地址</code>就能得到完整的64位指针<br>
+对应教程里的例子：你在DBG里看对象里存的Map指针，只有低32位是有效的，高32位全是0，加上R13寄存器里的基地址才是完整的Map地址。</li>
+</ul>
+<h3 id="53-漏洞利用注意" tabindex="-1"><a class="headerlink" href="#53-漏洞利用注意" aria-hidden="true"></a> 5.3 漏洞利用注意</h3>
+<ul>
+<li>不同版本V8的指针压缩开关可能不一样，新版本V8默认开启指针压缩，老版本可能关闭</li>
+<li>如果你写的POC要跨版本运行，需要先判断目标V8是否开启了指针压缩</li>
+<li>构造任意地址读写的时候，如果开启了指针压缩，只需要覆盖指针的低32位就可以控制指针指向的地址。</li>
+</ul>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>Chrome学习-V8和JavaScript内部机制介绍 <a href="https://x2nn.github.io/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/">https://x2nn.github.io/2026/03/18/Chrome学习-V8和JavaScript内部机制介绍/</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p>Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals <a target="_blank" rel="noopener" href="https://jhalon.github.io/chrome-browser-exploitation-1/">https://jhalon.github.io/chrome-browser-exploitation-1/</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-04-30 19:27:36
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/V8/" title="V8">
+                        #V8
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/JavaScript/" title="JavaScript">
+                        #JavaScript
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+                  <span class="post-categories">
+                    <i class="iconfont icon-bookmark" title="分类"></i>
+                    
+                    <span class="span--category">
+                      <a href="/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/" title="二进制安全">
+                        <b>#</b> 二进制安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text"> 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81javascript%E5%BC%95%E6%93%8E%E5%9F%BA%E7%A1%80%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-text"> 1、JavaScript引擎基础工作流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%85%88%E5%AD%A6%E5%BC%95%E6%93%8E%E5%8E%9F%E7%90%86%EF%BC%9F"><span class="toc-text"> 1.1 为什么要先学引擎原理？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E5%B8%B8%E8%A7%81js%E5%BC%95%E6%93%8E%E5%AF%B9%E6%AF%94"><span class="toc-text"> 1.2 常见JS引擎对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-js%E5%BC%95%E6%93%8E%E7%9A%84%E7%BC%96%E8%AF%91%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%88%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B%EF%BC%89"><span class="toc-text"> 1.3 JS引擎的编译流水线（核心流程）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-%E6%A0%88%E6%9C%BA-vs-%E5%AF%84%E5%AD%98%E5%99%A8%E6%9C%BA"><span class="toc-text"> 1.4 栈机 vs 寄存器机</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81v8%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E8%A1%A8%E7%A4%BA"><span class="toc-text"> 2、V8对象内存表示</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-%E4%B8%BA%E4%BB%80%E4%B9%88v8%E8%A6%81%E5%81%9A%E8%BF%99%E4%B9%88%E5%A4%9A%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96%EF%BC%9F"><span class="toc-text"> 2.1 为什么V8要做这么多内存优化？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#22-%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%EF%BC%9Asmi%E5%92%8C%E5%A0%86%E5%AF%B9%E8%B1%A1"><span class="toc-text"> 2.2 基础概念：Smi和堆对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#23-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%EF%BC%9Ahidden-class%EF%BC%88%E4%B9%9F%E5%8F%ABmap%EF%BC%8C%E6%B3%A8%E6%84%8F%E5%92%8Cjs%E7%9A%84map%E5%AF%B9%E8%B1%A1%E5%8C%BA%E5%88%86%E5%BC%80%EF%BC%89"><span class="toc-text"> 2.3 核心概念：Hidden Class（也叫Map，注意和JS的Map对象区分开）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#24-%E5%B1%9E%E6%80%A7%E7%9A%84%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F"><span class="toc-text"> 2.4 属性的存储方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#25-%E6%95%B0%E7%BB%84%E7%9A%84elements%E7%B1%BB%E5%9E%8B"><span class="toc-text"> 2.5 数组的Elements类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%B4%E5%BA%A61%EF%BC%9A%E5%85%83%E7%B4%A0%E7%B1%BB%E5%9E%8B"><span class="toc-text"> 维度1：元素类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%B4%E5%BA%A62%EF%BC%9A%E6%98%AF%E5%90%A6%E6%9C%89%E5%AD%94%E6%B4%9Eholes"><span class="toc-text"> 维度2：是否有孔洞(holes)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%80%831%EF%BC%9A%E5%89%8D%E6%96%87%E6%8F%90%E5%88%B0%E7%9A%84%E5%AD%94%E6%B4%9Ehole%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D%EF%BC%9F"><span class="toc-text"> 思考1：前文提到的孔洞(hole)是什么意思？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E8%8B%B1%E6%96%87%E5%8E%9F%E6%96%87"><span class="toc-text"> （1）英文原文</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%85%B7%E4%BD%93%E5%90%AB%E4%B9%89"><span class="toc-text"> （2）具体含义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E4%B8%BA%E4%BB%80%E4%B9%88v8%E8%A6%81%E4%B8%93%E9%97%A8%E5%8C%BA%E5%88%86hole%EF%BC%9F"><span class="toc-text"> （3）为什么V8要专门区分hole？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%80%832%EF%BC%9A%E5%BF%AB%E5%B1%9E%E6%80%A7%E5%92%8C%E6%85%A2%E5%B1%9E%E6%80%A7%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> 思考2：快属性和慢属性之间的区别是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%BF%AB%E5%B1%9E%E6%80%A7%E8%AF%A6%E8%A7%A3"><span class="toc-text"> 1. 快属性详解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84"><span class="toc-text"> （1）核心结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E4%B8%A4%E7%A7%8D%E5%BF%AB%E5%B1%9E%E6%80%A7%E7%BB%86%E5%88%86"><span class="toc-text"> （2）两种快属性细分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E8%AE%BF%E9%97%AE%E6%B5%81%E7%A8%8B%E7%A4%BA%E4%BE%8B"><span class="toc-text"> （3）访问流程示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E6%85%A2%E5%B1%9E%E6%80%A7%EF%BC%88%E5%AD%97%E5%85%B8%E6%A8%A1%E5%BC%8F%EF%BC%89%E8%AF%A6%E8%A7%A3"><span class="toc-text"> 2. 慢属性（字典模式）详解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E8%A7%A6%E5%8F%91%E9%99%8D%E7%BA%A7%E7%9A%84%E5%B8%B8%E8%A7%81%E6%9D%A1%E4%BB%B6"><span class="toc-text"> （1）触发降级的常见条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84"><span class="toc-text"> （2）核心结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E8%AE%BF%E9%97%AE%E6%B5%81%E7%A8%8B"><span class="toc-text"> （3）访问流程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81map%E7%9A%84%E5%AE%8C%E6%95%B4%E7%BB%93%E6%9E%84"><span class="toc-text"> 3、Map的完整结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#31-map%E6%A0%B8%E5%BF%83%E5%AD%97%E6%AE%B5%EF%BC%88%E9%80%9A%E7%94%A8%E7%BB%93%E6%9E%84%EF%BC%8C%E4%B8%8D%E5%90%8Cv8%E7%89%88%E6%9C%AC%E5%AD%97%E6%AE%B5%E9%A1%BA%E5%BA%8F%E6%95%B0%E9%87%8F%E7%95%A5%E6%9C%89%E5%B7%AE%E5%BC%82%EF%BC%89"><span class="toc-text"> 3.1 Map核心字段（通用结构，不同V8版本字段顺序&#x2F;数量略有差异）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-map%E7%9A%84%E8%BF%87%E6%B8%A1%E6%A0%91%E7%BB%93%E6%9E%84"><span class="toc-text"> 📌 Map的过渡树结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%8C%87%E9%92%88%E6%A0%87%E8%AE%B0%EF%BC%88pointer-tagging%EF%BC%89"><span class="toc-text"> 4. 指针标记（Pointer Tagging）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#41-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%8C%87%E9%92%88%E6%A0%87%E8%AE%B0%EF%BC%9F"><span class="toc-text"> 4.1 为什么需要指针标记？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#42-x64%E6%9E%B6%E6%9E%84%E4%B8%8B%E7%9A%84%E6%A0%87%E8%AE%B0%E8%A7%84%E5%88%99"><span class="toc-text"> 4.2 x64架构下的标记规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#43-%E5%BC%BA%E8%B0%83%E5%AE%9E%E6%88%98%E6%8A%80%E5%B7%A7"><span class="toc-text"> 4.3 强调实战技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%8C%87%E9%92%88%E5%8E%8B%E7%BC%A9%EF%BC%88pointer-compression%EF%BC%89"><span class="toc-text"> 5. 指针压缩（Pointer Compression）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#51-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%8C%87%E9%92%88%E5%8E%8B%E7%BC%A9%EF%BC%9F"><span class="toc-text"> 5.1 为什么需要指针压缩？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#52-%E5%8E%8B%E7%BC%A9%E8%A7%84%E5%88%99"><span class="toc-text"> 5.2 压缩规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#53-%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E6%B3%A8%E6%84%8F"><span class="toc-text"> 5.3 漏洞利用注意</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Chrome-v8%E5%AD%A6%E4%B9%A0-%E7%B2%BE%E7%AE%80%E7%89%88-1 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F04%2F30%2FChrome-v8%25E5%25AD%25A6%25E4%25B9%25A0-%25E7%25B2%25BE%25E7%25AE%2580%25E7%2589%2588-1%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/04/30/Chrome-v8%E5%AD%A6%E4%B9%A0-%E7%B2%BE%E7%AE%80%E7%89%88-1/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
