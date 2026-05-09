@@ -200,22 +200,6 @@
     <author>
       <name>X2n</name>
     </author>
-    <category term="生活杂谈" scheme="https://x2nn.github.io/categories/%E7%94%9F%E6%B4%BB%E6%9D%82%E8%B0%88/"/>
-    <category term="生活杂谈" scheme="https://x2nn.github.io/tags/%E7%94%9F%E6%B4%BB%E6%9D%82%E8%B0%88/"/>
-    <id>https://x2nn.github.io/2025/11/28/%E6%8A%8A%E5%BF%83%E6%94%BE%E5%AE%BD%EF%BC%8C%E6%8A%8A%E4%BA%8B%E7%9C%8B%E8%BF%9C%EF%BC%8C%E6%B4%BB%E5%BE%97%E8%88%92%E5%9D%A6/</id>
-    <link href="https://x2nn.github.io/2025/11/28/%E6%8A%8A%E5%BF%83%E6%94%BE%E5%AE%BD%EF%BC%8C%E6%8A%8A%E4%BA%8B%E7%9C%8B%E8%BF%9C%EF%BC%8C%E6%B4%BB%E5%BE%97%E8%88%92%E5%9D%A6/"/>
-    <published>2025-11-28T11:24:01.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="把心放宽，把事看远，活得舒坦" tabindex="-1"><a class="headerlink" href="#把心放宽，把事看远，活得舒坦" aria-hidden="true"></a> 把心放宽，把事看远，活得舒坦</h2>
-<h3]]>
-    </summary>
-    <title>把心放宽，把事看远，活得舒坦</title>
-    <updated>2026-01-15T01:43:06.261Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>X2n</name>
-    </author>
     <category term="内网渗透" scheme="https://x2nn.github.io/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/"/>
     <category term="NTML" scheme="https://x2nn.github.io/tags/NTML/"/>
     <category term="Kerberos" scheme="https://x2nn.github.io/tags/Kerberos/"/>
@@ -347,5 +331,23 @@
     </summary>
     <title>C语言函数调用栈和栈溢出漏洞</title>
     <updated>2025-08-19T12:45:47.217Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>X2n</name>
+    </author>
+    <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="ELF" scheme="https://x2nn.github.io/tags/ELF/"/>
+    <category term="汇编语言" scheme="https://x2nn.github.io/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/"/>
+    <category term="虚拟地址" scheme="https://x2nn.github.io/tags/%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80/"/>
+    <id>https://x2nn.github.io/2025/08/16/pwn%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E9%83%A8%E5%88%86/</id>
+    <link href="https://x2nn.github.io/2025/08/16/pwn%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E9%83%A8%E5%88%86/"/>
+    <published>2025-08-16T11:53:31.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>本章节主要介绍pwn学习中涉及到的基础知识部分<sup]]>
+    </summary>
+    <title>pwn基础知识部分</title>
+    <updated>2025-08-17T09:07:24.188Z</updated>
   </entry>
 </feed>
