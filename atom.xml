@@ -33,7 +33,7 @@
     <author>
       <name>X2n</name>
     </author>
-    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="云安全" scheme="https://x2nn.github.io/categories/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
     <category term="容器逃逸" scheme="https://x2nn.github.io/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"/>
     <category term="云安全" scheme="https://x2nn.github.io/tags/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
@@ -46,13 +46,13 @@
 <h2]]>
     </summary>
     <title>k8s-goat靶场练习-下</title>
-    <updated>2026-04-21T10:27:25.676Z</updated>
+    <updated>2026-05-09T10:05:04.507Z</updated>
   </entry>
   <entry>
     <author>
       <name>X2n</name>
     </author>
-    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="云安全" scheme="https://x2nn.github.io/categories/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
     <category term="容器逃逸" scheme="https://x2nn.github.io/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"/>
     <category term="云安全" scheme="https://x2nn.github.io/tags/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
@@ -64,7 +64,7 @@
 <p>Kubernetes Goat<sup class="footnote-ref"><a]]>
     </summary>
     <title>k8s-goat靶场练习-上</title>
-    <updated>2026-04-04T08:48:54.505Z</updated>
+    <updated>2026-05-09T10:04:59.276Z</updated>
   </entry>
   <entry>
     <author>
@@ -87,7 +87,7 @@
     <author>
       <name>X2n</name>
     </author>
-    <category term="Web安全" scheme="https://x2nn.github.io/categories/Web%E5%AE%89%E5%85%A8/"/>
+    <category term="云安全" scheme="https://x2nn.github.io/categories/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
     <id>https://x2nn.github.io/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</id>
     <link href="https://x2nn.github.io/2026/03/08/Kubernetes-K8s-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
@@ -96,7 +96,7 @@
       <![CDATA[<h1 id="kubernetes-k8s-学习笔记" tabindex="-1"><a class="headerlink" href="#kubernetes-k8s-学习笔记" aria-hidden="true"></a> Kubernetes (K8s)]]>
     </summary>
     <title>Kubernetes(K8s)学习笔记</title>
-    <updated>2026-03-12T02:12:39.322Z</updated>
+    <updated>2026-05-09T10:05:26.006Z</updated>
   </entry>
   <entry>
     <author>
