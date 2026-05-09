@@ -1,50 +1,57 @@
 // clipboard js 代码复制功能
-window.addEventListener('DOMContentLoaded', getCodeBlockDoms)
+window.addEventListener('DOMContentLoaded', initCodeCopy)
 
-let clipboard = null
+function initCodeCopy() {
+  if (typeof ClipboardJS === 'undefined') {
+    window.setTimeout(initCodeCopy, 80)
+    return
+  }
 
-// 获取code block dom
-function getCodeBlockDoms() {
-  const codeBlockDoms = document.querySelectorAll('figure')
-  const copyIcon = document.createElement('i')
-  copyIcon.classList = 'iconfont icon-copy'
-  const copyBtn = document.createElement('span')
-  copyBtn.classList = 'pin-copy'
-  copyBtn.setAttribute('data-text', 'copy')
-  copyBtn.appendChild(copyIcon)
-  codeBlockDoms.length && codeBlockDoms.forEach(res => {
-    res.addEventListener('mouseenter', () => {
-      res.setAttribute('id', 'copy-target')
-      const copyContent = res.querySelector('table tbody tr .code')
-      res.setAttribute('data-clipboard-text', copyContent && copyContent.innerText || '')
-      res.appendChild(copyBtn)
-      copyBtn.addEventListener('click', copyContentAction)
+  const codeBlockDoms = document.querySelectorAll('figure.highlight')
+  codeBlockDoms.forEach((block, index) => {
+    const copyContent = block.querySelector('td.code')
+    if (!copyContent) return
+
+    const copyBtn = document.createElement('button')
+    copyBtn.type = 'button'
+    copyBtn.className = 'pin-copy'
+    copyBtn.setAttribute('aria-label', '复制代码')
+    copyBtn.setAttribute('data-text', 'copy')
+    copyBtn.setAttribute('data-clipboard-text', copyContent.innerText || '')
+
+    const copyIcon = document.createElement('i')
+    copyIcon.className = 'iconfont icon-copy'
+    copyBtn.appendChild(copyIcon)
+
+    const codeLabel = document.createElement('span')
+    codeLabel.className = 'code-block-label'
+    codeLabel.textContent = getCodeBlockLabel(block, index)
+
+    const codeHead = document.createElement('div')
+    codeHead.className = 'code-block-head'
+    codeHead.appendChild(codeLabel)
+    codeHead.appendChild(copyBtn)
+    block.insertBefore(codeHead, block.firstChild)
+
+    const clipboard = new ClipboardJS(copyBtn)
+    clipboard.on('success', function(e) {
+      copyBtn.setAttribute('data-text', 'copied')
+      e.clearSelection()
+      window.setTimeout(function() {
+        copyBtn.setAttribute('data-text', 'copy')
+      }, 1400)
     })
-    res.addEventListener('mouseleave', () => {
-      res.setAttribute('id', '')
-      res.setAttribute('data-clipboard-text', '')
-      copyBtn.removeEventListener('click', copyContentAction)
-      copyBtn.setAttribute('data-text', 'copy')
+    clipboard.on('error', function() {
+      copyBtn.setAttribute('data-text', 'failed')
+      window.setTimeout(function() {
+        copyBtn.setAttribute('data-text', 'copy')
+      }, 1400)
     })
   })
 }
 
-// 点击复制
-function copyContentAction() {
-  if (!clipboard) {
-    clipboard = new ClipboardJS('#copy-target')
-  }
-  const copyBtnDom = document.querySelector('.pin-copy')
-  clipboard.on('success', function(e) {
-    console.warn('clipboard success', e)
-    clipboard.destroy()
-    clipboard = null
-    copyBtnDom && copyBtnDom.setAttribute('data-text', 'copied')
-  })
-  clipboard.on('error', function(e) {
-    console.warn('clipboard error', e)
-    clipboard.destroy()
-    clipboard = null
-    copyBtnDom && copyBtnDom.setAttribute('data-text', 'fail to copy')
-  })
+function getCodeBlockLabel(block, index) {
+  const classes = Array.from(block.classList).filter(name => name !== 'highlight')
+  const lang = classes[0] || 'text'
+  return lang === 'plaintext' ? 'text' : lang || `code ${index + 1}`
 }

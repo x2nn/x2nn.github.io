@@ -1,41 +1,40 @@
 .markdown-body .highlight .gutter pre {
-  background-color: #2d2d2d;
+  background-color: var(--bg-code-gutter);
 }
 
-figure {
-  padding: 32px 2px 2px;
+figure.highlight {
+  padding: 0;
 }
 
-figure::after {
+figure.highlight::after {
   content: "";
   position: absolute;
   height: 12px;
   width: 12px;
-  box-shadow: 10px 11px #ff5e5c, 30px 11px #ffbb4e, 50px 11px #00c857;
+  box-shadow:
+    10px 10px var(--color-mac-red),
+    30px 10px var(--color-mac-yellow),
+    50px 10px var(--color-mac-green);
   top: 0;
   left: 0;
   border-radius: 50%;
 }
 
-figure table {
+figure.highlight table {
   margin-bottom: 0 !important;
 }
 
-figure table .gutter {
+figure.highlight table .gutter {
   user-select: none;
 }
 
-figure figcaption {
-  padding-left: 1rem;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+figure.highlight figcaption {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 32px;
   left: 0;
-  display: none;
+  right: 0;
 }
 
-figure table {
-  border-top: 1px solid #ffffff1f;
+figure.highlight table {
+  border-top: 0;
 }

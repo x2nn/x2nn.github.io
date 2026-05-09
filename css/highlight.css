@@ -194,9 +194,16 @@ pre .javascript .function {
 }
 
 .markdown-body .highlight {
-  color: #ccc;
-  background-color: #2d2d2d;
-  border-radius: 5px;
+  position: relative;
+  margin: 2rem 0;
+  padding: 0;
+  color: var(--color-code-block);
+  background-color: var(--bg-code-block);
+  border: 1px solid var(--border-code-block);
+  border-top: 2px solid var(--border-code-block-accent);
+  border-radius: 8px;
+  box-shadow: var(--shadow-code-block);
+  overflow: hidden;
 }
 
 .markdown-body .highlight table td {
@@ -208,16 +215,22 @@ pre .javascript .function {
   border: none;
 }
 
+.markdown-body .highlight table {
+  width: 100%;
+  margin: 0;
+}
+
 .markdown-body .highlight .gutter pre {
-  color: #999;
-  background: #1b1b1b;
+  color: var(--color-code-muted);
+  background: var(--bg-code-gutter);
 }
 
 .highlight .code pre {
   width: 100%;
-  padding-left: 10px;
-  padding-right: 10px;
-  background-color: #2d2d2d !important;
+  padding-left: 14px;
+  padding-right: 14px;
+  background-color: var(--bg-code-block) !important;
+  color: var(--color-code-block);
 }
 
 .markdown-body .highlight table tbody pre {
@@ -228,24 +241,71 @@ details summary {
   outline: none;
   cursor: pointer;
 }
-figure {
+figure.highlight {
   position: relative;
 }
 
-figure figcaption {
-  padding-left: 1rem;
-  background-color: #1b1b1b;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+figure.highlight figcaption {
+  padding: .65rem 1rem;
+  background-color: var(--bg-code-header);
+  border-bottom: 1px solid var(--border-code-block);
 }
 
-figure table .gutter {
+figure.highlight table .gutter {
   user-select: none;
 }
 
-figure .pin-copy {
+figure.highlight .code-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  padding: 0 8px 0 70px;
+  background-color: var(--bg-code-header);
+  border-bottom: 1px solid var(--border-code-block);
+}
+
+figure.highlight .code-block-label {
+  color: var(--color-code-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+figure.highlight .pin-copy {
   position: absolute;
-  top: 0;
-  right: 1rem;
+  top: 4px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  color: var(--color-code-muted);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
   cursor: pointer;
+  opacity: .52;
+  transition: opacity .18s ease, color .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+figure.highlight:hover .pin-copy,
+figure.highlight .pin-copy:focus-visible {
+  opacity: 1;
+}
+
+figure.highlight .pin-copy:hover,
+figure.highlight .pin-copy:focus-visible {
+  color: var(--color-text-a-hover);
+  background-color: var(--bg-code-copy-hover);
+  border-color: var(--border-code-block);
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  figure.highlight .pin-copy {
+    opacity: .78;
+  }
 }
