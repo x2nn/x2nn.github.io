@@ -9,7 +9,7 @@
   <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
   
   
-    <meta name="description" content="前言 英语不错的师傅们，建议直接看 英文原版 ，英文可能还更好理解一些。文章内容，大部分来自作者 @jack_halon 。该文章仅作为自己的学习笔记，如果有错误的地方，还希望师傅们批评指正。 V8是什么？ 我们都知JavaScript，Javascript代码的执行依赖于JavaScript引擎，而V8就是JavaS…" />
+    <meta name="description" content="前言 这篇文章主要整理自 Jack Halon 的 Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals ，目标不是把 V8 的所有实现细节一次讲完，而是先建立一套够用的心智模型。 如果你是从浏览器漏洞利用的角度…" />
   
   
     <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
@@ -36,7 +36,7 @@
   <meta property="og:site_name" content="Keep your passion for what you love !" />
   <meta property="og:title" content="Chrome学习-V8和JavaScript内部机制介绍 | Keep your passion for what you love !" />
   
-    <meta property="og:description" content="前言 英语不错的师傅们，建议直接看 英文原版 ，英文可能还更好理解一些。文章内容，大部分来自作者 @jack_halon 。该文章仅作为自己的学习笔记，如果有错误的地方，还希望师傅们批评指正。 V8是什么？ 我们都知JavaScript，Javascript代码的执行依赖于JavaScript引擎，而V8就是JavaS…" />
+    <meta property="og:description" content="前言 这篇文章主要整理自 Jack Halon 的 Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals ，目标不是把 V8 的所有实现细节一次讲完，而是先建立一套够用的心智模型。 如果你是从浏览器漏洞利用的角度…" />
   
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://x2nn.github.io/2026/03/18/Chrome学习-V8和JavaScript内部机制介绍/" />
@@ -49,7 +49,7 @@
       <meta property="article:published_time" content="2026-03-18T13:43:46.000Z" />
     
     
-      <meta property="article:modified_time" content="2026-04-30T11:15:18.830Z" />
+      <meta property="article:modified_time" content="2026-05-14T14:54:41.135Z" />
     
     
       <meta property="article:tag" content="V8" />
@@ -62,7 +62,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Chrome学习-V8和JavaScript内部机制介绍 | Keep your passion for what you love !" />
   
-    <meta name="twitter:description" content="前言 英语不错的师傅们，建议直接看 英文原版 ，英文可能还更好理解一些。文章内容，大部分来自作者 @jack_halon 。该文章仅作为自己的学习笔记，如果有错误的地方，还希望师傅们批评指正。 V8是什么？ 我们都知JavaScript，Javascript代码的执行依赖于JavaScript引擎，而V8就是JavaS…" />
+    <meta name="twitter:description" content="前言 这篇文章主要整理自 Jack Halon 的 Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals ，目标不是把 V8 的所有实现细节一次讲完，而是先建立一套够用的心智模型。 如果你是从浏览器漏洞利用的角度…" />
   
   <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
 
@@ -227,8 +227,8 @@
         <div class="post-attach">
           <span class="post-pubtime">
             <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-            <time datetime="2026-04-30T19:15:18+08:00">
-              2026-04-30 19:15
+            <time datetime="2026-05-14T22:54:41+08:00">
+              2026-05-14 22:54
             </time>
           </span>
           
@@ -264,435 +264,458 @@
       </header>
       <div class="markdown-body">
         <h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
-<p>英语不错的师傅们，建议直接看<a target="_blank" rel="noopener" href="https://jhalon.github.io/chrome-browser-exploitation-1/">英文原版</a>，英文可能还更好理解一些。文章内容，大部分来自作者<a target="_blank" rel="noopener" href="https://x.com/jack_halon">@jack_halon</a>。该文章仅作为自己的学习笔记，如果有错误的地方，还希望师傅们批评指正。</p>
-<h2 id="v8是什么？" tabindex="-1"><a class="headerlink" href="#v8是什么？" aria-hidden="true"></a> V8是什么？</h2>
-<p>我们都知JavaScript，Javascript代码的执行依赖于JavaScript引擎，而V8就是JavaScript引擎中的一种。</p>
-<p>目前实际有很多不同的JavaScript引擎在使用，例如：</p>
+<p>这篇文章主要整理自 Jack Halon 的 <a target="_blank" rel="noopener" href="https://jhalon.github.io/chrome-browser-exploitation-1/">Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals</a>，目标不是把 V8 的所有实现细节一次讲完，而是先建立一套够用的心智模型。</p>
+<p>如果你是从浏览器漏洞利用的角度学习 V8，那么这一篇最重要。因为后面很多 <code>type confusion</code>、数组越界、JIT 假设错误，最后都会落回这几个基础问题：</p>
+<ol>
+<li>JavaScript 引擎是怎么执行代码的？</li>
+<li>V8 在内存里怎么表示一个对象？</li>
+<li><code>Map</code>、<code>Properties</code>、<code>Elements</code> 分别是什么？</li>
+<li>为什么指针标记和指针压缩会让调试结果看起来“不对劲”？</li>
+</ol>
+<blockquote>
+<p>本文以“经典 V8 学习模型”为主，重点是帮助理解对象模型和漏洞分析语境下的核心概念，而不是逐行追踪最新版本 V8 的全部实现细节。</p>
+</blockquote>
+<h2 id="v8-是什么？" tabindex="-1"><a class="headerlink" href="#v8-是什么？" aria-hidden="true"></a> V8 是什么？</h2>
+<p>JavaScript 代码本身不能直接在浏览器里“凭空执行”，它需要一个 JavaScript 引擎。V8 就是 Google Chrome 使用的 JavaScript 引擎之一。</p>
+<p>常见的 JavaScript 引擎包括：</p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://v8.dev/">V8</a> - Google 的开源高性能 JavaScript 和 WebAssembly 引擎，用于 Chrome 浏览器。</li>
-<li><a target="_blank" rel="noopener" href="https://spidermonkey.dev/">SpiderMonkey</a> - Mozilla 的 JavaScript 和 WebAssembly 引擎，用于 Firefox。</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/chakra-core/ChakraCore">Charka</a> - 微软开发的专有 JScript 引擎，用于 IE 和 Edge 浏览器。</li>
-<li><a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/javascriptcore">JavaScriptCore</a> - 苹果公司为 Safari 浏览器内置的 WebKit JavaScript 引擎。</li>
+<li><a target="_blank" rel="noopener" href="https://v8.dev/">V8</a>：Google 的 JavaScript / WebAssembly 引擎，用于 Chrome。</li>
+<li><a target="_blank" rel="noopener" href="https://spidermonkey.dev/">SpiderMonkey</a>：Mozilla 的引擎，用于 Firefox。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/chakra-core/ChakraCore">ChakraCore</a>：微软曾使用过的 JavaScript 引擎。</li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/javascriptcore">JavaScriptCore</a>：Apple 在 Safari / WebKit 中使用的引擎。</li>
 </ul>
-<p>众所周知，JavaScript 是一种轻量级、 <strong>解释型</strong> 、面向对象的脚本语言。在解释型语言中，代码逐行执行，执行结果立即返回，因此无需在浏览器运行前将代码编译成其他形式。但出于性能方面的考虑，这通常会导致此类语言性能不佳。在这种情况下，就需要用到编译技术，例如即时编译（Just-In-Time ,JIT）。JIT 将 JavaScript 代码解析成字节码（机器代码的抽象形式），然后进行进一步优化，从而显著提高代码效率，使其运行速度更快。</p>
-<p>虽然上述各种 JavaScript 引擎可能拥有不同的编译器和优化器，但它们的设计和实现方式几乎完全相同，都基于 <a target="_blank" rel="noopener" href="https://tc39.es/ecma262/">EcmaScript 标准</a>（也常与 JavaScript 互换使用）。EcmaScript 规范详细说明了浏览器应如何实现 JavaScript，以确保 JavaScript 程序在所有浏览器中都能以完全相同的方式运行。</p>
-<h2 id="javascript引擎的工作流程" tabindex="-1"><a class="headerlink" href="#javascript引擎的工作流程" aria-hidden="true"></a> JavaScript引擎的工作流程</h2>
-<p>那么，执行JavaScript代码之后，究竟发生了什么呢？下面提供了一张图标，该图标展示了JavaScript引擎的一般“流程”，也被称为编译管道<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>（compilation pipeline of JavaScript engines）。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260318221941907.png" alt="image-20260318221941907" loading="lazy" decoding="async"></p>
-<p>乍一看可能有点复杂，但别担心——其实并不难理解。那么，让我们一步一步地分解这个“流程”，并解释每个组成部分的作用。</p>
+<p>它们的实现方式并不完全相同，但都要遵守 <a target="_blank" rel="noopener" href="https://tc39.es/ecma262/">ECMAScript 规范</a>。也就是说，浏览器内部怎么优化可以不同，但 JavaScript 语义最终必须一致。</p>
+<h2 id="先看整体流程：javascript-引擎是怎么工作的" tabindex="-1"><a class="headerlink" href="#先看整体流程：javascript-引擎是怎么工作的" aria-hidden="true"></a> 先看整体流程：JavaScript 引擎是怎么工作的</h2>
+<p>先别急着扎进对象布局。先把整条执行链路记住，后面很多细节才有落点。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260318221941907.png" alt loading="lazy" decoding="async"></p>
+<p>可以把 JavaScript 引擎的执行过程粗略理解成 3 步：</p>
 <ol>
 <li>
-<p><strong>解析器（Parser）：</strong>执行 JavaScript 代码后，代码会被传递给 JavaScript 引擎，然后我们进入第一步，即解析代码。解析器会将代码转换为以下格式：</p>
-<ul>
-<li>
-<p><strong>词法单元（Tokens）：</strong>代码首先被分解成“词法单元（tokens）”，例如：Identifier, Number, String, Operator等。这被称为“词法分析（Lexical Analysis）”或“词法单元化（Tokenizing）”。</p>
-<ul>
-<li>例如：<code>var num = 42</code>被分解为 <code>var,num,=,42</code> ，然后每个“标记（token）”或项目都用其类型进行标记，因此在本例中将是:<code>Keyword,Identifier,Operator,Number</code>。</li>
-</ul>
+<p><strong>Parser（解析器）</strong><br>
+负责把源码拆成 token，再进一步组织成 AST。</p>
 </li>
 <li>
-<p><strong>抽象语法树（Abstract Syntax Tree, AST）：</strong>代码被解析成tokens后，解析器会将这些tokens转换成抽象语法树（AST）。这部分称为“语法分析（Syntax Analysis）”，顾名思义，它的作用是<strong>检查代码中是否存在语法错误</strong>。</p>
-<ul>
-<li>
-<p>例如：上面的代码样例，AST看起来像下面这样：</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;VariableDeclaration&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;start&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;end&quot;</span><span class="punctuation">:</span> <span class="number">13</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;declarations&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line"> <span class="punctuation">&#123;</span></span><br><span class="line"><span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;VariableDeclarator&quot;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;start&quot;</span><span class="punctuation">:</span> <span class="number">4</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;end&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Identifier&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;start&quot;</span><span class="punctuation">:</span> <span class="number">4</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;end&quot;</span><span class="punctuation">:</span> <span class="number">7</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;num&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;init&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Literal&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;start&quot;</span><span class="punctuation">:</span> <span class="number">10</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;end&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;value&quot;</span><span class="punctuation">:</span> <span class="number">42</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;raw&quot;</span><span class="punctuation">:</span> <span class="string">&quot;42&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;kind&quot;</span><span class="punctuation">:</span> <span class="string">&quot;var&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
+<p><strong>Interpreter（解释器）</strong><br>
+负责把 AST 转成字节码，并执行字节码。</p>
 </li>
 <li>
-<p><strong>解释器（Interpreter）：</strong>AST生成后，会被传递给Interpreter，Interpreter会遍历AST并生成字节码（bytecode），字节码生成后，会被执行，然后 AST 会被删除。</p>
-<p>V8的字节码，可以在<a target="_blank" rel="noopener" href="https://github.com/v8/v8/blob/main/src/interpreter/bytecodes.h">这里找到</a>。</p>
-<p>下面就是<code>var num = 42;</code>的字节码示例：</p>
+<p><strong>Compiler（编译器）</strong><br>
+负责观察热点代码，并把它进一步编译成优化后的机器码。</p>
+</li>
+</ol>
+<h3 id="1-parser：从源码到-ast" tabindex="-1"><a class="headerlink" href="#1-parser：从源码到-ast" aria-hidden="true"></a> 1. Parser：从源码到 AST</h3>
+<p>以这行代码为例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> num = <span class="number">42</span>;</span><br></pre></td></tr></table></figure>
+<p>解析器首先会把它切成 token，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var, num, =, 42</span><br></pre></td></tr></table></figure>
+<p>并分别标记类型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Keyword, Identifier, Operator, Number</span><br></pre></td></tr></table></figure>
+<p>之后再把这些 token 组装成 AST。AST 可以理解成“代码的结构化语法树”，它不是源码文本，而是更适合引擎继续处理的数据结构。</p>
+<h3 id="2-interpreter：从-ast-到字节码" tabindex="-1"><a class="headerlink" href="#2-interpreter：从-ast-到字节码" aria-hidden="true"></a> 2. Interpreter：从 AST 到字节码</h3>
+<p>当 AST 生成之后，解释器会继续把它转成字节码。对于 V8 来说，这部分由 Ignition 完成。</p>
+<p>例如 <code>var num = 42;</code> 可能会生成类似下面这样的字节码：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LdaConstant [0]</span><br><span class="line">Star1</span><br><span class="line">Mov &lt;closure&gt;, r2</span><br><span class="line">CallRuntime [DeclareGlobals], r1-r2</span><br><span class="line">LdaSmi [42]</span><br><span class="line">StaGlobal [1], [0]</span><br><span class="line">LdaUndefined</span><br><span class="line">Return</span><br></pre></td></tr></table></figure>
-</li>
-<li>
-<p><strong>编译器（Compiler）：</strong>Compiler会预先使用一种叫做“性能分析器（Profiler）”的工具来监控和观察需要优化的代码。如果存在所谓的“热点函数（hot function）”，Compiler会获取该函数并生成优化后（optimized）的机器代码来执行。否则，如果Compiler发现某个已优化的“hot function”不再被使用，它会将其“反优化（deoptimize）”回字节码。</p>
-</li>
-</ol>
-<p>谷歌的 V8 JavaScript 引擎的编译流程与之非常相似。不过，V8 包含一个额外的“非优化”编译器，该编译器于 2021 年新增。现在，V8 的每个组件都有特定的名称，它们如下：</p>
+<p>先不用记住每条指令的含义。这里真正重要的是：</p>
+<blockquote>
+<p>JavaScript 在 V8 里不会直接变成 CPU 机器码，而是会先变成字节码，再交给解释器执行。</p>
+</blockquote>
+<h3 id="3-compiler：热点代码会被进一步优化" tabindex="-1"><a class="headerlink" href="#3-compiler：热点代码会被进一步优化" aria-hidden="true"></a> 3. Compiler：热点代码会被进一步优化</h3>
+<p>解释执行足够灵活，但也会有额外开销。于是当某些函数足够“热”时，编译器就会介入。</p>
+<p>在经典 V8 流水线里，你可以把角色理解成：</p>
 <ul>
-<li><strong>Ignition：</strong>V8 的快速底层寄存器解释器，用于生成字节码</li>
-<li><strong>SparkPlug：</strong>V8 的新型非优化（non-optimizing） JavaScript 编译器，它通过迭代bytecode并为每个访问到的bytecode生成机器代码（machine code），从字节码进行编译。</li>
-<li><strong>TurboFan：</strong>V8 的优化编译器（optimizing compiler），它使用更多、更复杂的代码优化功能将bytecode翻译成machine code。它还包含 JIT（Just-In-Time）编译功能。</li>
+<li><code>Ignition</code>：解释器，负责生成和执行字节码。</li>
+<li><code>Sparkplug</code>：基线编译器，快速把字节码变成机器码。</li>
+<li><code>TurboFan</code>：优化编译器，负责更激进的优化。</li>
 </ul>
-<p>综上所述，V8编译流程的概览如下：</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319115925618.png" alt="image-20260319115925618" loading="lazy" decoding="async"></p>
-<p>现在，如果像编译器（compilers）和优化（optimizations）之类的概念或特性你现在还不太理解，也不用担心。这篇文章并不需要你完全理解整个编译流程，但你应该对引擎的整体工作原理有一个大致的了解。</p>
-<p>在此之前，如果你想了解更多关于管道（pipeline）的信息，建议观看“JavaScript Engines: The Good Parts<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>”，以获得更好的理解。</p>
-<p>目前，你只需要理解这个编译流程中的一点：解释器（interpreter）是一个“栈式机器（stack machine）”，或者说本质上是一个虚拟机（VM），bytecode就是在这个虚拟机中执行的。而对于Ignition（V8的interpreter）来说，它实际上是一个带有累加寄存器的“寄存器式机器（register machine）”。Ignition仍然使用栈，但它更倾向于将数据存储在寄存器中以提高速度。</p>
-<p>建议阅读“Understanding V8’s Bytecode<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>”和“Firing up the Ignition Interpreter<sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>”，以便更好的掌握这些概念。</p>
-<h2 id="javascript和v8内部机制" tabindex="-1"><a class="headerlink" href="#javascript和v8内部机制" aria-hidden="true"></a> JavaScript和V8内部机制</h2>
-<p>现在我们已经对 JavaScript 引擎及其编译器管道的结构有了一些基本的了解，是时候深入了解 JavaScript 本身的内部结构，看看 V8 如何在内存中存储和表示 JavaScript 对象，以及它们的值和属性。</p>
-<p>如果你想利用 V8 以及其他 JavaScript 引擎中的漏洞，那么理解这一部分<strong>至关重要</strong> 。因为事实证明，所有主流引擎对 JavaScript 对象模型的实现方式都大同小异。</p>
-<p>众所周知，JavaScript 是一种动态类型语言。这意味着类型信息与运行时值相关联，而不是像 C++ 那样与编译时变量相关联。因此，JavaScript 中的任何对象都可以在运行时轻松修改其属性。<a target="_blank" rel="noopener" href="https://262.ecma-international.org/6.0/#sec-ecmascript-data-types-and-values">JavaScript类型系统</a>定义了诸如 <code>Undefined</code>、<code>Null</code>、<code>Boolean</code>、<code>String</code>、<code>Symbol</code>、<code>Number</code> 和 <code>Object</code>（包括<code>arrays</code>和<code>functions</code>）等数据类型。</p>
-<p>简单来说，这意味着什么？嗯，这通常意味着，与 C++ 不同，JavaScript 中的对象或基本类型，例如 <code>var</code> 可以在运行时改变其数据类型。例如，让我们在 JavaScript 中创建一个名为 <code>item</code> 新变量，并将其值设置为 <code>42</code> 。</p>
-<p>通过在 <code>item</code> 变量上使用<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">typeof运算符</a>，我们可以看到它返回其数据类型——即 <code>number</code> 。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319144426814.png" alt="image-20260319144426814" loading="lazy" decoding="async"></p>
-<p>如果我们将 <code>item</code> 设置为字符串，然后检查它的数据类型，会发生什么情况？</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319144525574.png" alt="image-20260319144525574" loading="lazy" decoding="async"></p>
-<p>你看， <code>item</code> 变量现在被设置为 <code>string</code> 类型，而不是 <code>number</code> 类型。这就是 JavaScript 的“动态（dynamic）”特性。与 C++ 不同，如果我们尝试创建一个 <code>int</code> 或整数类型的变量，然后再尝试将其设置为字符串类型，就会失败——就像这样：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> item = <span class="number">3</span>;</span><br><span class="line">item = <span class="string">&quot;Hello!&quot;</span>; <span class="comment">// error: invalid conversion from &#x27;const char*&#x27; to &#x27;int&#x27;</span></span><br><span class="line"><span class="comment">//     ^~~~~~~~</span></span><br></pre></td></tr></table></figure>
-<p>虽然这在 JavaScript 中很酷，但它确实给我们带来了一个问题。V8 和 Ignition 是用 C++ 编写的，因此Interpreter和Compiler需要弄清楚 JavaScript 打算如何使用某些数据。这对于高效的代码编译至关重要，尤其是在 C++ 中，像 <code>int</code> 和 <code>char</code> 这样的数据类型占用的内存大小不同。</p>
-<p>除了效率之外，这对于安全性也至关重要，因为如果Interpreter和Compiler错误地 “interpret”了 JavaScript 代码，导致我们得到的是一个字典对象（dictionary object）而不是数组对象（array object），那么我们就遇到了类型混淆漏洞（Type Confusion vulnerability）。</p>
-<p>那么 V8 如何将所有这些信息与每个运行时值一起存储，引擎又是如何保持高效的呢？？</p>
-<p>在 V8 中，这是通过使用一种名为<strong>Map</strong>的专用信息类型对象来实现的（不要与<a target="_blank" rel="noopener" href="https://262.ecma-international.org/6.0/#sec-map-objects">Map Objects</a>混淆了）,它也被称为<strong>“Hidden Classs”</strong>。有时你可能会听到<strong>Map</strong>被称为<strong>“Shape”</strong>，尤其是在 Mozilla 的 SpiderMonkey JavaScript 引擎中。</p>
-<p>V8 还使用一种称为指针压缩（pointer compression）或指针标记（pointer tagging）的内存技术来减少内存消耗，并允许 V8 将内存中的任何值表示为指向对象的指针。</p>
-<p>但是，在我们深入研究所有这些功能的细节之前，我们首先必须了解什么是 JavaScript 对象以及它们在 V8 中是如何表示的。</p>
-<h2 id="object-representation-对象表示" tabindex="-1"><a class="headerlink" href="#object-representation-对象表示" aria-hidden="true"></a> Object Representation 对象表示</h2>
-<p>在 JavaScript 中，对象本质上是一组属性的集合，这些属性以键值对的形式存储——这意味着对象本质上类似于字典（dictionaries）。对象可以是数组（Arrays）、函数（Functions）、布尔值（Booleans）、正则表达式（RegExp）等等。</p>
-<p>在JavaScript中，每个对象都关联着属性（properties），<strong>属性可以简单地理解为定义对象特征的变量。</strong>例如，一个新创建的<code>car</code>对象可以拥有诸如<code>make</code>、<code>model</code>和<code>year</code>之类的属性，这些属性有助于定义这辆<code>car</code>。你可以通过简单的点号运算符（例如<code>objectName.propertyName</code>）或方括号运算符（例如<code>objectName['propertyName']</code>）来访问对象的属性。</p>
-<p>此外，每个对象的属性都映射到<a target="_blank" rel="noopener" href="https://tc39.es/ecma262/#sec-property-attributes">属性特性</a>（property attributes），这些特性用于定义和解释对象属性的状态。下面展示了JavaScript对象中这些属性特性的示例。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319200419733.png" alt="image-20260319200419733" loading="lazy" decoding="async"></p>
-<p>现在我们对对象有了一些了解，下一步是了解对象在内存中的结构以及它的存储位置。</p>
-<p>每当创建一个对象的时，V8都会创建一个<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/js-objects.h;l=327?q=JSObject&amp;ss=chromium%2Fchromium%2Fsrc:v8%2F">新的<code>JSObject</code>对象</a>，并在堆上为其分配内存。该对象的值是指向<code>JSObject</code>，其结构中包含以下内容：</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319115925618.png" alt loading="lazy" decoding="async"></p>
+<p>这一篇不深入讲 JIT 优化细节，但有一件事需要先记住：</p>
+<blockquote>
+<p>V8 想要“快”，就必须知道对象长什么样、属性放在哪、数组里装的是什么类型。</p>
+</blockquote>
+<p>这正是后面 <code>Map</code>、<code>Properties</code>、<code>Elements</code> 这些结构存在的原因。</p>
+<h2 id="为什么-javascript-的“动态性”会给引擎带来困难" tabindex="-1"><a class="headerlink" href="#为什么-javascript-的“动态性”会给引擎带来困难" aria-hidden="true"></a> 为什么 JavaScript 的“动态性”会给引擎带来困难</h2>
+<p>JavaScript 是动态类型语言。类型不是绑定在变量名上的，而是绑定在运行时值上的。</p>
+<p>例如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> item = <span class="number">42</span>;</span><br><span class="line"><span class="keyword">typeof</span> item;  <span class="comment">// &quot;number&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319144426814.png" alt loading="lazy" decoding="async"></p>
+<p>然后你完全可以在运行时把它改成字符串：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">item = <span class="string">&quot;Hello!&quot;</span>;</span><br><span class="line"><span class="keyword">typeof</span> item;  <span class="comment">// &quot;string&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319144525574.png" alt loading="lazy" decoding="async"></p>
+<p>这在 JavaScript 里很正常，但对 V8 这种用 C++ 写的引擎来说就不那么轻松了。因为它需要在运行时持续判断：</p>
 <ul>
-<li>
-<p><strong>Map：</strong>指向<strong>HiddenClass</strong>对象的指针，详细说明对象的<strong>Shape</strong>或者结构。</p>
-</li>
-<li>
-<p><strong>Properties：</strong>指向包含<strong>命名属性（named properties）</strong>的对象的指针。</p>
-</li>
-<li>
-<p><strong>Elements：</strong>指向包含<strong>编号属性（numbered properties）</strong>的对象的指针。</p>
-</li>
-<li>
-<p><strong>In-Object Properties：</strong>指向在对象<strong>初始化时</strong>定义的命名属性（named properties）的指针。</p>
-</li>
+<li>这个值到底是对象、整数、浮点数还是字符串？</li>
+<li>这个对象当前有哪些属性？</li>
+<li>这些属性存在哪？</li>
+<li>这个数组里装的是整数、double，还是对象引用？</li>
 </ul>
-<p>为了帮助更好的理解，下图详细说明了基本的V8 JSObject在内存中的结构。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319202310194.png" alt="image-20260319202310194" loading="lazy" decoding="async"></p>
-<p>观察<code>JSObject</code>的结构，我们可以看到属性（Properties）和元素（Elements）分别存储在两个独立的<code>FixedArray</code>数据结构中，这使得添加和访问Properties或Elements更加高效。</p>
-<p><strong>Elements结构主要存储非负整数（non-negative）或数组索引（array-indexed）属性（keys），这些通常被称为元素（Elements）。</strong></p>
-<p><strong>Properties结构，如果对象的Property键不是非负整数，例如string，则该属性将存储为内联对象属性（Inline-Object Property）（稍后会解释）或者存储在Elements结构中，有时也称为对象的属性后备存储（objects properties backing store）。</strong></p>
-<p>需要注意的是，虽然命名属性（named properties）的存储方式与数组元素类似，但它们在属性访问方面却并不相同。与元素不同，我们不能直接使用键（key）来查找命名属性（named properties）在属性数组中的位置；我们需要一些额外的元数据（additional metadata）。如前所述，V8使用一个名为<code>HiddenClass</code>或<code>Map</code>特殊对象，该对象与每个<code>JSObject</code>相关联。这个<code>Map</code>存储了<code>JavaScript</code>对象的所有信息，从而使V8能够“动态（dynamic）”运行。</p>
-<p>因此，在进一步了解<code>JSObject</code>结构及其属性之前，我们首先需要了解V8中的<code>HiddenClass</code>是如何工作的。</p>
-<h2 id="hiddenclass（map）and-shape-transitions" tabindex="-1"><a class="headerlink" href="#hiddenclass（map）and-shape-transitions" aria-hidden="true"></a> HiddenCLass（Map）and Shape Transitions</h2>
-<p>如前所述，我们知道 JavaScript 是一种动态类型语言。正因如此，JavaScript 中没有类的概念。在 C++ 中，如果你创建了一个类或对象，就无法像在 JavaScript 中那样动态地添加或删除它的方法和属性。在 C++ 和其他面向对象语言中，你可以将对象属性存储在固定的内存偏移量中，因为给定类的实例的对象布局永远不会改变，但在 JavaScript 中，对象布局会在运行时动态变化。为了解决这个问题，JavaScript 使用了一种称为“ <a target="_blank" rel="noopener" href="https://262.ecma-international.org/6.0/#sec-objects">基于原型的继承</a> ”的机制，其中每个对象都引用一个原型对象（prototype object）或 “ shape ”，并继承其属性。</p>
-<p>那么V8是如何存储对象的布局的呢？</p>
-<p>这时就需要用到<code>HiddenClass</code>或<code>Map</code>了。<code>HiddenClass</code>的工作方式类似于固定对象布局，其中属性值（或指向这些属性的指针）可以存储在特定的内存结构中，然后通过<strong>固定的偏移量</strong>进行访问。这些偏移量由<a target="_blank" rel="noopener" href="https://v8.dev/docs/torque">Torque</a>生成，可以在V8的<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:out/win-Debug/gen/v8/torque-generated/src/objects/">/torque-generated/src/objects/*.tq.inc</a>目录中找到。这实际相当于对象的“shape”标识符，从而使V8能够更好地优化JavaScript代码并缩短属性访问时间。</p>
-<p>如上文<code>JSObject</code>示例中所示，<code>Map</code>是对象中的另一种数据结构。该<code>Map</code>结构包含以下信息：</p>
+<p>如果这些判断和假设出了错，性能会下降；如果优化阶段基于错误假设生成了机器码，甚至可能演变成安全漏洞。</p>
+<blockquote>
+<p>从漏洞分析角度看，很多类型混淆问题，本质上就是“引擎对对象布局或值类型的理解和真实情况不一致”。</p>
+</blockquote>
+<h2 id="javascript-对象在-v8-里是怎么表示的" tabindex="-1"><a class="headerlink" href="#javascript-对象在-v8-里是怎么表示的" aria-hidden="true"></a> JavaScript 对象在 V8 里是怎么表示的</h2>
+<p>要理解这一点，先从 JavaScript 世界的“对象”说起。</p>
+<p>在语言层面，对象本质上是一组键值对。它可以是普通对象、数组、函数、布尔包装对象、正则对象等等。</p>
+<p>每个属性还带有一组属性特性，比如：</p>
 <ul>
-<li>对象的动态类型，例如String、JSArray、HeapNumber等。
+<li><code>value</code></li>
+<li><code>writable</code></li>
+<li><code>enumerable</code></li>
+<li><code>configurable</code></li>
+</ul>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319200419733.png" alt loading="lazy" decoding="async"></p>
+<p>但站在 V8 内部看，一个 JavaScript 对象不会直接以“高层语义”形式存在。每当创建一个对象时，V8 都会在堆上分配一个 <code>JSObject</code>。</p>
+<p>一个简化后的 <code>JSObject</code> 可以先记成这样：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">JSObject &#123;</span><br><span class="line">  map         -&gt; 对象的结构说明书</span><br><span class="line">  properties  -&gt; 命名属性的存储区</span><br><span class="line">  elements    -&gt; 索引属性的存储区</span><br><span class="line">  in-object fields -&gt; 直接放在对象内部的属性槽</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319202310194.png" alt loading="lazy" decoding="async"></p>
+<p>先记住一句最重要的话：</p>
+<blockquote>
+<p><code>Map</code> 决定“属性在哪”，<code>Properties</code> / <code>Elements</code> 决定“值放在哪”。</p>
+</blockquote>
+<h2 id="map-是什么：v8-里的-hidden-class" tabindex="-1"><a class="headerlink" href="#map-是什么：v8-里的-hidden-class" aria-hidden="true"></a> <code>Map</code> 是什么：V8 里的 Hidden Class</h2>
+<p>在 V8 中，<code>Map</code> 不是 ECMAScript 里的 <code>Map</code> 对象，而是另一种内部数据结构。它也常被称为：</p>
 <ul>
-<li>V8中的对象类型列在<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/objects.h;l=37;bpv=0;bpt=1">/src/objects/objects.h</a>文件中。</li>
+<li>Hidden Class</li>
+<li>Shape</li>
 </ul>
-</li>
-<li>对象的大小（对象内部属性（in-object properties）等）</li>
-<li>对象属性及其存储位置</li>
-<li>数组元素类型</li>
-<li>对象的Prototype或Shape（如果有的话）</li>
+<p>它的职责可以粗略概括为：</p>
+<blockquote>
+<p>描述一个对象当前的结构和布局。</p>
+</blockquote>
+<h3 id="map-里记录了什么" tabindex="-1"><a class="headerlink" href="#map-里记录了什么" aria-hidden="true"></a> <code>Map</code> 里记录了什么</h3>
+<p>一个 <code>Map</code> 通常会记录这些信息：</p>
+<ul>
+<li>对象类型，例如 <code>JSObject</code>、<code>JSArray</code>、<code>HeapNumber</code></li>
+<li>对象大小</li>
+<li>对象有多少个 in-object 属性槽</li>
+<li>命名属性的布局信息</li>
+<li>数组元素的 kind</li>
+<li>原型相关信息</li>
 </ul>
-<p>为了帮助理解Map对象在内存中的结构，我在下图提供了一个较为详细的V8 Map结构图。更多关于结构的信息可以在V8的源代码中找到，具体位置在 <a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/map.h;l=122-201">/src/objects/map.h</a> 和 <a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/descriptor-array.h">/src/objects/descriptor-array.h </a>源文件中。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319214218205.png" alt="image-20260319214218205" loading="lazy" decoding="async"></p>
-<p>现在我们了解了Map的布局，接下来解释一下我们经常提到的“Shape”。如你所知，每个新创建的JSObject都会有一个hidden class，其中包含每个属性的内存偏移量。有趣的是，如果该对象的属性被创建、删除或动态更改，则会创建一个新的hidden class，这个新的hidden class保留了现有属性的信息，并包含了新属性的内存偏移量。<strong>请注意，只有在添加新属性时才会创建新的hidden class，添加数组索引属性不会创建新的hidden class。</strong></p>
-<p>那么，这在实践中是如何体现的呢？我们以以下代码为例：</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319214218205.png" alt loading="lazy" decoding="async"></p>
+<p>所以如果把它类比成静态语言中的概念，<code>Map</code> 更接近于：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">“这个对象的内存布局说明书”</span><br></pre></td></tr></table></figure>
+<p>而不是“属性值仓库”本身。</p>
+<h3 id="为什么-map-存的是偏移，不是值" tabindex="-1"><a class="headerlink" href="#为什么-map-存的是偏移，不是值" aria-hidden="true"></a> 为什么 <code>Map</code> 存的是偏移，不是值</h3>
+<p>假设你有两个对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123;<span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">var</span> obj2 = &#123;<span class="attr">x</span>: <span class="number">2</span>, <span class="attr">y</span>: <span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>它们的值不同，但结构相同：</p>
+<ul>
+<li>都有 <code>x</code></li>
+<li>都有 <code>y</code></li>
+<li>顺序也相同</li>
+</ul>
+<p>这就意味着，它们可以共享同一个 <code>Map</code>。如果每个对象都重复存一份完整的“属性名到属性位置”的描述，不仅浪费内存，也会拖慢访问速度。</p>
+<p>所以 V8 的做法是：</p>
+<ul>
+<li><code>Map</code> 只记录属性名及其偏移</li>
+<li>具体值存在对象本身或独立的 backing store 中</li>
+</ul>
+<p>也就是说，<code>Map</code> 更像这样：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x -&gt; offset 0</span><br><span class="line">y -&gt; offset 1</span><br></pre></td></tr></table></figure>
+<p>而不是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x -&gt; 1</span><br><span class="line">y -&gt; 2</span><br></pre></td></tr></table></figure>
+<h3 id="descriptorarray：命名属性布局的关键" tabindex="-1"><a class="headerlink" href="#descriptorarray：命名属性布局的关键" aria-hidden="true"></a> <code>DescriptorArray</code>：命名属性布局的关键</h3>
+<p><code>Map</code> 之所以能描述对象形状，关键就在于它关联的 <code>DescriptorArray</code>。</p>
+<p>可以把 <code>DescriptorArray</code> 理解成：</p>
+<blockquote>
+<p>“属性名 -&gt; 属性位置/属性描述” 的元数据表</p>
+</blockquote>
+<p>它里面保存的不是最终值，而是类似下面这种信息：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x -&gt; offset 0</span><br><span class="line">y -&gt; offset 1</span><br></pre></td></tr></table></figure>
+<p>于是 V8 就知道：对于所有共享这个 <code>Map</code> 的对象，<code>x</code> 应该去哪个槽位读，<code>y</code> 应该去哪个槽位读。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320143942738.png" alt loading="lazy" decoding="async"></p>
+<h2 id="对象形状是怎么变化的：shape-transition" tabindex="-1"><a class="headerlink" href="#对象形状是怎么变化的：shape-transition" aria-hidden="true"></a> 对象形状是怎么变化的：Shape Transition</h2>
+<p>JavaScript 对象不是静态的，运行时可以继续加属性：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123;&#125;;</span><br><span class="line">obj1.<span class="property">x</span> = <span class="number">1</span>;</span><br><span class="line">obj1.<span class="property">y</span> = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-<p>首先，我们创建一个名为<code>obj1</code>新对象，该对象会被创建并存储在V8的堆内存中。由于这是一个新创建的对象，显然需要创建一个hidden class，即使该对象尚未定义任何属性，这个hidden class也会被创建并存储在V8的堆内存中。为了便于示例，我们将这个初始hidden class称为 “C0”。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319220000868.png" alt="image-20260319220000868" loading="lazy" decoding="async"></p>
-<p>当执行到下一行代码并执行<code>obj1.x = 1</code>时，V8将创建一个名为 “C1” 的第二个hidden class，该类基于C0。C1是第一个用于描述属性 x 在内存中位置的hidden class。但是，<strong>它存储的不是指向 x 值的指针，而是 x 的偏移量，偏移量为 0</strong>。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319220904045.png" alt="image-20260319220904045" loading="lazy" decoding="async"></p>
-<p>这里为什么是一个对属性（property）的偏移，而不是它的值？？？🤔</p>
-<p>在V8中，这是一种优化技巧。Map对象在内存使用方面相对来说比较昂贵。如果我们把属性的键值对以字典形式存储在每个新创建的JSObject中，那么由于解析字典速度较慢，这将导致大量的计算开销！</p>
-<p>其次，如果创建一个新对象<code>obj2</code>，它与<code>obj1</code>共享相同的属性，例如<code>x</code>和<code>y</code>，会发生什么情况？即使它们的值可能不同，但这两个对象实际上共享了相同名称且顺序相同的属性，或者我们称之为相同的<strong>“Shape”</strong>。在这种情况下，将相同的属性名称存储在两个不同的位置会造成浪费。</p>
-<p>这正是V8速度快的原因：它经过优化，尽可能在结构相似的对象之间共享Map。由于相同结构的所有对象的属性名称相同且顺序一致，我们可以让多个对象指向内存中同一个HiddenClass，并<strong>通过属性偏移量而非值指针来访问它们</strong>。此外，由于Map和JSObject一样都是在HeapObject中分配内存，因此也便于垃圾回收。</p>
-<p>为了更好地解释这个概念，我们暂时跳出上面的例子，来看看HiddenClass的关键部分。HiddenClass中最重要的两个部分是 <strong><a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/descriptor-array.h">DescriptorArray</a></strong>和<strong>Int Field 3</strong>（第三个位字段），它们共同构成了Map的“Shape”。如果你回顾一下上面的 Map 结构，你会发现<strong>Int Field 3</strong>存储了属性的数量，而 DescriptorArray 则包含了关于已命名属性（named properties）的信息，例如属性名称(name)、值存储的位置（offset）以及属性的具体属性值（properties attributes）。</p>
-<p>例如，假设我们创建一个新对象<code>var obj { x : 1}</code>。<code>x</code> 属性将被存储在JavaScript对象的“对象内属性（In-Object properties）” 或 称“属性存储（Properties store）”。由于创建了一个新对象，同时也会创建一个新的HiddenClass。在该HiddenClass中，描述符数组（descriptor array）和Int Field 3将被填充。由于我们只有一个属性，Int Field 3会将<code>numberOfOwnDescriptors</code> 设置为 <code>1</code> ，然后描述符数组（descriptor array）会填充与属性<code>x</code>相关的详细信息，包括键（key）、详细信息（detail）和值（value）。该描述符（descriptor）的值（value）将被设置为<code>0</code>。</p>
-<p>为什么是<code>0</code>呢？因为对象内属性（In-Object properties）和属性存储（Properties store）本质上就是一个数组。因此，通过描述符的值设置为<code>0</code>，V8就知道对于任何相同类型的对象，key的value都将位于该数组的偏移量<code>0</code>处。</p>
-<p>下面可以看到我们刚才解释内容的直观示例：</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320143942738.png" alt="image-20260320143942738" loading="lazy" decoding="async"></p>
-<h2 id="v8调试" tabindex="-1"><a class="headerlink" href="#v8调试" aria-hidden="true"></a> V8调试</h2>
-<p>让我们看看在V8中会是什么样子。首先使用 <code>--allow-natives-syntax</code>参数启动<code>v8</code>，并执行以下JavaScript代码：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">d8&gt; </span><span class="language-bash">var obj1 = &#123;a: 1, b: 2, c: 3&#125;</span></span><br></pre></td></tr></table></figure>
-<p>完成后，我们将使用<code>%DebugPrint()</code>命令来显示对象的属性（properties）、映射（map）以及其他信息，例如实例描述符（instance descriptor）。执行后，注意以下事项：</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320201725825.png" alt="image-20260320201725825" loading="lazy" decoding="async"></p>
-<p><strong>黄色部分</strong>显示的是我们的对象<code>obj1</code>。<strong>红色部分</strong>显示的是指向HiddenClass或Map的指针。在该HiddenClass中，我们找到了指向<code>DescriptorArray</code>的实例描述符（instance descriptors）。使用<code>%DebugPrintPtr()</code>函数访问该数组的指针，我们可以看到该数组在内存中的更多细节，这些细节以<strong>蓝色显示</strong>。</p>
-<p>请注意，我们有3个属性，这与Map中instance descriptors部分的descriptors数量一致。在下方，我们可以看到descriptors数组保存着属性键，而<code>const data field</code>则保存着属性存储中对应属性值的偏移量。现在，如果我们沿着箭头从偏移量向上找到对象，我们会发现偏移量确实匹配，并且每个属性都已分配了正确的值。</p>
-<p>另外，请注意这些属性的右侧，您可以看到每个属性的<strong>location</strong> ；正如我之前提到的，这些属性位于<strong>in-object</strong> 。这几乎可以证明，这些偏移量指向的是对象内部（In-Object）和属性存储（Properties store）中的属性。</p>
-<p>好了，现在我们明白了为什么要使用偏移量（offset），让我们回到之前的HiddenClass示例。正如我们之前所说，通过向<code>obj1</code>添加属性<code>x</code>，我们现在会创建一个名为“C1”的新HiddenClass，其偏移量为<code>x</code>。由于我们创建了一个新的HiddenClass，V8会使用“类转换（class transition）”更新“C0”，该转换表明，如果创建了一个具有属性<code>x</code>的新对象，则HiddenClass应直接切换到“C1”。</p>
-<p>然后，当我们执行<code>obj1.y = 2</code>，这个过程会重复进行。此时会创建一个名为C2的新HiddenClass，并在C1中添加一个类转换，该转换声明对于任何具有属性<code>x</code>对象，如果添加了属性<code>y</code>，则HiddenClass应转换到C2。最终，所有这些类转换会形成一个称为“转换树（transition tree）”的结构。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320225406762.png" alt="image-20260320225406762" loading="lazy" decoding="async"></p>
-<p>此外，需要注意的是，类转换取决于属性添加到对象的顺序。因此，如果属性 z 是在属性 y 之后添加的，“Shape”将不再相同，也不会遵循从 C1 到 C2 的相同转换路径。取而代之的是，将创建一个新的HiddenClass，并添加一条从 C1 到 C2 的新转换路径来处理该新属性，从而进一步扩展转换树。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320232112033.png" alt="image-20260320232112033" loading="lazy" decoding="async"></p>
-<p>现在我们理解了这一点，让我们来看看当两个形状相同的对象共享一个 Map 时，对象在内存中的样子。</p>
-<p>首先，使用 <code>--allow-natives-syntax</code> 参数再次启动 <code>d8</code> ，然后输入以下两行 JavaScript 代码：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">d8&gt; <span class="keyword">var</span> obj1 = &#123;<span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span>&#125;;</span><br><span class="line">d8&gt; <span class="keyword">var</span> obj2 = &#123;<span class="attr">x</span>: <span class="number">2</span>, <span class="attr">y</span>: <span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure>
-<p>完成后，我们将再次使用 <code>%DebugPrint()</code> 命令对每个对象进行测试，以显示它们的properties、map和其他信息。执行后，请注意以下事项：</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321101201559.png" alt="image-20260321101201559" loading="lazy" decoding="async"></p>
-<p>在<strong>黄色区域</strong>，我们可以看到两个对象<code>obj1</code>和<code>obj2</code>。请注意，它们都是<code>JS_OBJECT_TYPE</code>类型，但在堆内存中拥有不同的地址，因为它们显然是具有不同属性的独立对象。</p>
-<p>我们知道，这两个对象shape相同，因为它们都包含顺序相同的<code>x</code>和<code>y</code>属性。在这种情况下，在<strong>蓝色区域</strong>，我们可以看到这些属性位于同一个<code>FixedArray</code>中，<code>x</code>和<code>y</code>的偏移量分别为0何1。这是因为，正如我们所知，shape相同的对象共享一个HiddenClass（<strong>红色区域</strong>），该HiddenClass具有相同的描述符数组（descriptor array）。</p>
-<p>从图中可见，对象的大多数属性和Map地址都是相同的，因为这两个对象共享同一个Map。</p>
-<p>现在我们来关注一下<strong>绿色高亮</strong>显示的<code>back_pointer</code>。回顾一下我们之前提到的从 C0 到 C2的映射转换示例，你会注意到我们提到过一个叫做“转换树（transition tree）”的东西。每次创建一个新的HiddenClass时，V8都会在后台创建一个transition tree，并将新旧HiddenClass连接起来。这个<code>back_pointer</code>就是transition tree的一部分，因为它指向了转换发生的父映射。这样，V8就可以沿着<code>back_pointer</code>链遍历映射，直到找到保存对象属性的映射，即它们的shape。</p>
-<p>下面用<code>d8</code>来深入了解一下它的工作原理。我们将再次使用<code>%DebugPrintPtr()</code>命令来打印V8中地址指针的详细信息。这次我们将使用<code>back_pointer</code>地址来查看其详细信息。完成后，你的输出应该和我的类似。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321104344785.png" alt="image-20260321104344785" loading="lazy" decoding="async"></p>
-<p>在<strong>绿色部分</strong>，我们可以看到<code>back_pointer</code>解析到内存中的<code>JS_OBJECT_TYPE</code>，而它实际上是一个Map！这个Map就是我们之前讨论的C1 Map。我们知道Map如何回溯到它之前的Map，但是当添加属性时，它如何知道要转换到哪个Map呢？如果我们仔细观察Map中的信息，就会发现实例描述符下方有一个<strong>红色</strong>的<strong>”transitions“</strong>部分。这个transitions部分包含了Map结构中原始转换指针（Raw Transition Pointer）指向的信息。</p>
-<p>在 V8 中，Map 的转换使用名为 <a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/transitions.h?q=TransitionsAccessor&amp;ss=chromium%2Fchromium%2Fsrc:v8%2F">TransitionsAccessor </a>的组件。这是一个辅助类，它封装了 Map 在其 <code>Map::kTransitionsOrPrototypeInfo</code> 字段（也称为我们之前提到的Raw Transition Pointer）中存储与其他 Map 转换的各种方式。该指针指向一个名为 <a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/transitions.h?q=TransitionArray&amp;ss=chromium%2Fchromium%2Fsrc:v8%2F">TransitionArray</a> 的对象，它本身也是一个 <code>FixedArray</code> ，用于保存 Map 属性更改的转换信息。</p>
-<p>回顾<strong>红色</strong>高亮部分，我们可以看到该转换数组（transition array）中只有一个转换（transition）。在该数组中，我们可以看到<code>transitions #1</code>详细描述了当<code>y</code>属性添加到对象时没发生的transition。如果添加了<code>y</code>属性，他会指示Map更新为存储在<code>0x2b2508207aa1</code>的Map，该Map与我们当前的Map匹配！如果存在另一个transition，例如，将<code>z</code>属性添加到<code>x</code>而不是<code>y</code>属性，那么该transition array中将会有2个元素，分别指向该对象shape对应的Map。</p>
-<p>那么，如果我们删除一个属性，transition tree会发生什么变化呢？在这种情况下，V8每次删除属性时都会创建一个新的Map，这其中存在一些微妙之处，我们知道，Map在内存使用方面相对昂贵，因此，当属性删除到一定程度时，继承（inheriting）和维护transition tree的成本会越来越高，速度也会越来越慢。如果删除对象的最后一个属性，Map只会调整其back pointer，使其返回到之前的Map，而不会创建一个新的Map。但是，<strong>如果我们删除对象的中间属性（middle property）会发生什么呢？在这种情况下，每当我们添加过多属性或删除非最后一个元素时，V8都会放弃维护transition tree，并切换到一种称为字典模式（dictionary mode）的较慢模式。</strong></p>
-<p>那么，什么是dictionary mode呢？既然我们已经了解了 V8 如何使用HiddenClass来跟踪对象的shape，现在我们可以回过头来，进一步了解这些Properties和Elements在 V8 中是如何存储和处理的。</p>
-<h2 id="properties" tabindex="-1"><a class="headerlink" href="#properties" aria-hidden="true"></a> Properties</h2>
-<p>如前所述，我们知道JavaScript对象有两种基本属性：命名属性（named properties）和索引元素（indexed elements）。下面首先介绍named properties。</p>
-<p>如果你还记得我们之前关于映射（Maps）和描述符数组（Descriptor Array）的讨论，我们提到过named properties可以存储在对象内部（In-Object）或属性数组（Property array）中。</p>
-<p>我们所说的对象内部属性（In-Object Property）是什么呢？</p>
-<p>在 V8 中，这种模式是一种非常快速的直接在对象上存储属性的方法，因为无需任何间接层即可访问属性。虽然速度很快，但它也受限于对象的初始大小。如果添加的属性数量超过了对象的空间，则新属性将被存储在属性存储区（properties store）中——这会增加一层间接层（one level of indirection）。</p>
-<p>一般来说，JavaScript引擎使用两种”模式（modes）“来存储属性，它们被分别称为：</p>
+<p>V8 不会在原地“模糊修改”原有形状，而是会随着属性增加，不断让对象沿着一条 transition path 演进。</p>
+<p>你可以把上面这个过程理解成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">C0: &#123;&#125;</span><br><span class="line">  -- add x --&gt;</span><br><span class="line">C1: &#123;x&#125;</span><br><span class="line">  -- add y --&gt;</span><br><span class="line">C2: &#123;x, y&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319220000868.png" alt loading="lazy" decoding="async"></p>
+<p>继续加 <code>x</code> 后，对象会从 <code>C0</code> 过渡到 <code>C1</code>：</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260319220904045.png" alt loading="lazy" decoding="async"></p>
+<p>再加 <code>y</code>，就会继续过渡到下一个 <code>Map</code>：</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320225406762.png" alt loading="lazy" decoding="async"></p>
+<p>这些过渡连起来，就形成了一棵 transition tree。</p>
+<h3 id="属性顺序也会影响-shape" tabindex="-1"><a class="headerlink" href="#属性顺序也会影响-shape" aria-hidden="true"></a> 属性顺序也会影响 Shape</h3>
+<p>这一点非常重要。</p>
+<p>下面两个对象看起来只是“属性一样”，但它们的 shape 不一定相同：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = &#123;&#125;;</span><br><span class="line">a.<span class="property">x</span> = <span class="number">1</span>;</span><br><span class="line">a.<span class="property">y</span> = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> b = &#123;&#125;;</span><br><span class="line">b.<span class="property">y</span> = <span class="number">2</span>;</span><br><span class="line">b.<span class="property">x</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>原因是属性添加顺序不同，transition path 也不同。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320232112033.png" alt loading="lazy" decoding="async"></p>
+<p>从优化角度看，这就是为什么“结构稳定、构造顺序稳定”的对象更容易被优化。</p>
+<h2 id="用-d8-看看-map-到底长什么样" tabindex="-1"><a class="headerlink" href="#用-d8-看看-map-到底长什么样" aria-hidden="true"></a> 用 <code>d8</code> 看看 <code>Map</code> 到底长什么样</h2>
+<p>只讲概念很容易发虚，最好的方式还是直接看 V8 的调试输出。</p>
+<p>先在 <code>d8</code> 里创建一个对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123;<span class="attr">a</span>: <span class="number">1</span>, <span class="attr">b</span>: <span class="number">2</span>, <span class="attr">c</span>: <span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>然后用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%<span class="title class_">DebugPrint</span>(obj1)</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260320201725825.png" alt loading="lazy" decoding="async"></p>
+<p>这个输出里最值得关注的几块信息是：</p>
 <ul>
-<li><strong>Fast Properties：</strong> 通常用于定义存储在线性属性存储（linear properties store）中的属性。这些属性可以通过访问HiddenClass中的描述符数组（Descriptor Array），并根据在属性存储（properties store）中的索引查找来访问。</li>
-<li><strong>Slow Properties：</strong>也称为“dictionary mode”，当添加或删除的属性过多，导致大量内存开销时，就会使用此模式。因此，具有慢属性（slow properties）的对象会使用一个独立的字典（a self-contained dictionary）作为属性存储。所有属性的元信息（meta information）不再存储在HiddenClass中的描述符数组（Descriptor Array）中，而是直接存储在属性字典中（properties dictionary）。V8 将使用哈希表（hash table）来访问这些属性。</li>
+<li>对象本身的地址</li>
+<li><code>map</code> 指针</li>
+<li><code>instance descriptors</code></li>
+<li>各个属性的 <code>location</code></li>
 </ul>
-<p>下面可以查看 Map 在过渡到（transitions to）具有自包含字典（self-contained dictionary）的慢属性（slow Properties）时的示例。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321232028666.png" alt="image-20260321232028666" loading="lazy" decoding="async"></p>
-<p>这里还需要注意一点。形状过渡（Shape transitions）仅适用于快速属性（Fast Properties），而不适用于慢速属性（Slow Properties），因为字典形状（dictionary shapes）仅供单个对象使用，因此无法在不同对象之间共享，因而没有过渡（transitions）效果。</p>
-<h2 id="elements" tabindex="-1"><a class="headerlink" href="#elements" aria-hidden="true"></a> Elements</h2>
-<p>好了，至此，我们已经基本讲完了命名属性（named properties）。现在让我们来看看数组索引属性（array indexed properties）或元素（elements）。你可能会认为索引属性（indexed properties）的处理会更简单…但是你的想法是错误的。元素（elements）的处理并不比命名属性（named properties）简单。尽管所有索引属性（indexed properties）都保存在元素存储区（elements store）中，但V8会非常精确地区分每个数组包含的元素类型。实际上，该存储区可以跟踪大约<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/objects/elements-kind.h;l=78">21种不同的元素类型！</a>这使得V8能够针对特定类型的元素（elements）优化对数组（array）的任何操作。</p>
-<p>这是什么意思你？下面来看这行代码的例子：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br></pre></td></tr></table></figure>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260322170624371.png" alt="image-20260322170624371" loading="lazy" decoding="async"></p>
-<p>在JavaScript中，如果我们对这个数组执行<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">typeof操作</a>，它会判定该数组包含<code>numbers</code>因为JavaScript无法区分整数（integer）、浮点数（float）和双精度浮点数（double）。然而，V8的区分更加精确，会将该数组归类为<code>PACKED_SMI_ELEMENTS</code>，其中<code>SMI</code>指的是小整数（Small Integers）。</p>
-<p>那么，SMI到底有什么用呢？V8会跟踪每个数组包含哪些类别的元素。然后，它会利用这些信息来优化针对该类型元素的数组操作。在V8中，我们需要了解三种不同的元素类型，它们分别是：</p>
+<p>你会看到：</p>
 <ul>
-<li><strong><code>SMI_ELEMENTS</code>：</strong>用于表示包含小整数（例如1、2、3等）的数组。</li>
-<li><strong><code>DOUBLE_ELEMENTS</code>：</strong>用于表示包含浮点数（floating-point）的数组，例如4.5、5.5等。</li>
-<li><strong><code>ELEMENTS</code>：</strong>用于表示包含字符串字面量元素（string literal elements）或无法表示为<code>SMI</code>或<code>Double</code>例如：<code>x</code>的数组。</li>
+<li>对象关联了某个 <code>Map</code></li>
+<li><code>Map</code> 里有对应的 <code>DescriptorArray</code></li>
+<li>属性可能位于 <code>in-object</code></li>
 </ul>
-<p>那么V8是如何使用数组的这些元素类型的呢？它们是针对整个数组设置的，还是针对每个元素设置的？</p>
-<p>答案是，元素类型是针对整个数组设置的。我们需要记住的重要一点是，元素类型（element kinds）之间存在一个”转换（transition）“，这个transition只能单向进行，我们可以采用”自顶向下（top down）“的方法来查看这个转换树（transition tree）。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260322173329762.png" alt="image-20260322173329762" loading="lazy" decoding="async"></p>
-<p>例如，让我们以之前提到的数组示例为例：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_SMI_ELEMENTS</span></span><br></pre></td></tr></table></figure>
-<p>如你所见，V8 将此数组的元素类型跟踪为打包的<code>SMI</code>（packed SMI），packed SMI是什么？这个后面会说到。现在，如果我们添加一个浮点数（floating-point number），则数组元素的类型将“转换（transition）”为 Double元素类型，如下所示。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>];</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_SMI_ELEMENTS</span></span><br><span class="line">array.<span class="title function_">push</span>(<span class="number">3.337</span>)</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_DOUBLE_ELEMENTS</span></span><br></pre></td></tr></table></figure>
-<p>这种transition的原因很简单，就是为了优化运算。因为我们使用的是浮点整数（floating-point integer），V8需要能够对这些值进行优化，所以它向下过渡（transitions）到<code>DOUBLES</code>，因为可以用<code>SMI</code>表示的数字集合是可以用双精度浮点（double）表示的数字集合的子集。</p>
-<p>由于元素类型的transitions是单向的，一旦数组被标记为较低类型（lower elements）的元素，例如<code>PACKED_DOUBLES_ELEMENTS</code>，即使我们替换或删除浮点整数，它也无法再”升级“（go back “up”）回<code>PACKED_SMI_ELEMENTS</code>。一般来说，创建数组时指定的元素类型越具体，可实现的优化就越精细（fine-grained）。元素类型越低，对对象的操作速度可能就越慢。</p>
-<p>接下来，我们还需要了解V8在跟踪索引被删除或为空时，元素后端存储方式的第一个主要区别。这些区别是：</p>
-<ul>
-<li><strong>PACKED：</strong>用于表示密集数组（dense）,意味着数组中的所有可用元素都已填充。</li>
-<li><strong>HOLEY：</strong>用于表示数组中存在”空位（holes）“，例如索引元素被删除或未定义时。这也被称为使数组”稀疏“（making an array ”sparse“）。</li>
-</ul>
-<p>那么让我们仔细看看。例如，我们来看一下两个数组：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> packed_array = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">5.5</span>,<span class="string">&#x27;x&#x27;</span>];</span><br><span class="line"><span class="comment">// Elements Kind: PACKED_ELEMENTS</span></span><br><span class="line"><span class="keyword">const</span> holey_array = [<span class="number">1</span>,<span class="number">2</span>,,<span class="number">5</span>,<span class="string">&#x27;x&#x27;</span>];</span><br><span class="line"><span class="comment">// Elements Kind: HOLEY_ELEMENTS</span></span><br></pre></td></tr></table></figure>
-<p>正如你所见，<code>holey_array</code>数组中存在”空洞（holes）“，因为我们忘记在索引上加上<code>3</code>，而是将其留空或设为<code>undefined</code>。V8之所以区分这两种数组，是因为对<code>packed arrays</code>的操作可以比对<code>holey_array</code>的操作进行更积极的优化。</p>
-<p>如果你想了解更多相关信息，我建议你观看Mathias Bynens的演讲&quot;V8 internals for JavaScript Developers&quot;<sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>，其中对此有非常详细的讲解。</p>
-<p>V8还实现了前面提到的<code>PACKED</code>和<code>HOLEY</code>数组上的元素类型转换，从而形成一个“晶格（lattice）”。下面是V8博客中对这些转换的简单可视化。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323142108914.png" alt="image-20260323142108914" loading="lazy" decoding="async"></p>
-<p>再次强调，元素类型在这个lattice中，只能单向向下转换。例如，向SMI数组（SMI array）中添加一个浮点数（floating-point）会将其标记为双精度浮点数（double）；类似的，一旦数组中出现空位（hole），即使之后填充了该空位，它也会被永久标记为空位。</p>
-<p>V8对元素（elements）还有第二个需要我们理解的重要区别。在元素存储中（in the element backing stores），元素也可以是fast模式或dictionary-mode（slow）。快速元素（fast elements）就是一个数组，其中属性索引（property index）映射到元素存储（elements store）中对应项的偏移量。至于慢速数组（slow array），这种情况通常发生在只有少量条目被使用的大型稀疏数组（large sparse arrays）中。在这种情况下，数组存储（array backing store）会使用类似属性存储（properties store）中的字典表示（dictionary representation）来节省内存，但会牺牲一些性能。该字典会将键（key）、值（value）和元素属性存储（element attributes）在字典三元组值中。</p>
-<h2 id="viewing-chrome-objects-in-memory" tabindex="-1"><a class="headerlink" href="#viewing-chrome-objects-in-memory" aria-hidden="true"></a> Viewing Chrome Objects In-Memory</h2>
-<p>到目前为止，我们已经探讨了许多关于JavaScript和V8内部机制的复杂主题。希望你现在对V8底层运行的一些概念已经有了一定的了解。既然我们已经掌握了这些知识，接下来就让我们通过GDB来观察 V8 及其对象（objects）在内存中的运行情况，以及它们使用了哪些优化。这里我使用的是Linux中的Chrome V8，使用GDB调试V8程序，查看内存中的内容。</p>
-<p>我们知道我们已经研究过对象（objects）和映射（maps）的内存结构，也接触过<code>d8</code>库，所以我们应该对指针指向什么以及内存中数据的位置有了大致的了解。但是，不要以为事情，就这么简单。就像 V8 的所有功能一样，优化在保证其速度和效率方面起着至关重要的作用，这同样适用于它处理和存储内存值的方式。</p>
-<p>这是什么意思呢？下面不妨使用d8和gdb快速了解一下简单的V8对象结构。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./d8 --allow-natives-syntax</span><br></pre></td></tr></table></figure>
-<p>完成后，我们继续使用 <code>%DebugPrint()</code> 函数打印出对象的信息。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">root@x2n:/home/x2n/Documents/v8/v8/out/x64_.release# ./d8 --allow-natives-syntax</span><br><span class="line">V8 version 9.6.180.6</span><br><span class="line"><span class="meta prompt_">d8&gt; </span><span class="language-bash">var obj = &#123;x:1, y:2&#125;;</span>    </span><br><span class="line">undefined</span><br><span class="line"><span class="meta prompt_">d8&gt; </span><span class="language-bash">%DebugPrint(obj)</span></span><br><span class="line">DebugPrint: 0x3791080498ed: [JS_OBJECT_TYPE]</span><br><span class="line"> - map: 0x379108207aa1 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x3791081c41f5 &lt;Object map = 0x3791082021b9&gt;</span><br><span class="line"> - elements: 0x37910800222d &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - properties: 0x37910800222d &lt;FixedArray[0]&gt;</span><br><span class="line"> - All own properties (excluding elements): &#123;</span><br><span class="line">    0x3791081d3111: [String] in OldSpace: #x: 1 (const data field 0), location: in-object</span><br><span class="line">    0x3791081d3121: [String] in OldSpace: #y: 2 (const data field 1), location: in-object</span><br><span class="line"> &#125;</span><br><span class="line">0x379108207aa1: [Map]</span><br><span class="line"> - type: JS_OBJECT_TYPE</span><br><span class="line"> - instance size: 20</span><br><span class="line"> - inobject properties: 2</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - back pointer: 0x379108207a79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line"> - prototype_validity cell: 0x379108142405 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #2: 0x37910804991d &lt;DescriptorArray[2]&gt;</span><br><span class="line"> - prototype: 0x3791081c41f5 &lt;Object map = 0x3791082021b9&gt;</span><br><span class="line"> - constructor: 0x3791081c3e2d &lt;JSFunction Object (sfi = 0x37910814474d)&gt;</span><br><span class="line"> - dependent code: 0x3791080021b9 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br><span class="line"></span><br><span class="line">&#123;x: 1, y: 2&#125;</span><br></pre></td></tr></table></figure>
-<p>之后，启动gdb并将其附加到<code>d8</code>进程。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb -p $(pidof d8)</span><br></pre></td></tr></table></figure>
-<p>我们将使用<code>x/10wx 0x3791080498ed</code>，查看<code>0x3791080498ed</code>地址的内容。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323191204748.png" alt="image-20260323191204748" loading="lazy" decoding="async"></p>
-<p>查看GDB输出，我们可以看到对象使用的内存地址是正确的。但是，当我们查看内存内容时，第一个地址（如果你还记得我们的 JSObject 结构，它应该是一个指向map的指针）似乎已损坏。嗯，人们可能会认为它损坏了，更有经验的逆向工程师或漏洞利用开发者甚至可能会认为存在偏移/对齐（offset/alignment）问题，从技术上讲，你的猜测很接近，但并不完全正确。</p>
-<p>朋友们，这又是 V8 引擎的优化在起作用。你们应该能理解为什么我们需要讨论这些优化，因为对于非专业人士来说，内存中发生的一切都会让人感到困惑不已。我们在这里实际看到的是两件事——指针压缩（Pointer Compression）和指针标记（Pointer Tagging）。</p>
-<p>我们首先来了解一下 V8 中的指针（Pointer）或值标记（Value tagging）。</p>
-<h2 id="pointer-tagging" tabindex="-1"><a class="headerlink" href="#pointer-tagging" aria-hidden="true"></a> Pointer Tagging</h2>
-<p>那么，什么是指针标记（pointer tagging）？我们为什么要使用它？</p>
-<p>我们知道，在 V8 中，值（values）被表示为对象（objects）并分配在堆上——无论它们是对象（objects）、数组（array）、数字（number）还是字符串（string）。现在，许多 JavaScript 程序实际上会对整数值（integer values）进行计算，因此，如果我们每次递增或修改值时都必须在 JavaScript 中创建一个新的 <code>Number()</code> 对象，那么就会增加创建对象和堆跟踪（heap tracking）的时间开销，并增加内存占用，从而导致效率低下。</p>
-<p>在这种情况下，V8 的做法是，它不会每次都创建一个新对象，而是将部分值直接存储到对象内部。虽然这种方法可行，但却带来了第二个问题：<strong>如何区分对象指针（object pointer）和内联值（inline value）？这就需要用到<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Tagged_pointer">指针标记（pointer tagging）了 </a>。</strong></p>
-<p>指针标记技术（Pointer tagging’s technique）基于这样的观察：</p>
-<p>在 x32 和 x64 系统中，已分配的数据必须按字对齐（4 字节）边界排列。由于数据以这种方式对齐，最低有效位 (LSB) 始终为零。<strong>标记技术（Tagging）随后使用最低两位来区分堆对象指针（heap object pointer）和整数（an integer）或 SMI。</strong></p>
-<p>在x64架构上，使用以下标记方案：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">            |----- 32 bits -----|----- 32 bits -------|</span><br><span class="line">Pointer:    |________________address______________(w1)|</span><br><span class="line">Smi:        |____int32_value____|000000000000000000(0)|</span><br></pre></td></tr></table></figure>
-<p>如示例所示，<strong>0 用于表示 SMI，1 用于表示指针</strong>。需要注意的是，你看到的是内存中的 SMI，虽然它们以内联方式存储（stored inline），但实际上会被复制两份以避免指针标记（pointer tag）。因此，<strong>如果原始值为 1，则在内存中它将是 2。</strong></p>
-<p>指针内部，第二个最低有效位（LSB）上还有一个 <em>“w”</em> ，它用于区分强指针和弱指针（strong or weak pointer）。如果您不熟悉强指针和弱指针的概念，我来解释一下。简单来说， <strong>强指针（strong pointer）表示其指向的对象必须保留在内存中（它代表一个对象），而弱指针（weak pointer）则指向可能已被删除的数据</strong>。当垃圾回收器（GC）删除对象时，它必须同时删除强指针，因为它保存着引用计数（reference count）。</p>
-<p>在这种指针标记（pointer tagging）方案下，对整数进行算术（arithmetic）或二进制运算（binary operations）时可以忽略标记（tag），因为低 32 位将全部为零。然而，当需要解引用（dereferencing a HeapObject）堆对象时，V8 需要先屏蔽（mask off）最低有效位，为此使用了一个特殊的访问器（accessor）来清除最低有效位。</p>
-<p>现在我们了解了这一点，回到GDB中的例子，<strong>通过从地址中减去 1 来清除最低有效位 (LSB)。这样应该就能得到有效的内存地址</strong>。完成后，输出应该如下所示。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323195426610.png" alt="image-20260323195426610" loading="lazy" decoding="async"></p>
-<p>如您所见，清除最低有效位 (LSB) 后，内存中就出现了有效的指针地址！具体来说，我们有了映射 (map)、属性 (properties)、元素 (elements) 以及内联对象 (inline objects)。再次提醒，<strong>SMI 的值双倍了（doubled）</strong> ，因此原本存储值为 1 的 x 在内存中实际上是 2，2 也是如此，现在变成了 4。</p>
-<p>⚠️这里的黄色箭头我指错了，我想指真实地址中的内容，后面仔细看了文章才发现指错了！。我想指<code>x/10wx 0x3791080498ed-1</code>地址中的内容，这里<code>0x37910800222d</code>和<code>0x2d080022</code>明显对不上，下面的<code>0x0800222d</code>才是对的，这也正说明了<code>x/10wx 0x3791080498ed-1</code>才是真实的地址。</p>
-<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323200046224.png" alt="image-20260323200046224" loading="lazy" decoding="async"></p>
-<p>眼尖的人可能已经注意到，指针只有一半指向内存中的对象。这是为什么呢？</p>
-<p>如果你回答“这是另一种优化”，那就对了。这叫做指针压缩（Pointer Compression），我们接下来会详细讨论。</p>
-<h2 id="pointer-compression" tabindex="-1"><a class="headerlink" href="#pointer-compression" aria-hidden="true"></a> Pointer Compression</h2>
-<p>Chrome和V8中的指针压缩（Pointer Compression）利用了堆上对象的一个有趣特性：堆对象通常彼此靠近，因此指针的最高有效位（ the most significant bits）很可能相同。在这种情况下，V8只将指针的一半（最低有效位，the least significant bits）保存到内存中，并将V8堆（称为<strong>isolate root</strong>）的最高有效位（高32位）放入<strong>root register（R13）</strong>中。每当我们需要访问指针时，只需将寄存器中的值与内存中的值相加，即可得到完整的地址。该压缩方案在V8的<a target="_blank" rel="noopener" href="https://source.chromium.org/chromium/chromium/src/+/main:v8/src/common/ptr-compr-inl.h"><code>/src/common/ptr-compr-inl.h</code></a> 源文件中实现。</p>
-<p>基本上，V8 团队的目标是想方设法将两种类型的标记值（tagged values）都放入 64 位架构的 32 位中，特别是为了减少 V8 的开销，从而尽可能多地在 x64 架构中回收浪费的 4 个字节。</p>
-<h2 id="ai总结版" tabindex="-1"><a class="headerlink" href="#ai总结版" aria-hidden="true"></a> AI总结版</h2>
+<p>这正好和前面的理论对应上：对象负责存值，<code>Map</code> 负责告诉 V8 这些值该怎么解释。</p>
+<h2 id="多个同形对象会共享一个-map" tabindex="-1"><a class="headerlink" href="#多个同形对象会共享一个-map" aria-hidden="true"></a> 多个同形对象会共享一个 <code>Map</code></h2>
+<p>如果我们创建两个 shape 一样的对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123;<span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">var</span> obj2 = &#123;<span class="attr">x</span>: <span class="number">2</span>, <span class="attr">y</span>: <span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>再分别 <code>%DebugPrint()</code>，会发现它们虽然地址不同，但会共享同一个 <code>Map</code>。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321101201559.png" alt loading="lazy" decoding="async"></p>
+<p>这正是 Hidden Class 优化最核心的一点：</p>
 <blockquote>
-<p><strong>Map（隐藏类） + Properties（命名属性） + Elements（索引属性） = 完整描述一个 JS 对象</strong></p>
+<p>结构相同的对象，共享同一份布局描述。</p>
 </blockquote>
-<p>我会用你这个例子贯穿讲：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="一、整体结构：v8如何表示一个对象？" tabindex="-1"><a class="headerlink" href="#一、整体结构：v8如何表示一个对象？" aria-hidden="true"></a> 一、整体结构：V8如何表示一个对象？</h3>
-<p>在 V8 内部，一个 JS 对象大致是这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">JSObject &#123;</span><br><span class="line">  map        ---&gt; Map（隐藏类）</span><br><span class="line">  elements   ---&gt; Elements（数组索引属性）</span><br><span class="line">  properties ---&gt; Properties（普通属性存储）</span><br><span class="line">  in-object fields（直接内嵌的属性值）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>👉 关键点：</p>
+<p>这样一来，属性访问就不需要每次都像字典那样查找字符串键，而可以更像：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">先看 map</span><br><span class="line">确认 layout</span><br><span class="line">按固定 offset 取值</span><br></pre></td></tr></table></figure>
+<p>这也是 JavaScript 引擎能把对象访问做得很快的重要原因。</p>
+<h3 id="back_pointer-和-transition-tree" tabindex="-1"><a class="headerlink" href="#back_pointer-和-transition-tree" aria-hidden="true"></a> <code>back_pointer</code> 和 transition tree</h3>
+<p>如果继续沿着 <code>Map</code> 里的 <code>back_pointer</code> 看，还能回溯到前一个 shape。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321104344785.png" alt loading="lazy" decoding="async"></p>
+<p>这说明 transition tree 不是抽象概念，而是真实存在于 <code>Map</code> 之间的链接关系。</p>
+<h2 id="properties：命名属性的存储" tabindex="-1"><a class="headerlink" href="#properties：命名属性的存储" aria-hidden="true"></a> Properties：命名属性的存储</h2>
+<p>讲完 <code>Map</code>，再回到对象的“值到底放哪”。</p>
+<p>命名属性，也就是像下面这种字符串 key：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">obj.<span class="property">x</span></span><br><span class="line">obj.<span class="property">y</span></span><br><span class="line">obj[<span class="string">&quot;name&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>在 V8 里通常有两种主要存法。</p>
+<h3 id="1-in-object-properties" tabindex="-1"><a class="headerlink" href="#1-in-object-properties" aria-hidden="true"></a> 1. In-object properties</h3>
+<p>最理想的情况，是属性直接放在对象本体内部：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">obj:</span><br><span class="line">  [map]</span><br><span class="line">  [x]</span><br><span class="line">  [y]</span><br></pre></td></tr></table></figure>
+<p>这种方式最快，因为访问时几乎没有额外间接层。</p>
+<h3 id="2-properties-backing-store" tabindex="-1"><a class="headerlink" href="#2-properties-backing-store" aria-hidden="true"></a> 2. Properties backing store</h3>
+<p>如果对象属性变多，超出了对象初始预留的 in-object 槽位，剩余属性就会被放到 <code>properties</code> backing store 里。</p>
+<p>这时访问逻辑会变成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Map 记录 offset</span><br><span class="line">对象或 properties store 存实际值</span><br></pre></td></tr></table></figure>
+<h3 id="fast-properties-和-slow-properties" tabindex="-1"><a class="headerlink" href="#fast-properties-和-slow-properties" aria-hidden="true"></a> Fast Properties 和 Slow Properties</h3>
+<p>V8 还会根据对象变化的频率和复杂度，区分两种模式：</p>
 <ul>
-<li><strong>map：描述“对象长什么样”</strong></li>
-<li><strong>properties：存“字符串属性”</strong></li>
-<li><strong>elements：存“数字索引属性”</strong></li>
+<li>
+<p><strong>Fast Properties</strong><br>
+通过 <code>Map + DescriptorArray + offset</code> 来访问，适合结构稳定的对象。</p>
+</li>
+<li>
+<p><strong>Slow Properties</strong><br>
+也常被叫做 dictionary mode。属性元数据不再主要依赖共享的 <code>Map</code>，而是直接存进字典结构。</p>
+</li>
 </ul>
-<p>官方总结也很明确：</p>
-<ul>
-<li>named properties 和 elements 是分开存的 (<a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties?utm_source=chatgpt.com">v8.dev</a>)</li>
-</ul>
-<h3 id="二、map（隐藏类）：对象的“结构定义”" tabindex="-1"><a class="headerlink" href="#二、map（隐藏类）：对象的“结构定义”" aria-hidden="true"></a> 二、Map（隐藏类）：对象的“结构定义”</h3>
-<h4 id="1-map-是什么？" tabindex="-1"><a class="headerlink" href="#1-map-是什么？" aria-hidden="true"></a> 1. Map 是什么？</h4>
-<p>Map（Hidden Class）本质是：</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260321232028666.png" alt loading="lazy" decoding="async"></p>
+<p>这背后的直觉也很简单：</p>
 <blockquote>
-<p><strong>对象的结构描述（shape / layout）</strong></p>
+<p>如果一个对象老是在增删属性，继续维护漂亮的 transition tree 成本太高，不如退化成字典模式。</p>
 </blockquote>
-<p>它记录：</p>
+<p>所以：</p>
 <ul>
-<li>有哪些属性（x, y）</li>
-<li>每个属性存在哪里（offset）</li>
-<li>属性类型（数据属性 / accessor）</li>
-<li>属性顺序</li>
+<li>结构稳定的对象更快</li>
+<li>经常增删属性的对象更容易进入慢路径</li>
 </ul>
-<p>📌 类比：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map ≈ C语言 struct 定义</span><br></pre></td></tr></table></figure>
-<h4 id="2-map-内部关键结构" tabindex="-1"><a class="headerlink" href="#2-map-内部关键结构" aria-hidden="true"></a> 2. Map 内部关键结构</h4>
-<p>一个 Map 关联三个重要结构：</p>
-<h5 id="1-descriptorarray（描述符数组）" tabindex="-1"><a class="headerlink" href="#1-descriptorarray（描述符数组）" aria-hidden="true"></a> (1) DescriptorArray（描述符数组）</h5>
-<p>记录：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[x → offset 0]</span><br><span class="line">[y → offset 1]</span><br></pre></td></tr></table></figure>
-<p>👉 本质是：</p>
+<h2 id="elements：数组和整数索引属性" tabindex="-1"><a class="headerlink" href="#elements：数组和整数索引属性" aria-hidden="true"></a> Elements：数组和整数索引属性</h2>
+<p>除了命名属性，V8 还专门把“整数索引属性”单独拿出来处理，也就是 <code>Elements</code>。</p>
+<p>例如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">arr[<span class="number">0</span>];</span><br><span class="line">arr[<span class="number">1</span>];</span><br></pre></td></tr></table></figure>
+<p>这些就不走普通的 named properties，而是走 <code>elements</code> 存储。</p>
+<p>之所以要单独拆开，是因为数组访问模式和对象属性访问模式差异很大：</p>
+<ul>
+<li>对象属性更像字符串键查找</li>
+<li>数组元素更像连续索引访问</li>
+</ul>
+<p>因此 V8 会对 <code>elements</code> 做非常细的分类和优化。</p>
+<h2 id="v8-会跟踪数组的-elements-kind" tabindex="-1"><a class="headerlink" href="#v8-会跟踪数组的-elements-kind" aria-hidden="true"></a> V8 会跟踪数组的 Elements Kind</h2>
+<p>JavaScript 语言层面上，<code>[1,2,3]</code> 看起来只是“number 数组”。但在 V8 眼里，这还不够精细。</p>
+<p>以这行代码为例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260322170624371.png" alt loading="lazy" decoding="async"></p>
+<p>V8 往往会把它标记为 <code>PACKED_SMI_ELEMENTS</code>：</p>
+<ul>
+<li><code>SMI</code>：小整数</li>
+<li><code>PACKED</code>：数组比较紧凑，没有洞</li>
+</ul>
+<p>对学习来说，先记住 3 种基本元素类别就够了：</p>
+<ul>
+<li><code>SMI_ELEMENTS</code>：小整数数组</li>
+<li><code>DOUBLE_ELEMENTS</code>：浮点数数组</li>
+<li><code>ELEMENTS</code>：对象引用、字符串等更一般的元素</li>
+</ul>
+<h3 id="elements-kind-是按“整个数组”跟踪的" tabindex="-1"><a class="headerlink" href="#elements-kind-是按“整个数组”跟踪的" aria-hidden="true"></a> Elements Kind 是按“整个数组”跟踪的</h3>
+<p>重点不是每个元素单独贴标签，而是：</p>
 <blockquote>
-<p>属性名 → 内存位置 的映射 (<a target="_blank" rel="noopener" href="https://v8.dev/docs/hidden-classes?utm_source=chatgpt.com">v8.dev</a>)</p>
-</blockquote>
-<h5 id="2-transitionarray（状态迁移）" tabindex="-1"><a class="headerlink" href="#2-transitionarray（状态迁移）" aria-hidden="true"></a> (2) TransitionArray（状态迁移）</h5>
-<p>当对象“加属性”时：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#125; --add x--&gt; &#123;x&#125;</span><br><span class="line">&#123;x&#125; --add y--&gt; &#123;x,y&#125;</span><br></pre></td></tr></table></figure>
-<p>👉 每一步都会生成一个新 Map (<a target="_blank" rel="noopener" href="https://v8.dev/docs/hidden-classes?utm_source=chatgpt.com">v8.dev</a>)</p>
-<h5 id="3-map-指针" tabindex="-1"><a class="headerlink" href="#3-map-指针" aria-hidden="true"></a> (3) Map 指针</h5>
-<p>每个对象第一个字段就是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj.map → Map</span><br></pre></td></tr></table></figure>
-<p>👉 用来快速判断对象“类型是否相同”</p>
-<h4 id="3-用你的例子解释-map" tabindex="-1"><a class="headerlink" href="#3-用你的例子解释-map" aria-hidden="true"></a> 3. 用你的例子解释 Map</h4>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;;</span><br></pre></td></tr></table></figure>
-<p>V8内部大致过程：</p>
-<ul>
-<li>Step 1：创建空对象</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map0: &#123;&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>Step 2：加 x</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Map1: &#123; x &#125;</span><br><span class="line">Descriptor: [x → offset0]</span><br></pre></td></tr></table></figure>
-<ul>
-<li>Step 3：加 y</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Map2: &#123; x, y &#125;</span><br><span class="line">Descriptor: [x → offset0, y → offset1]</span><br></pre></td></tr></table></figure>
-<p>👉 最终：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj1.map = Map2</span><br></pre></td></tr></table></figure>
-<h3 id="三、properties：普通属性存储" tabindex="-1"><a class="headerlink" href="#三、properties：普通属性存储" aria-hidden="true"></a> 三、Properties：普通属性存储</h3>
-<h4 id="1-properties-是什么？" tabindex="-1"><a class="headerlink" href="#1-properties-是什么？" aria-hidden="true"></a> 1. Properties 是什么？</h4>
-<blockquote>
-<p><strong>存储字符串 key 的属性值</strong></p>
+<p>V8 会给整个数组一个当前的 elements kind。</p>
 </blockquote>
 <p>例如：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">obj1.<span class="property">x</span></span><br><span class="line">obj1.<span class="property">y</span></span><br></pre></td></tr></table></figure>
-<h4 id="2-两种存储方式" tabindex="-1"><a class="headerlink" href="#2-两种存储方式" aria-hidden="true"></a> 2. 两种存储方式</h4>
-<h5 id="✅-1-in-object-properties（最重要）" tabindex="-1"><a class="headerlink" href="#✅-1-in-object-properties（最重要）" aria-hidden="true"></a> ✅ (1) In-object properties（最重要）</h5>
-<p>直接存在对象内部：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">obj1:</span><br><span class="line">  [map]</span><br><span class="line">  [x:1]</span><br><span class="line">  [y:2]</span><br></pre></td></tr></table></figure>
-<p>👉 最快访问方式 (<a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties?utm_source=chatgpt.com">v8.dev</a>)</p>
-<h5 id="❗-2-properties-backing-store" tabindex="-1"><a class="headerlink" href="#❗-2-properties-backing-store" aria-hidden="true"></a> ❗ (2) properties backing store</h5>
-<p>如果属性太多：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">obj1:</span><br><span class="line">  [map]</span><br><span class="line">  [x]</span><br><span class="line">  [y]</span><br><span class="line">  properties → [z, k, ...]</span><br></pre></td></tr></table></figure>
-<p>👉 Map 决定：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="comment">// PACKED_SMI_ELEMENTS</span></span><br><span class="line"></span><br><span class="line">array.<span class="title function_">push</span>(<span class="number">3.337</span>);</span><br><span class="line"><span class="comment">// PACKED_DOUBLE_ELEMENTS</span></span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260322173329762.png" alt loading="lazy" decoding="async"></p>
+<p>一旦数组里出现了更宽的值类型，elements kind 就会沿着一个单向路径下降。一般来说：</p>
 <ul>
-<li>z 在 properties[0]</li>
-<li>k 在 properties[1]</li>
+<li>从 <code>SMI</code> 可以降到 <code>DOUBLE</code></li>
+<li>从 <code>DOUBLE</code> 还可以继续降到更通用的 <code>ELEMENTS</code></li>
 </ul>
-<h4 id="3-map-和-properties-的关系（核心）" tabindex="-1"><a class="headerlink" href="#3-map-和-properties-的关系（核心）" aria-hidden="true"></a> 3. Map 和 Properties 的关系（核心）</h4>
-<p>Map 不存值，只存：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x → offset 0</span><br><span class="line">y → offset 1</span><br></pre></td></tr></table></figure>
-<p>而值在：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj + offset</span><br></pre></td></tr></table></figure>
-<p>👉 所以访问：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj1.<span class="property">x</span></span><br></pre></td></tr></table></figure>
-<p>变成：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">load obj1 + offset0</span><br></pre></td></tr></table></figure>
-<p>🚀 这就是为什么 JS 能像 C 一样快</p>
-<h3 id="四、elements：数组索引属性" tabindex="-1"><a class="headerlink" href="#四、elements：数组索引属性" aria-hidden="true"></a> 四、Elements：数组/索引属性</h3>
-<h4 id="1-elements-是什么？" tabindex="-1"><a class="headerlink" href="#1-elements-是什么？" aria-hidden="true"></a> 1. Elements 是什么？</h4>
-<blockquote>
-<p><strong>key 是整数（0,1,2…）的属性</strong></p>
-</blockquote>
+<p>这个过程通常是不可逆的。也就是说，数组一旦“变杂”，优化空间往往只会变小，不会自动回到最理想状态。</p>
+<h2 id="packed-和-holey" tabindex="-1"><a class="headerlink" href="#packed-和-holey" aria-hidden="true"></a> PACKED 和 HOLEY</h2>
+<p>除了元素类型，V8 还非常在意数组里有没有“洞”。</p>
 <p>例如：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> arr = [<span class="number">10</span>, <span class="number">20</span>];</span><br></pre></td></tr></table></figure>
-<p>内部：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">elements = [10, 20]</span><br></pre></td></tr></table></figure>
-<h4 id="2-为什么要单独分？" tabindex="-1"><a class="headerlink" href="#2-为什么要单独分？" aria-hidden="true"></a> 2. 为什么要单独分？</h4>
-<p>因为访问模式不同：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> packed_array = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5.5</span>, <span class="string">&quot;x&quot;</span>];</span><br><span class="line"><span class="comment">// PACKED_ELEMENTS</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> holey_array = [<span class="number">1</span>, <span class="number">2</span>, , <span class="number">5</span>, <span class="string">&quot;x&quot;</span>];</span><br><span class="line"><span class="comment">// HOLEY_ELEMENTS</span></span><br></pre></td></tr></table></figure>
+<p><code>PACKED</code> 表示数组是稠密的；<code>HOLEY</code> 表示数组存在空洞。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323142108914.png" alt loading="lazy" decoding="async"></p>
+<p>为什么这个区别重要？</p>
+<p>因为 packed array 更容易优化。数组没有洞时，V8 可以更激进地假设：</p>
 <ul>
-<li>elements：连续访问（数组）</li>
-<li>properties：随机访问（对象）</li>
+<li>索引范围更规整</li>
+<li>访问路径更简单</li>
+<li>检查更少</li>
 </ul>
-<p>👉 V8 专门优化两套结构 (<a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties?utm_source=chatgpt.com">v8.dev</a>)</p>
-<h4 id="3-obj1-有没有-elements？" tabindex="-1"><a class="headerlink" href="#3-obj1-有没有-elements？" aria-hidden="true"></a> 3. obj1 有没有 elements？</h4>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj1 = &#123; <span class="attr">x</span>:<span class="number">1</span>, <span class="attr">y</span>:<span class="number">2</span> &#125;;</span><br></pre></td></tr></table></figure>
-<p>👉 没有</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">elements = []</span><br></pre></td></tr></table></figure>
-<hr>
-<p>如果你这样：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj1[<span class="number">0</span>] = <span class="number">100</span>;</span><br></pre></td></tr></table></figure>
-<p>就会变成：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">elements = [100]</span><br><span class="line">properties = &#123;x, y&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="五、三者关系总结（最关键）" tabindex="-1"><a class="headerlink" href="#五、三者关系总结（最关键）" aria-hidden="true"></a> 五、三者关系总结（最关键）</h3>
-<p>我们把三者串起来：</p>
-<h4 id="1-map-“结构说明书”" tabindex="-1"><a class="headerlink" href="#1-map-“结构说明书”" aria-hidden="true"></a> 1. Map = “结构说明书”</h4>
-<p>描述：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">属性名 → 存储位置</span><br></pre></td></tr></table></figure>
-<h4 id="2-properties-“数据区（字符串key）”" tabindex="-1"><a class="headerlink" href="#2-properties-“数据区（字符串key）”" aria-hidden="true"></a> 2. Properties = “数据区（字符串key）”</h4>
-<p>存：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = 1</span><br><span class="line">y = 2</span><br></pre></td></tr></table></figure>
-<h4 id="3-elements-“数组数据区（数字key）”" tabindex="-1"><a class="headerlink" href="#3-elements-“数组数据区（数字key）”" aria-hidden="true"></a> 3. Elements = “数组数据区（数字key）”</h4>
-<p>存：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0 = xxx</span><br><span class="line">1 = xxx</span><br></pre></td></tr></table></figure>
-<h4 id="4-最终-obj1-内部结构" tabindex="-1"><a class="headerlink" href="#4-最终-obj1-内部结构" aria-hidden="true"></a> 4. 最终 obj1 内部结构</h4>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">obj1:</span><br><span class="line">  map ------&gt; Map2</span><br><span class="line">  elements -&gt; []</span><br><span class="line">  properties -&gt; (可能为空)</span><br><span class="line"></span><br><span class="line">  in-object:</span><br><span class="line">    offset0 → 1 (x)</span><br><span class="line">    offset1 → 2 (y)</span><br></pre></td></tr></table></figure>
-<h3 id="六、从-exploitation-角度再补一层（非常重要）" tabindex="-1"><a class="headerlink" href="#六、从-exploitation-角度再补一层（非常重要）" aria-hidden="true"></a> 六、从 exploitation 角度再补一层（非常重要）</h3>
-<h4 id="👉-map-是类型系统" tabindex="-1"><a class="headerlink" href="#👉-map-是类型系统" aria-hidden="true"></a> 👉 Map 是类型系统</h4>
-<p>漏洞利用常见套路：</p>
-<h5 id="1-类型混淆（type-confusion）" tabindex="-1"><a class="headerlink" href="#1-类型混淆（type-confusion）" aria-hidden="true"></a> 1. 类型混淆（Type Confusion）</h5>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">obj1.map != obj2.map</span><br><span class="line">但被当成一样用</span><br></pre></td></tr></table></figure>
-<p>👉 导致：</p>
+<p>而一旦变成 holey array，很多访问都必须更保守。</p>
+<h3 id="elements-也会退化成字典模式" tabindex="-1"><a class="headerlink" href="#elements-也会退化成字典模式" aria-hidden="true"></a> Elements 也会退化成字典模式</h3>
+<p>不仅 named properties 会退化成 dictionary mode，elements 也会。</p>
+<p>典型场景是：</p>
 <ul>
-<li>读取错误 offset</li>
-<li>越界访问</li>
+<li>超大稀疏数组</li>
+<li>索引分布很离散</li>
 </ul>
-<h5 id="2-map-控制内存布局" tabindex="-1"><a class="headerlink" href="#2-map-控制内存布局" aria-hidden="true"></a> 2. Map 控制内存布局</h5>
-<p>攻击目标：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">伪造 Map</span><br><span class="line">→ 控制 property offset</span><br><span class="line">→ 任意读写</span><br></pre></td></tr></table></figure>
-<h5 id="3-elements-vs-properties-混淆" tabindex="-1"><a class="headerlink" href="#3-elements-vs-properties-混淆" aria-hidden="true"></a> 3. elements vs properties 混淆</h5>
-<p>因为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">elements 是数组</span><br><span class="line">properties 是对象</span><br></pre></td></tr></table></figure>
-<p>👉 利用点：</p>
-<ul>
-<li>HOLEY_ELEMENTS</li>
-<li>PACKED_ELEMENTS</li>
-<li>转换 bug</li>
-</ul>
-<h3 id="七、一句话总结（非常重要）" tabindex="-1"><a class="headerlink" href="#七、一句话总结（非常重要）" aria-hidden="true"></a> 七、一句话总结（非常重要）</h3>
+<p>这时如果还强行维持紧凑数组存储，浪费太大，于是 V8 会用类似字典的结构来保存元素。</p>
+<h2 id="现在回到-exploitation-视角：为什么这些细节重要" tabindex="-1"><a class="headerlink" href="#现在回到-exploitation-视角：为什么这些细节重要" aria-hidden="true"></a> 现在回到 exploitation 视角：为什么这些细节重要</h2>
+<p>到这里，其实可以把问题压缩成一句话：</p>
 <blockquote>
-<p><strong>Map 决定“属性在哪”，Properties/Elements 存“值在哪”</strong></p>
+<p>V8 为了优化速度，需要持续记录对象的 shape、属性布局和数组元素类型。</p>
 </blockquote>
-<p>更精确一点：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Map = layout（布局）</span><br><span class="line">Properties = named storage</span><br><span class="line">Elements = indexed storage</span><br></pre></td></tr></table></figure>
-<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
-<hr class="footnotes-sep">
-<section class="footnotes">
-<ol class="footnotes-list">
-<li id="fn1" class="footnote-item"><p>JavaScript引擎的一般流程 <a target="_blank" rel="noopener" href="https://jhalon.github.io/chrome-browser-exploitation-1/">https://jhalon.github.io/chrome-browser-exploitation-1/</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+<p>而浏览器漏洞里常见的问题，恰恰就是这些“运行时事实”被错误理解了。</p>
+<p>最常见的几条主线是：</p>
+<ol>
+<li>
+<p><strong>对象 shape 被错误假设</strong><br>
+编译器以为对象还是老的 <code>Map</code>，但实际已经不是。</p>
 </li>
-<li id="fn2" class="footnote-item"><p>JavaScript: The Good Parts <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=5nmpokoRaZI">https://www.youtube.com/watch?v=5nmpokoRaZI</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+<li>
+<p><strong>elements kind 被错误假设</strong><br>
+编译器以为数组还是 <code>PACKED_SMI_ELEMENTS</code>，但实际已经过渡到更宽的 kind。</p>
 </li>
-<li id="fn3" class="footnote-item"><p>Understanding V8’s Bytecode <a target="_blank" rel="noopener" href="https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775">https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+<li>
+<p><strong>属性布局解释错位</strong><br>
+本来该按对象 A 的 layout 读，结果按对象 B 的 layout 去读。</p>
 </li>
-<li id="fn4" class="footnote-item"><p>Firing up the Ignition Interpreter <a target="_blank" rel="noopener" href="https://v8.dev/blog/ignition-interpreter">https://v8.dev/blog/ignition-interpreter</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
-</li>
-<li id="fn5" class="footnote-item"><p>V8 internals for JavaScript Developers <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=m9cTaYI95Zc">https://www.youtube.com/watch?v=m9cTaYI95Zc</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+<li>
+<p><strong>字典模式 / 快模式切换处理出错</strong><br>
+某些优化假设对象仍处于快模式，实际却已经退化。</p>
 </li>
 </ol>
-</section>
+<p>这就是很多 <code>type confusion</code> 的底层背景。</p>
+<h2 id="在内存里看对象：为什么调试输出会让人困惑" tabindex="-1"><a class="headerlink" href="#在内存里看对象：为什么调试输出会让人困惑" aria-hidden="true"></a> 在内存里看对象：为什么调试输出会让人困惑</h2>
+<p>学到这里，你已经知道：</p>
+<ul>
+<li>对象在堆上</li>
+<li>对象里有 <code>map / properties / elements</code></li>
+<li>小整数和对象引用不一定按最直观的方式存</li>
+</ul>
+<p>于是接下来就可以进入一个非常容易让初学者卡住的部分：为什么在调试器里看到的地址和 <code>DebugPrint</code> 输出对不上？</p>
+<p>先看一个 <code>d8</code> 例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj = &#123;<span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span>&#125;;</span><br><span class="line">%<span class="title class_">DebugPrint</span>(obj);</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323191204748.png" alt loading="lazy" decoding="async"></p>
+<p>如果你再用调试器直接去读这块内存，第一眼往往会怀疑：</p>
+<ul>
+<li>地址是不是错了？</li>
+<li>指针是不是坏了？</li>
+<li>为什么 map 指针看起来不像 map 指针？</li>
+</ul>
+<p>答案通常不是“你看错了”，而是 V8 的两种优化一起生效了：</p>
+<ul>
+<li>pointer tagging</li>
+<li>pointer compression</li>
+</ul>
+<h2 id="pointer-tagging" tabindex="-1"><a class="headerlink" href="#pointer-tagging" aria-hidden="true"></a> Pointer Tagging</h2>
+<p>V8 不是把所有值都老老实实地当成完整堆对象来处理。特别是对小整数这类高频值，如果每次都专门分配一个堆对象，成本太高。</p>
+<p>于是它会把一部分值以内联的形式编码进去。但这样立刻带来一个问题：</p>
+<blockquote>
+<p>眼前这个 machine word，到底是堆对象指针，还是一个被编码过的立即值？</p>
+</blockquote>
+<p>这就是 pointer tagging 要解决的事。</p>
+<h3 id="可以怎样理解它" tabindex="-1"><a class="headerlink" href="#可以怎样理解它" aria-hidden="true"></a> 可以怎样理解它</h3>
+<p>一个简化理解是：</p>
+<ul>
+<li>某些低位 bit 被拿来当“标签”</li>
+<li>标签决定这个值是对象指针还是 SMI</li>
+</ul>
+<p>在经典 V8 调试语境里，常见的理解方式是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Pointer: ... ... ... ... (w1)</span><br><span class="line">SMI:     int32_value ... (0)</span><br></pre></td></tr></table></figure>
+<p>也就是说：</p>
+<ul>
+<li>低位用于区分“这是指针还是 SMI”</li>
+<li>对象指针在真正解引用前，需要先去掉 tag</li>
+</ul>
+<p>原文里的 WinDBG/GDB 场景之所以看着“差一位”，本质就在这里。</p>
+<h3 id="为什么-smi-在内存里看起来像“翻倍”" tabindex="-1"><a class="headerlink" href="#为什么-smi-在内存里看起来像“翻倍”" aria-hidden="true"></a> 为什么 SMI 在内存里看起来像“翻倍”</h3>
+<p>如果你在调试器里看到：</p>
+<ul>
+<li>逻辑上的 <code>1</code></li>
+<li>内存里却像 <code>2</code></li>
+</ul>
+<p>不要立刻怀疑对象坏了。很多时候，这是因为 SMI 的编码方式导致它看起来像被左移/翻倍过。</p>
+<p>这也是为什么直接肉眼看内存时，很容易误判。</p>
+<h3 id="结合调试图来看" tabindex="-1"><a class="headerlink" href="#结合调试图来看" aria-hidden="true"></a> 结合调试图来看</h3>
+<p>原文的调试过程里，去掉低位 tag 之后，地址就变得合理了。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323195426610.png" alt loading="lazy" decoding="async"></p>
+<p>你文中后来补的这张图也很好，正好说明了“真正该对照的是去掉 tag 后的地址内容”。</p>
+<p><img src="/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/image-20260323200046224.png" alt loading="lazy" decoding="async"></p>
+<h2 id="pointer-compression" tabindex="-1"><a class="headerlink" href="#pointer-compression" aria-hidden="true"></a> Pointer Compression</h2>
+<p>接下来还有第二层优化：pointer compression。</p>
+<p>它利用了一个非常现实的事实：</p>
+<blockquote>
+<p>同一个 isolate / heap 里的对象，地址通常彼此很接近。</p>
+</blockquote>
+<p>既然高位经常相同，那就没必要每个指针都完整存 64 位。</p>
+<p>于是 V8 会：</p>
+<ul>
+<li>在内存里只保存压缩后的低位部分</li>
+<li>把高位基址放在专门的寄存器或根基址里</li>
+<li>真正访问时再把两部分拼回完整地址</li>
+</ul>
+<p>这就是为什么你有时会看到：</p>
+<ul>
+<li><code>DebugPrint</code> 里是完整地址</li>
+<li>内存转储里只有“半截看起来能对上的指针”</li>
+</ul>
+<p>这不是坏数据，而是压缩指针的正常表现。</p>
+<h2 id="到这里，应该把什么记住" tabindex="-1"><a class="headerlink" href="#到这里，应该把什么记住" aria-hidden="true"></a> 到这里，应该把什么记住</h2>
+<p>如果你只带走几句话，我建议记住这几条：</p>
+<ol>
+<li>JavaScript 引擎不是只会“解释执行”，现代 V8 会经过解释、基线编译和优化编译多个阶段。</li>
+<li>V8 想优化对象访问，就必须记录对象的 shape，这就是 <code>Map</code> / Hidden Class 的意义。</li>
+<li><code>Map</code> 存布局，<code>Properties</code> 和 <code>Elements</code> 存实际值。</li>
+<li>结构相同的对象会共享 <code>Map</code>，结构变化会触发 shape transition。</li>
+<li>数组不仅有值，还有 <code>elements kind</code>，比如 <code>SMI</code>、<code>DOUBLE</code>、<code>PACKED</code>、<code>HOLEY</code>。</li>
+<li>调试内存时看到“地址不对劲”，优先考虑 pointer tagging 和 pointer compression，而不是先怀疑对象损坏。</li>
+</ol>
+<h2 id="总结" tabindex="-1"><a class="headerlink" href="#总结" aria-hidden="true"></a> 总结</h2>
+<p>这篇文章其实是在给后面的 JIT 和漏洞利用内容打地基。</p>
+<p>如果不先理解：</p>
+<ul>
+<li>对象在 V8 里长什么样</li>
+<li><code>Map</code> 怎么描述布局</li>
+<li><code>Properties</code> / <code>Elements</code> 怎么分工</li>
+<li>数组为什么会有不同的 elements kind</li>
+<li>指针为什么会被标记和压缩</li>
+</ul>
+<p>那么后面看 <code>type confusion</code>、越界访问、错误优化时就很容易失去方向。</p>
+<p>所以在我看来，这一篇最重要的收获不是记住所有结构名，而是建立这样一个直觉：</p>
+<blockquote>
+<p>V8 的很多优化，本质上都建立在“对象结构稳定、值类型可预测”这个前提上；而浏览器漏洞，恰恰经常发生在这个前提失效、却仍被错误相信的时候。</p>
+</blockquote>
+<p>下一篇再回到编译器流水线，就会更容易理解 Ignition、Sparkplug 和 TurboFan 到底在优化什么。</p>
+<h2 id="参考" tabindex="-1"><a class="headerlink" href="#参考" aria-hidden="true"></a> 参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://jhalon.github.io/chrome-browser-exploitation-1/">Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals</a></li>
+<li><a target="_blank" rel="noopener" href="https://tc39.es/ecma262/">ECMAScript Language Specification</a></li>
+<li><a target="_blank" rel="noopener" href="https://v8.dev/blog/ignition-interpreter">Firing up the Ignition Interpreter</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775">Understanding V8’s Bytecode</a></li>
+<li><a target="_blank" rel="noopener" href="https://v8.dev/blog/fast-properties">Fast properties in V8</a></li>
+<li><a target="_blank" rel="noopener" href="https://v8.dev/docs/hidden-classes">Maps (Hidden Classes) in V8</a></li>
+<li><a target="_blank" rel="noopener" href="https://v8.dev/blog/pointer-compression">Pointer Compression in V8</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=m9cTaYI95Zc">V8 internals for JavaScript Developers</a></li>
+</ul>
 
       </div>
       
@@ -708,7 +731,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-              2026-04-30 19:15:18
+              2026-05-14 22:54:41
             </span>
             
                   <span class="post-tags">
@@ -760,7 +783,7 @@
     <div class="title">目录</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text"> 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> V8是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#javascript%E5%BC%95%E6%93%8E%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text"> JavaScript引擎的工作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#javascript%E5%92%8Cv8%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6"><span class="toc-text"> JavaScript和V8内部机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#object-representation-%E5%AF%B9%E8%B1%A1%E8%A1%A8%E7%A4%BA"><span class="toc-text"> Object Representation 对象表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hiddenclass%EF%BC%88map%EF%BC%89and-shape-transitions"><span class="toc-text"> HiddenCLass（Map）and Shape Transitions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v8%E8%B0%83%E8%AF%95"><span class="toc-text"> V8调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#properties"><span class="toc-text"> Properties</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#elements"><span class="toc-text"> Elements</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#viewing-chrome-objects-in-memory"><span class="toc-text"> Viewing Chrome Objects In-Memory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pointer-tagging"><span class="toc-text"> Pointer Tagging</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pointer-compression"><span class="toc-text"> Pointer Compression</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ai%E6%80%BB%E7%BB%93%E7%89%88"><span class="toc-text"> AI总结版</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84%EF%BC%9Av8%E5%A6%82%E4%BD%95%E8%A1%A8%E7%A4%BA%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%9F"><span class="toc-text"> 一、整体结构：V8如何表示一个对象？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81map%EF%BC%88%E9%9A%90%E8%97%8F%E7%B1%BB%EF%BC%89%EF%BC%9A%E5%AF%B9%E8%B1%A1%E7%9A%84%E2%80%9C%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89%E2%80%9D"><span class="toc-text"> 二、Map（隐藏类）：对象的“结构定义”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-map-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> 1. Map 是什么？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-map-%E5%86%85%E9%83%A8%E5%85%B3%E9%94%AE%E7%BB%93%E6%9E%84"><span class="toc-text"> 2. Map 内部关键结构</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-descriptorarray%EF%BC%88%E6%8F%8F%E8%BF%B0%E7%AC%A6%E6%95%B0%E7%BB%84%EF%BC%89"><span class="toc-text"> (1) DescriptorArray（描述符数组）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-transitionarray%EF%BC%88%E7%8A%B6%E6%80%81%E8%BF%81%E7%A7%BB%EF%BC%89"><span class="toc-text"> (2) TransitionArray（状态迁移）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-map-%E6%8C%87%E9%92%88"><span class="toc-text"> (3) Map 指针</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E7%94%A8%E4%BD%A0%E7%9A%84%E4%BE%8B%E5%AD%90%E8%A7%A3%E9%87%8A-map"><span class="toc-text"> 3. 用你的例子解释 Map</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81properties%EF%BC%9A%E6%99%AE%E9%80%9A%E5%B1%9E%E6%80%A7%E5%AD%98%E5%82%A8"><span class="toc-text"> 三、Properties：普通属性存储</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-properties-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> 1. Properties 是什么？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%B8%A4%E7%A7%8D%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F"><span class="toc-text"> 2. 两种存储方式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E2%9C%85-1-in-object-properties%EF%BC%88%E6%9C%80%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text"> ✅ (1) In-object properties（最重要）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E2%9D%97-2-properties-backing-store"><span class="toc-text"> ❗ (2) properties backing store</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-map-%E5%92%8C-properties-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%88%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="toc-text"> 3. Map 和 Properties 的关系（核心）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81elements%EF%BC%9A%E6%95%B0%E7%BB%84%E7%B4%A2%E5%BC%95%E5%B1%9E%E6%80%A7"><span class="toc-text"> 四、Elements：数组&#x2F;索引属性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-elements-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> 1. Elements 是什么？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8D%95%E7%8B%AC%E5%88%86%EF%BC%9F"><span class="toc-text"> 2. 为什么要单独分？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-obj1-%E6%9C%89%E6%B2%A1%E6%9C%89-elements%EF%BC%9F"><span class="toc-text"> 3. obj1 有没有 elements？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%89%E8%80%85%E5%85%B3%E7%B3%BB%E6%80%BB%E7%BB%93%EF%BC%88%E6%9C%80%E5%85%B3%E9%94%AE%EF%BC%89"><span class="toc-text"> 五、三者关系总结（最关键）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-map-%E2%80%9C%E7%BB%93%E6%9E%84%E8%AF%B4%E6%98%8E%E4%B9%A6%E2%80%9D"><span class="toc-text"> 1. Map &#x3D; “结构说明书”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-properties-%E2%80%9C%E6%95%B0%E6%8D%AE%E5%8C%BA%EF%BC%88%E5%AD%97%E7%AC%A6%E4%B8%B2key%EF%BC%89%E2%80%9D"><span class="toc-text"> 2. Properties &#x3D; “数据区（字符串key）”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-elements-%E2%80%9C%E6%95%B0%E7%BB%84%E6%95%B0%E6%8D%AE%E5%8C%BA%EF%BC%88%E6%95%B0%E5%AD%97key%EF%BC%89%E2%80%9D"><span class="toc-text"> 3. Elements &#x3D; “数组数据区（数字key）”</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E6%9C%80%E7%BB%88-obj1-%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="toc-text"> 4. 最终 obj1 内部结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E-exploitation-%E8%A7%92%E5%BA%A6%E5%86%8D%E8%A1%A5%E4%B8%80%E5%B1%82%EF%BC%88%E9%9D%9E%E5%B8%B8%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text"> 六、从 exploitation 角度再补一层（非常重要）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%F0%9F%91%89-map-%E6%98%AF%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="toc-text"> 👉 Map 是类型系统</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E7%B1%BB%E5%9E%8B%E6%B7%B7%E6%B7%86%EF%BC%88type-confusion%EF%BC%89"><span class="toc-text"> 1. 类型混淆（Type Confusion）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-map-%E6%8E%A7%E5%88%B6%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-text"> 2. Map 控制内存布局</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-elements-vs-properties-%E6%B7%B7%E6%B7%86"><span class="toc-text"> 3. elements vs properties 混淆</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93%EF%BC%88%E9%9D%9E%E5%B8%B8%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text"> 七、一句话总结（非常重要）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text"> 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v8-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text"> V8 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%9C%8B%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B%EF%BC%9Ajavascript-%E5%BC%95%E6%93%8E%E6%98%AF%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="toc-text"> 先看整体流程：JavaScript 引擎是怎么工作的</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-parser%EF%BC%9A%E4%BB%8E%E6%BA%90%E7%A0%81%E5%88%B0-ast"><span class="toc-text"> 1. Parser：从源码到 AST</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-interpreter%EF%BC%9A%E4%BB%8E-ast-%E5%88%B0%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text"> 2. Interpreter：从 AST 到字节码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-compiler%EF%BC%9A%E7%83%AD%E7%82%B9%E4%BB%A3%E7%A0%81%E4%BC%9A%E8%A2%AB%E8%BF%9B%E4%B8%80%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="toc-text"> 3. Compiler：热点代码会被进一步优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-javascript-%E7%9A%84%E2%80%9C%E5%8A%A8%E6%80%81%E6%80%A7%E2%80%9D%E4%BC%9A%E7%BB%99%E5%BC%95%E6%93%8E%E5%B8%A6%E6%9D%A5%E5%9B%B0%E9%9A%BE"><span class="toc-text"> 为什么 JavaScript 的“动态性”会给引擎带来困难</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#javascript-%E5%AF%B9%E8%B1%A1%E5%9C%A8-v8-%E9%87%8C%E6%98%AF%E6%80%8E%E4%B9%88%E8%A1%A8%E7%A4%BA%E7%9A%84"><span class="toc-text"> JavaScript 对象在 V8 里是怎么表示的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#map-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9Av8-%E9%87%8C%E7%9A%84-hidden-class"><span class="toc-text"> Map 是什么：V8 里的 Hidden Class</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#map-%E9%87%8C%E8%AE%B0%E5%BD%95%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-text"> Map 里记录了什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-map-%E5%AD%98%E7%9A%84%E6%98%AF%E5%81%8F%E7%A7%BB%EF%BC%8C%E4%B8%8D%E6%98%AF%E5%80%BC"><span class="toc-text"> 为什么 Map 存的是偏移，不是值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#descriptorarray%EF%BC%9A%E5%91%BD%E5%90%8D%E5%B1%9E%E6%80%A7%E5%B8%83%E5%B1%80%E7%9A%84%E5%85%B3%E9%94%AE"><span class="toc-text"> DescriptorArray：命名属性布局的关键</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%BD%A2%E7%8A%B6%E6%98%AF%E6%80%8E%E4%B9%88%E5%8F%98%E5%8C%96%E7%9A%84%EF%BC%9Ashape-transition"><span class="toc-text"> 对象形状是怎么变化的：Shape Transition</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%9E%E6%80%A7%E9%A1%BA%E5%BA%8F%E4%B9%9F%E4%BC%9A%E5%BD%B1%E5%93%8D-shape"><span class="toc-text"> 属性顺序也会影响 Shape</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8-d8-%E7%9C%8B%E7%9C%8B-map-%E5%88%B0%E5%BA%95%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7"><span class="toc-text"> 用 d8 看看 Map 到底长什么样</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E4%B8%AA%E5%90%8C%E5%BD%A2%E5%AF%B9%E8%B1%A1%E4%BC%9A%E5%85%B1%E4%BA%AB%E4%B8%80%E4%B8%AA-map"><span class="toc-text"> 多个同形对象会共享一个 Map</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#back_pointer-%E5%92%8C-transition-tree"><span class="toc-text"> back_pointer 和 transition tree</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#properties%EF%BC%9A%E5%91%BD%E5%90%8D%E5%B1%9E%E6%80%A7%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-text"> Properties：命名属性的存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-in-object-properties"><span class="toc-text"> 1. In-object properties</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-properties-backing-store"><span class="toc-text"> 2. Properties backing store</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fast-properties-%E5%92%8C-slow-properties"><span class="toc-text"> Fast Properties 和 Slow Properties</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#elements%EF%BC%9A%E6%95%B0%E7%BB%84%E5%92%8C%E6%95%B4%E6%95%B0%E7%B4%A2%E5%BC%95%E5%B1%9E%E6%80%A7"><span class="toc-text"> Elements：数组和整数索引属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v8-%E4%BC%9A%E8%B7%9F%E8%B8%AA%E6%95%B0%E7%BB%84%E7%9A%84-elements-kind"><span class="toc-text"> V8 会跟踪数组的 Elements Kind</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#elements-kind-%E6%98%AF%E6%8C%89%E2%80%9C%E6%95%B4%E4%B8%AA%E6%95%B0%E7%BB%84%E2%80%9D%E8%B7%9F%E8%B8%AA%E7%9A%84"><span class="toc-text"> Elements Kind 是按“整个数组”跟踪的</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#packed-%E5%92%8C-holey"><span class="toc-text"> PACKED 和 HOLEY</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#elements-%E4%B9%9F%E4%BC%9A%E9%80%80%E5%8C%96%E6%88%90%E5%AD%97%E5%85%B8%E6%A8%A1%E5%BC%8F"><span class="toc-text"> Elements 也会退化成字典模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E5%9C%A8%E5%9B%9E%E5%88%B0-exploitation-%E8%A7%86%E8%A7%92%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%BA%9B%E7%BB%86%E8%8A%82%E9%87%8D%E8%A6%81"><span class="toc-text"> 现在回到 exploitation 视角：为什么这些细节重要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E5%86%85%E5%AD%98%E9%87%8C%E7%9C%8B%E5%AF%B9%E8%B1%A1%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%B0%83%E8%AF%95%E8%BE%93%E5%87%BA%E4%BC%9A%E8%AE%A9%E4%BA%BA%E5%9B%B0%E6%83%91"><span class="toc-text"> 在内存里看对象：为什么调试输出会让人困惑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pointer-tagging"><span class="toc-text"> Pointer Tagging</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E4%BB%A5%E6%80%8E%E6%A0%B7%E7%90%86%E8%A7%A3%E5%AE%83"><span class="toc-text"> 可以怎样理解它</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-smi-%E5%9C%A8%E5%86%85%E5%AD%98%E9%87%8C%E7%9C%8B%E8%B5%B7%E6%9D%A5%E5%83%8F%E2%80%9C%E7%BF%BB%E5%80%8D%E2%80%9D"><span class="toc-text"> 为什么 SMI 在内存里看起来像“翻倍”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E5%90%88%E8%B0%83%E8%AF%95%E5%9B%BE%E6%9D%A5%E7%9C%8B"><span class="toc-text"> 结合调试图来看</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pointer-compression"><span class="toc-text"> Pointer Compression</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%B0%E8%BF%99%E9%87%8C%EF%BC%8C%E5%BA%94%E8%AF%A5%E6%8A%8A%E4%BB%80%E4%B9%88%E8%AE%B0%E4%BD%8F"><span class="toc-text"> 到这里，应该把什么记住</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text"> 总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text"> 参考</span></a></li></ol>
       
     </div>
   </div>

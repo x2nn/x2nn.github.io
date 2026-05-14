@@ -9,7 +9,7 @@
   <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
   
   
-    <meta name="description" content="前言 前面的一篇文章 [1] 参考了大佬的英文文章 [2] ，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。 欢迎对v8感兴趣的师傅，一块交流学习！！！ 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？…" />
+    <meta name="description" content="前言 对之前文章的精简版 [1] 。 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？ 所有V8漏洞的本质都是：V8引擎在解析/执行JS代码的过程中，某个步骤的逻辑出现了错误，导致攻击者可以控制内存、执行任意代码。所以我们必须先知道「正常情况下V8是怎么工作的」，才能理解「哪里会出问题」。 1.2…" />
   
   
     <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
@@ -36,7 +36,7 @@
   <meta property="og:site_name" content="Keep your passion for what you love !" />
   <meta property="og:title" content="Chrome-v8学习-精简版-1 | Keep your passion for what you love !" />
   
-    <meta property="og:description" content="前言 前面的一篇文章 [1] 参考了大佬的英文文章 [2] ，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。 欢迎对v8感兴趣的师傅，一块交流学习！！！ 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？…" />
+    <meta property="og:description" content="前言 对之前文章的精简版 [1] 。 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？ 所有V8漏洞的本质都是：V8引擎在解析/执行JS代码的过程中，某个步骤的逻辑出现了错误，导致攻击者可以控制内存、执行任意代码。所以我们必须先知道「正常情况下V8是怎么工作的」，才能理解「哪里会出问题」。 1.2…" />
   
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://x2nn.github.io/2026/04/30/Chrome-v8学习-精简版-1/" />
@@ -49,7 +49,7 @@
       <meta property="article:published_time" content="2026-04-30T09:36:58.000Z" />
     
     
-      <meta property="article:modified_time" content="2026-04-30T11:27:36.441Z" />
+      <meta property="article:modified_time" content="2026-05-14T15:02:21.607Z" />
     
     
       <meta property="article:tag" content="V8" />
@@ -62,7 +62,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Chrome-v8学习-精简版-1 | Keep your passion for what you love !" />
   
-    <meta name="twitter:description" content="前言 前面的一篇文章 [1] 参考了大佬的英文文章 [2] ，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。 欢迎对v8感兴趣的师傅，一块交流学习！！！ 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？…" />
+    <meta name="twitter:description" content="前言 对之前文章的精简版 [1] 。 1、JavaScript引擎基础工作流 1.1 为什么要先学引擎原理？ 所有V8漏洞的本质都是：V8引擎在解析/执行JS代码的过程中，某个步骤的逻辑出现了错误，导致攻击者可以控制内存、执行任意代码。所以我们必须先知道「正常情况下V8是怎么工作的」，才能理解「哪里会出问题」。 1.2…" />
   
   <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
 
@@ -227,8 +227,8 @@
         <div class="post-attach">
           <span class="post-pubtime">
             <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-            <time datetime="2026-04-30T19:27:36+08:00">
-              2026-04-30 19:27
+            <time datetime="2026-05-14T23:02:21+08:00">
+              2026-05-14 23:02
             </time>
           </span>
           
@@ -264,8 +264,7 @@
       </header>
       <div class="markdown-body">
         <h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
-<p>前面的一篇文章<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>参考了大佬的英文文章<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>，靠翻译去看，有些东西还是很绕，掺杂了很多的源代码部分，有点难懂。这次我结合了ai，加上自己的一些理解，重新整理了一下逻辑，我觉得更好理解一些。</p>
-<p>欢迎对v8感兴趣的师傅，一块交流学习！！！</p>
+<p>对之前文章的精简版<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>。</p>
 <h2 id="1、javascript引擎基础工作流" tabindex="-1"><a class="headerlink" href="#1、javascript引擎基础工作流" aria-hidden="true"></a> 1、JavaScript引擎基础工作流</h2>
 <h3 id="11-为什么要先学引擎原理？" tabindex="-1"><a class="headerlink" href="#11-为什么要先学引擎原理？" aria-hidden="true"></a> 1.1 为什么要先学引擎原理？</h3>
 <p>所有V8漏洞的本质都是：V8引擎在解析/执行JS代码的过程中，某个步骤的逻辑出现了错误，导致攻击者可以控制内存、执行任意代码。所以我们必须先知道「正常情况下V8是怎么工作的」，才能理解「哪里会出问题」。</p>
@@ -644,8 +643,6 @@
 <ol class="footnotes-list">
 <li id="fn1" class="footnote-item"><p>Chrome学习-V8和JavaScript内部机制介绍 <a href="https://x2nn.github.io/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/">https://x2nn.github.io/2026/03/18/Chrome学习-V8和JavaScript内部机制介绍/</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
 </li>
-<li id="fn2" class="footnote-item"><p>Chrome Browser Exploitation, Part 1: Introduction to V8 and JavaScript Internals <a target="_blank" rel="noopener" href="https://jhalon.github.io/chrome-browser-exploitation-1/">https://jhalon.github.io/chrome-browser-exploitation-1/</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
-</li>
 </ol>
 </section>
 
@@ -663,7 +660,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-              2026-04-30 19:27:36
+              2026-05-14 23:02:21
             </span>
             
                   <span class="post-tags">

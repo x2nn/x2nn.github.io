@@ -11,7 +11,7 @@
   <rights>All rights reserved 2026, X2n</rights>
   <subtitle>X2n 的个人技术博客，记录 Web 安全、漏洞挖掘、渗透测试、内网与云安全等方向的学习笔记与实战复盘。</subtitle>
   <title>Keep your passion for what you love !</title>
-  <updated>2026-04-30T11:27:36.441Z</updated>
+  <updated>2026-05-14T15:02:21.607Z</updated>
   <entry>
     <author>
       <name>X2n</name>
@@ -24,10 +24,10 @@
     <published>2026-04-30T09:36:58.000Z</published>
     <summary>
       <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
-<p>前面的一篇文章<sup class="footnote-ref"><a]]>
+<p>对之前文章的精简版<sup class="footnote-ref"><a]]>
     </summary>
     <title>Chrome-v8学习-精简版-1</title>
-    <updated>2026-04-30T11:27:36.441Z</updated>
+    <updated>2026-05-14T15:02:21.607Z</updated>
   </entry>
   <entry>
     <author>
@@ -36,7 +36,6 @@
     <category term="云安全" scheme="https://x2nn.github.io/categories/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
     <category term="容器逃逸" scheme="https://x2nn.github.io/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"/>
-    <category term="云安全" scheme="https://x2nn.github.io/tags/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <id>https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/</id>
     <link href="https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8B/"/>
     <published>2026-04-04T08:52:05.000Z</published>
@@ -46,7 +45,7 @@
 <h2]]>
     </summary>
     <title>k8s-goat靶场练习-下</title>
-    <updated>2026-05-09T10:05:04.507Z</updated>
+    <updated>2026-05-10T04:36:28.469Z</updated>
   </entry>
   <entry>
     <author>
@@ -55,7 +54,6 @@
     <category term="云安全" scheme="https://x2nn.github.io/categories/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <category term="Kubernetes" scheme="https://x2nn.github.io/tags/Kubernetes/"/>
     <category term="容器逃逸" scheme="https://x2nn.github.io/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"/>
-    <category term="云安全" scheme="https://x2nn.github.io/tags/%E4%BA%91%E5%AE%89%E5%85%A8/"/>
     <id>https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8A/</id>
     <link href="https://x2nn.github.io/2026/04/04/k8s-goat%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-%E4%B8%8A/"/>
     <published>2026-04-04T08:45:15.000Z</published>
@@ -64,7 +62,7 @@
 <p>Kubernetes Goat<sup class="footnote-ref"><a]]>
     </summary>
     <title>k8s-goat靶场练习-上</title>
-    <updated>2026-05-09T10:04:59.276Z</updated>
+    <updated>2026-05-10T04:36:23.756Z</updated>
   </entry>
   <entry>
     <author>
@@ -78,10 +76,10 @@
     <published>2026-03-18T13:43:46.000Z</published>
     <summary>
       <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
-<p>英语不错的师傅们，建议直接看<a]]>
+<p>这篇文章主要整理自 Jack Halon 的 <a]]>
     </summary>
     <title>Chrome学习-V8和JavaScript内部机制介绍</title>
-    <updated>2026-04-30T11:15:18.830Z</updated>
+    <updated>2026-05-14T14:54:41.135Z</updated>
   </entry>
   <entry>
     <author>
@@ -213,7 +211,7 @@
       <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a>]]>
     </summary>
     <title>NTLM协议和Kerberos协议</title>
-    <updated>2025-11-23T07:05:11.601Z</updated>
+    <updated>2026-05-11T04:17:44.966Z</updated>
   </entry>
   <entry>
     <author>

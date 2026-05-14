@@ -1991,7 +1991,7 @@ a:hover {
   position: fixed;
   right: 2.2rem;
   bottom: 2.2rem;
-  /* The search overlay is rendered inside this fixed toolbar; keep its stacking context above sticky page content. */
+  /* 搜索弹层挂在工具栏内，父级层级必须高于 sticky 表头。 */
   z-index: 10000;
 }
 
