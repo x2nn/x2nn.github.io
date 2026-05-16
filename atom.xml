@@ -39,6 +39,7 @@
       <name>X2n</name>
     </author>
     <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="浏览器安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%AE%89%E5%85%A8/"/>
     <category term="V8" scheme="https://x2nn.github.io/tags/V8/"/>
     <category term="JavaScript" scheme="https://x2nn.github.io/tags/JavaScript/"/>
     <id>https://x2nn.github.io/2026/04/30/Chrome-v8%E5%AD%A6%E4%B9%A0-%E7%B2%BE%E7%AE%80%E7%89%88-1/</id>
@@ -49,7 +50,7 @@
 <p>对之前文章的精简版<sup class="footnote-ref"><a]]>
     </summary>
     <title>Chrome-v8学习-精简版-1</title>
-    <updated>2026-05-14T15:02:21.607Z</updated>
+    <updated>2026-05-16T04:02:48.120Z</updated>
   </entry>
   <entry>
     <author>
@@ -91,6 +92,7 @@
       <name>X2n</name>
     </author>
     <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
+    <category term="浏览器安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%AE%89%E5%85%A8/"/>
     <category term="V8" scheme="https://x2nn.github.io/tags/V8/"/>
     <category term="JavaScript" scheme="https://x2nn.github.io/tags/JavaScript/"/>
     <id>https://x2nn.github.io/2026/03/18/Chrome%E5%AD%A6%E4%B9%A0-V8%E5%92%8CJavaScript%E5%86%85%E9%83%A8%E6%9C%BA%E5%88%B6%E4%BB%8B%E7%BB%8D/</id>
@@ -101,7 +103,7 @@
 <p>这篇文章主要整理自 Jack Halon 的 <a]]>
     </summary>
     <title>Chrome 学习：V8和JavaScript内部机制介绍</title>
-    <updated>2026-05-14T15:21:16.104Z</updated>
+    <updated>2026-05-16T04:02:40.812Z</updated>
   </entry>
   <entry>
     <author>
@@ -123,6 +125,7 @@
       <name>X2n</name>
     </author>
     <category term="CTF" scheme="https://x2nn.github.io/categories/CTF/"/>
+    <category term="PWN" scheme="https://x2nn.github.io/categories/CTF/PWN/"/>
     <category term="heap Overflow" scheme="https://x2nn.github.io/tags/heap-Overflow/"/>
     <category term="bins" scheme="https://x2nn.github.io/tags/bins/"/>
     <category term="UAF" scheme="https://x2nn.github.io/tags/UAF/"/>
@@ -133,7 +136,7 @@
       <![CDATA[<h2 id="fmtstr_uaf" tabindex="-1"><a class="headerlink" href="#fmtstr_uaf" aria-hidden="true"></a>]]>
     </summary>
     <title>二进制堆的练习题</title>
-    <updated>2026-03-17T09:27:50.435Z</updated>
+    <updated>2026-05-16T04:04:25.058Z</updated>
   </entry>
   <entry>
     <author>
@@ -206,6 +209,7 @@
       <name>X2n</name>
     </author>
     <category term="CTF" scheme="https://x2nn.github.io/categories/CTF/"/>
+    <category term="PWN" scheme="https://x2nn.github.io/categories/CTF/PWN/"/>
     <category term="Stack Overflow" scheme="https://x2nn.github.io/tags/Stack-Overflow/"/>
     <id>https://x2nn.github.io/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/</id>
     <link href="https://x2nn.github.io/2025/12/14/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%88%E7%9A%84%E7%BB%83%E4%B9%A0%E9%A2%98/"/>
@@ -214,7 +218,7 @@
       <![CDATA[<h2 id="level0-pwn0" tabindex="-1"><a class="headerlink" href="#level0-pwn0" aria-hidden="true"></a> level0:]]>
     </summary>
     <title>二进制栈的练习题</title>
-    <updated>2026-01-17T09:37:56.641Z</updated>
+    <updated>2026-05-16T04:04:32.604Z</updated>
   </entry>
   <entry>
     <author>

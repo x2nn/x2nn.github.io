@@ -52,6 +52,8 @@
           
           <category> 二进制安全 </category>
           
+          <category> 浏览器安全 </category>
+          
       </categories>
       
       
@@ -133,6 +135,8 @@
           
           <category> 二进制安全 </category>
           
+          <category> 浏览器安全 </category>
+          
       </categories>
       
       
@@ -184,6 +188,8 @@
       <categories>
           
           <category> CTF </category>
+          
+          <category> PWN </category>
           
       </categories>
       
@@ -319,6 +325,8 @@
       <categories>
           
           <category> CTF </category>
+          
+          <category> PWN </category>
           
       </categories>
       
@@ -1298,6 +1306,8 @@
       <categories>
           
           <category> CTF </category>
+          
+          <category> Web </category>
           
       </categories>
       
