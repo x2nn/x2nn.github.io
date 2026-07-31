@@ -49,7 +49,7 @@
       <meta property="article:published_time" content="2026-05-14T15:18:46.000Z" />
     
     
-      <meta property="article:modified_time" content="2026-05-15T14:14:04.138Z" />
+      <meta property="article:modified_time" content="2026-06-14T14:10:29.955Z" />
     
     
       <meta property="article:tag" content="V8" />
@@ -235,8 +235,8 @@
         <div class="post-attach">
           <span class="post-pubtime">
             <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-            <time datetime="2026-05-15T22:14:04+08:00">
-              2026-05-15 22:14
+            <time datetime="2026-06-14T22:10:29+08:00">
+              2026-06-14 22:10
             </time>
           </span>
           
@@ -725,18 +725,106 @@
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /tmp/turbo</span><br><span class="line"></span><br><span class="line">./d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-turbo \</span><br><span class="line">  --trace-turbo-filter=rangeDemo \</span><br><span class="line">  --trace-turbo-path=<span class="regexp">/tmp/</span>turbo \</span><br><span class="line">  /home/x2n/<span class="title class_">Documents</span>/v8/poc/range_demo.<span class="property">js</span></span><br></pre></td></tr></table></figure>
 <p>然后把生成的 <code>turbo-rangeDemo-0.json</code> 导入 Turbolizer，就能看到下面的结果：</p>
 <p><img src="/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurborFan-JIT%E7%BC%96%E8%AF%91/image-20260515221030158.png" alt="image-20260515221030158" loading="lazy" decoding="async"></p>
-<p>然后点击xxx</p>
-<p>待补充</p>
-<p>这个例子里，<code>a</code> 只有两条来源：<code>1</code> 和 <code>2</code>。SSA 里通常会出现 <code>Phi</code> 节点来合并这两个值，所以在 <code>V8.TFTyper</code> 里你能看到 <code>Phi[kRepTagged]</code>，在 <code>V8.TFSimplifiedLowering</code> 里能看到它如何流向 <code>LoadElement</code> 或 <code>CheckBounds</code>。</p>
-<p>这也是我前面那句“<code>a</code> 可能是 <code>1</code> 或 <code>2</code>，因而 <code>values[a]</code> 的索引范围是受限的”的直接图像化版本。</p>
+<p>然后点击<code>30: Return</code>，点击键盘的↑键，可以看到其中忽略的一些节点。</p>
+<p><img src="/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurborFan-JIT%E7%BC%96%E8%AF%91/image-20260611210150849.png" alt="image-20260611210150849" loading="lazy" decoding="async"></p>
+<p>这张图里，<code>20: Merge</code> 下面那几步，正好把“范围分析如何继续流向真正的数组访问”展示出来了。</p>
+<p>先说一个很容易混淆的点：</p>
+<blockquote>
+<p><code>Merge</code> 合并的是控制流，<code>Phi</code> 合并的才是值。</p>
+</blockquote>
+<p>也就是说：</p>
+<ul>
+<li><code>19: IfFalse</code> 和 <code>21: IfTrue</code> 表示 <code>if (flag)</code> 的两条分支。</li>
+<li><code>20: Merge</code> 只负责把这两条控制流重新汇合。</li>
+<li>真正表示 “<code>a</code> 在这里可能是 <code>1</code> 或 <code>2</code>” 的，不是 <code>Merge</code>，而是下面的 <code>23: Phi[kRepTagged]</code>。</li>
+</ul>
+<p>可以按下面的顺序读这张图：</p>
+<ul>
+<li>
+<p><code>23: Phi[kRepTagged]</code><br>
+这是这张图最关键的节点。它把两条分支里的 <code>a = 1</code> 和 <code>a = 2</code> 合并成一个 SSA 值。也就是说，从这里往后，编译器知道：<code>a</code> 不再是“任意整数”，而是“来自两条路径之一的值”，也就是这里可以把它理解成只可能落在 <code>{1, 2}</code> 这个很窄的范围里。<code>kRepTagged</code> 则表示这个值此时仍然是 V8 的 tagged JavaScript value 表示。</p>
+</li>
+<li>
+<p><code>24: Checkpoint</code><br>
+这是一个恢复点。意思是：如果后面基于当前假设走的优化路径失败了，V8 需要能从这里恢复状态并 deopt 回未优化代码。</p>
+</li>
+<li>
+<p><code>36: CheckMaps</code><br>
+在真正按优化路径访问数组之前，V8 会先检查 <code>values</code> 的 <code>Map</code> 是否还是自己预期的那个。只有 <code>Map</code> 没变，后面关于数组布局、元素存储方式等假设才成立。</p>
+</li>
+<li>
+<p><code>37: LoadField[+8]</code><br>
+这一步通常可以把它理解成：从数组对象里取出后面边界检查要用到的关键信息，最常见的就是数组长度这类元数据。它会继续流向后面的 <code>CheckBounds</code>。</p>
+</li>
+<li>
+<p><code>39: CheckBounds</code><br>
+这里就是边界检查。它会拿 <code>Phi</code> 合并出来的索引值去和数组的合法范围比较，确认 <code>values[a]</code> 不越界。也正因为前面 <code>Phi</code> 已经把索引收窄到了一个很小的范围，所以 <code>CheckBounds</code> 在这里就有了更强的分析基础。</p>
+</li>
+<li>
+<p><code>38: LoadField[+12]</code><br>
+这一步通常可以理解成：把真正存放数组元素的 backing store 或 elements 指针取出来，供后面的元素读取使用。</p>
+</li>
+<li>
+<p><code>40: LoadElement</code><br>
+这才是真正的 <code>values[a]</code>。也就是说，前面的 <code>Phi -&gt; CheckMaps -&gt; CheckBounds -&gt; LoadField</code> 都是在为这一步铺路：先确认索引来源可控、对象布局没变、索引没有越界，然后再真正把元素取出来。</p>
+</li>
+<li>
+<p><code>29: NumberConstant[0]</code>、<code>30: Return</code>、<code>31: End</code><br>
+这些更多是返回路径上的收尾节点。对 <code>Range Analysis</code> 这一节来说，真正重要的还是前面那条链：索引值如何被合并、如何被检查、最后如何被拿去做数组访问。</p>
+</li>
+</ul>
+<p>如果把这一小段压缩成一句话，就是：</p>
+<blockquote>
+<p><code>20: Merge</code> 表示控制流重新汇合，<code>23: Phi[kRepTagged]</code> 表示索引值 <code>a</code> 被收窄成一个来自 <code>{1, 2}</code> 的合并值，而后面的 <code>CheckMaps</code>、<code>CheckBounds</code> 和 <code>LoadElement</code> 则说明这个受限索引会继续被拿去做真正的优化后数组访问。</p>
+</blockquote>
 <h3 id="bounds-checking-elimination（bce）" tabindex="-1"><a class="headerlink" href="#bounds-checking-elimination（bce）" aria-hidden="true"></a> Bounds Checking Elimination（BCE）</h3>
+<p>边界检查消除，BCE。</p>
 <p>BCE 的目标很直接：</p>
 <blockquote>
 <p>如果编译器已经证明数组索引一定合法，那就没必要每次都再做边界检查。</p>
 </blockquote>
 <p>示例：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">bceDemo</span>(<span class="params">values</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> sum = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; values.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    sum += values[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">%<span class="title class_">PrepareFunctionForOptimization</span>(bceDemo);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">  <span class="title function_">bceDemo</span>(arr);</span><br><span class="line">&#125;</span><br><span class="line">%<span class="title class_">OptimizeFunctionOnNextCall</span>(bceDemo);</span><br><span class="line"><span class="title function_">bceDemo</span>(arr);</span><br></pre></td></tr></table></figure>
-<p>看图时重点看 <code>V8.TFSimplifiedLowering</code> 和 <code>V8.TFLoadElimination</code>：如果 BCE 生效，<code>CheckBounds</code> 往往会变少、变窄，或者被搬到循环外。它不一定每次都“完全消失”，但你能明显看到检查结构被压缩了。</p>
+<p>对应的运行命令可以写成：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /tmp/turbo</span><br><span class="line"></span><br><span class="line">./d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-turbo \</span><br><span class="line">  --trace-turbo-filter=bceDemo \</span><br><span class="line">  --trace-turbo-path=/tmp/turbo \</span><br><span class="line">  /home/x2n/Documents/v8/poc/bce_demo.js</span><br></pre></td></tr></table></figure>
+<p>然后把生成的 <code>turbo-bceDemo-0.json</code> 导入 Turbolizer。这里和前面的 <code>Typer</code>、<code>Range Analysis</code> 不太一样：<code>BCE</code> 最关键的不是盯住某一个单独节点，而是观察 <strong>同一个数组访问相关节点，在不同 phase 里怎么变化</strong>。</p>
+<p><img src="/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurborFan-JIT%E7%BC%96%E8%AF%91/image-20260613121508293.png" alt="image-20260613121508293" loading="lazy" decoding="async"></p>
+<p>点击<code>48: Return</code>，点击键盘的↑键。</p>
+<p><code>34: LoopExitValue[kRepTagged]</code> 就是在表示“循环结束后带出来的那个值”，点击这个节点，点击键盘的↑键，继续跟。</p>
+<p>建议至少对比这两个阶段：</p>
+<ul>
+<li><code>V8.TFSimplifiedLowering</code></li>
+<li><code>V8.TFLoadElimination</code></li>
+</ul>
+<p>可以按下面的顺序看图：</p>
+<ol>
+<li>先找循环里的数组访问节点，也就是 <code>values[i]</code> 对应的那条路径。</li>
+<li>再找和它相连的 <code>CheckBounds</code>。</li>
+<li>对比不同 phase，观察这个 <code>CheckBounds</code> 是不是还在原地、是不是数量减少了、是不是被移动到了更靠前的位置。</li>
+</ol>
+<p>这一步真正想看的，不是“有没有一个叫 BCE 的节点”，而是下面这件事有没有发生：</p>
+<blockquote>
+<p>编译器已经根据循环条件 <code>i &lt; values.length</code> 证明了索引 <code>i</code> 在某个范围内，因此后面对 <code>values[i]</code> 的边界检查可以被缩减、前移，甚至在某些情况下直接删除。</p>
+</blockquote>
+<p>如果你在图里看到下面这种变化，就可以认为 BCE 在起作用：</p>
+<ul>
+<li>原本每次元素访问前都要经过 <code>CheckBounds</code></li>
+<li>后来 <code>CheckBounds</code> 数量减少了</li>
+<li>或者它被挪到了循环入口附近，不再和每一次 <code>LoadElement</code> 紧贴在一起</li>
+<li>或者某些访问路径已经不再单独保留边界检查</li>
+</ul>
+<p>如果写成更贴近这段代码的中文，就是：</p>
+<blockquote>
+<p>在 <code>for (let i = 0; i &lt; values.length; i++)</code> 这个循环里，<code>i &lt; values.length</code> 本身已经提供了很强的范围信息。TurboFan 会尝试利用这个事实，证明 <code>values[i]</code> 不会越界，从而减少重复的边界检查开销。</p>
+</blockquote>
+<p>所以 <code>BCE</code> 这一节真正该记住的，不是某个固定节点编号，而是这一条图上的变化链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">循环条件提供范围信息</span><br><span class="line">  -&gt; 编译器相信 i 不会越界</span><br><span class="line">  -&gt; CheckBounds 被缩减 / 前移 / 删除</span><br><span class="line">  -&gt; LoadElement 走更短的快路径</span><br></pre></td></tr></table></figure>
+<p>和前面的 <code>Range Analysis</code> 连起来看，会更清楚：</p>
+<ul>
+<li><code>Range Analysis</code> 负责回答“索引大概落在什么范围里”</li>
+<li><code>BCE</code> 则继续消费这个结论，尝试把原本必须保留的边界检查压缩掉</li>
+</ul>
+<p>也正因为如此，<code>BCE</code> 一直是浏览器利用文章里最值得警惕的一类优化。</p>
 <p>这类优化的危险点也很明确：</p>
 <blockquote>
 <p>一旦“证明过程”错了，删掉的就不是无关紧要的代码，而是安全边界本身。</p>
@@ -1003,7 +1091,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-              2026-05-15 22:14:04
+              2026-06-14 22:10:29
             </span>
             
                   <span class="post-tags">
