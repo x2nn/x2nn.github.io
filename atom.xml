@@ -42,15 +42,15 @@
     <category term="Sparkplug" scheme="https://x2nn.github.io/tags/Sparkplug/"/>
     <category term="TurboFan" scheme="https://x2nn.github.io/tags/TurboFan/"/>
     <category term="JIT" scheme="https://x2nn.github.io/tags/JIT/"/>
-    <id>https://x2nn.github.io/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurborFan-JIT%E7%BC%96%E8%AF%91/</id>
-    <link href="https://x2nn.github.io/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurborFan-JIT%E7%BC%96%E8%AF%91/"/>
+    <id>https://x2nn.github.io/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurboFan-JIT%E7%BC%96%E8%AF%91/</id>
+    <link href="https://x2nn.github.io/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurboFan-JIT%E7%BC%96%E8%AF%91/"/>
     <published>2026-05-14T15:18:46.000Z</published>
     <summary>
       <![CDATA[<h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
 <p>这篇笔记主要整理自 Jack Halon 的文章 <a]]>
     </summary>
     <title>Chrome 学习：Ignition、Sparkplug 和 TurboFan JIT 编译</title>
-    <updated>2026-08-19T06:15:48.646Z</updated>
+    <updated>2026-08-19T06:21:18.066Z</updated>
   </entry>
   <entry>
     <author>
