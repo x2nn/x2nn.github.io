@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="X2n" />
+
+  <!-- 搜索引擎摘要：优先页面自定义 description / excerpt / 正文前 160 字，最后回落到站点 description -->
+  
+  
+    <meta name="description" content="前言 本文主要记录 V8 中 TurboFan 优化编译器和 Deopt 机制的基础学习过程。 在 V8 的执行流程中，Ignition 负责解释执行字节码，Sparkplug 负责快速生成 baseline 机器码，而 TurboFan 负责基于运行时反馈生成更高质量的优化代码。TurboFan 的优化通常建立在一些…" />
+  
+  
+    <meta name="keywords" content="X2n,Web安全,漏洞挖掘,渗透测试,SRC,内网渗透,Kubernetes 安全,云安全,安全研究,技术博客" />
+  
+
+  
+  
+  <title>
+    
+      Chrome学习-TurboFan优化与Deopt机制 
+      
+      
+      |
+    
+     Keep your passion for what you love !
+  </title>
+
+  
+
+  <!-- Canonical URL：避免重复内容降权 -->
+  <link rel="canonical" href="https://x2nn.github.io/2026/08/19/Chrome学习-TurboFan优化与Deopt机制/" />
+
+  <!-- Open Graph (Facebook / 微信 / 飞书 / LinkedIn) -->
+  <meta property="og:site_name" content="Keep your passion for what you love !" />
+  <meta property="og:title" content="Chrome学习-TurboFan优化与Deopt机制 | Keep your passion for what you love !" />
+  
+    <meta property="og:description" content="前言 本文主要记录 V8 中 TurboFan 优化编译器和 Deopt 机制的基础学习过程。 在 V8 的执行流程中，Ignition 负责解释执行字节码，Sparkplug 负责快速生成 baseline 机器码，而 TurboFan 负责基于运行时反馈生成更高质量的优化代码。TurboFan 的优化通常建立在一些…" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://x2nn.github.io/2026/08/19/Chrome学习-TurboFan优化与Deopt机制/" />
+  <meta property="og:image" content="https://x2nn.github.io/images/avatar.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="zh_CN" />
+  
+    
+      <meta property="article:published_time" content="2026-08-19T06:59:20.000Z" />
+    
+    
+      <meta property="article:modified_time" content="2026-08-26T18:08:09.877Z" />
+    
+    
+      <meta property="article:tag" content="Chrome" />
+    
+      <meta property="article:tag" content="V8" />
+    
+      <meta property="article:tag" content="TurboFan" />
+    
+      <meta property="article:tag" content="JIT" />
+    
+      <meta property="article:tag" content="Deopt" />
+    
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Chrome学习-TurboFan优化与Deopt机制 | Keep your passion for what you love !" />
+  
+    <meta name="twitter:description" content="前言 本文主要记录 V8 中 TurboFan 优化编译器和 Deopt 机制的基础学习过程。 在 V8 的执行流程中，Ignition 负责解释执行字节码，Sparkplug 负责快速生成 baseline 机器码，而 TurboFan 负责基于运行时反馈生成更高质量的优化代码。TurboFan 的优化通常建立在一些…" />
+  
+  <meta name="twitter:image" content="https://x2nn.github.io/images/avatar.png" />
+
+  <!-- RSS 订阅：浏览器与阅读器可自动发现 -->
+  <link rel="alternate" type="application/atom+xml" title="Keep your passion for what you love ! Atom Feed" href="/atom.xml" />
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+    
+<link rel="stylesheet" href="/css/figcaption/mac-block.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+  
+<script src="/js/progressBar.js"></script>
+
+  
+<script src="/js/headerlinkCopy.js"></script>
+
+
+  
+
+  
+
+  <!-- Cloudflare Web Analytics（零 cookie、隐私友好） -->
+  
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "1e1fd0957b6d4ca8a09a54a598b7b525"}'></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="" loading="lazy" decoding="async">
+      
+    </a>
+    <div class="nickname"><a href="/"></a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          <a href="/categories/">Category</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+        <li class="nav-item" data-path="/collections/">
+          <a href="/collections/">Collections</a>
+        </li>
+      
+        <li class="nav-item" data-path="/journals/">
+          <a href="/journals/">Journals</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <header class="post-header">
+        <h1 class="post-title">Chrome学习-TurboFan优化与Deopt机制</h1>
+        <div class="post-attach">
+          <span class="post-pubtime">
+            <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+            <time datetime="2026-08-27T02:08:09+08:00">
+              2026-08-27 02:08
+            </time>
+          </span>
+          
+                <span class="post-tags">
+                  <i class="iconfont icon-tags mr-10" title="标签"></i>
+                  
+                  <span class="span--tag mr-8">
+                    <a href="/tags/Chrome/" title="Chrome">
+                      #Chrome
+                    </a>
+                  </span>
+                  
+                  <span class="span--tag mr-8">
+                    <a href="/tags/V8/" title="V8">
+                      #V8
+                    </a>
+                  </span>
+                  
+                  <span class="span--tag mr-8">
+                    <a href="/tags/TurboFan/" title="TurboFan">
+                      #TurboFan
+                    </a>
+                  </span>
+                  
+                  <span class="span--tag mr-8">
+                    <a href="/tags/JIT/" title="JIT">
+                      #JIT
+                    </a>
+                  </span>
+                  
+                  <span class="span--tag mr-8">
+                    <a href="/tags/Deopt/" title="Deopt">
+                      #Deopt
+                    </a>
+                  </span>
+                  
+                </span>
+            
+        </div>
+      </header>
+      <div class="markdown-body">
+        <h2 id="前言" tabindex="-1"><a class="headerlink" href="#前言" aria-hidden="true"></a> 前言</h2>
+<p>本文主要记录 V8 中 TurboFan 优化编译器和 Deopt 机制的基础学习过程。</p>
+<p>在 V8 的执行流程中，Ignition 负责解释执行字节码，Sparkplug 负责快速生成 baseline 机器码，而 TurboFan 负责基于运行时反馈生成更高质量的优化代码。TurboFan 的优化通常建立在一些运行时假设之上，例如对象的 Map 是否稳定、属性访问形态是否稳定、参数类型是否稳定等。</p>
+<p>这些假设一旦失效，V8 需要从优化代码回退到解释器能够理解的状态，这个过程就是 Deopt。</p>
+<p>本文先通过一个最小实验观察 TurboFan 优化和 <code>wrong map</code> Deopt 现象，为后续继续学习 TurboFan 编译流程、Map 推断、FrameState，以及 CVE-2020-6418 做铺垫。</p>
+<h2 id="实验环境" tabindex="-1"><a class="headerlink" href="#实验环境" aria-hidden="true"></a> 实验环境</h2>
+<p>本文使用的 V8 环境是单独搭建的旧版本环境：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/home/x2n/Documents/v8-cve-2020-6418/v8</span><br></pre></td></tr></table></figure>
+<p>对应的 V8 版本为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">8.2.0 (candidate)</span><br></pre></td></tr></table></figure>
+<p>当前源码提交为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bdaa7d66a37adcc1f1d81c9b0f834327a74ffe07</span><br></pre></td></tr></table></figure>
+<p>该提交是 CVE-2020-6418 修复提交 <code>fb0a60e15695466621cf65932f9152935d859447</code> 之前的版本。本文暂时不分析漏洞利用细节，只先学习 TurboFan 优化和 Deopt 的基本现象。</p>
+<h2 id="实验目标" tabindex="-1"><a class="headerlink" href="#实验目标" aria-hidden="true"></a> 实验目标</h2>
+<p>本文先不直接阅读大量 TurboFan 源码，而是通过一个最小实验观察：</p>
+<ul>
+<li>函数什么时候被 TurboFan 优化？</li>
+<li>优化后的代码依赖了什么假设？</li>
+<li>当假设失败时，V8 如何触发 Deopt？</li>
+</ul>
+<p>整体流程可以先理解为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 55, &quot;rankSpacing&quot;: 55, &quot;wrappingWidth&quot;: 320&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart TD</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;JavaScript 源码&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;Ignition 生成 Bytecode&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;执行函数并收集反馈&lt;/div&gt;&quot;]</span><br><span class="line">    C --&gt; D[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;FeedbackVector / Inline Cache&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; E[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;函数变热或被手动标记优化&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; F[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;TurboFan 编译优化代码&lt;/div&gt;&quot;]</span><br><span class="line">    F --&gt; G[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;Optimized Code&lt;/div&gt;&quot;]</span><br><span class="line">    G --&gt; H&#123;&quot;&lt;div style=&#x27;min-width:200px&#x27;&gt;优化假设是否成立？&lt;/div&gt;&quot;&#125;</span><br><span class="line">    H -- &quot;成立&quot; --&gt; I[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;继续执行快速路径&lt;/div&gt;&quot;]</span><br><span class="line">    H -- &quot;失败&quot; --&gt; J[&quot;&lt;div style=&#x27;min-width:180px&#x27;&gt;触发 Deopt&lt;/div&gt;&quot;]</span><br><span class="line">    J --&gt; K[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;回到 Ignition 继续执行&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<p>这里的 <code>Inline Cache</code> 简称 <code>IC</code>，中文一般叫“内联缓存”。它不是 CPU cache 那种硬件缓存，而是 V8 在运行时为属性访问、函数调用、二元运算等操作记录反馈信息的机制。后面看到的 <code>LoadProperty MONOMORPHIC</code>、<code>LoadProperty POLYMORPHIC</code>，都可以理解为某个属性读取点的 IC 状态。</p>
+<h2 id="实验代码" tabindex="-1"><a class="headerlink" href="#实验代码" aria-hidden="true"></a> 实验代码</h2>
+<p>创建测试文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/x2n/Documents/v8-cve-2020-6418</span><br><span class="line">vim testjs/turbofan-deopt-01.js</span><br></pre></td></tr></table></figure>
+<p>测试代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">f</span>(<span class="params">o</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> o.<span class="property">x</span> + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> a = &#123;<span class="attr">x</span>: <span class="number">1</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> b = &#123;<span class="attr">x</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">y</span>: <span class="number">3</span>&#125;;</span><br><span class="line"></span><br><span class="line">%<span class="title class_">PrepareFunctionForOptimization</span>(f);</span><br><span class="line"><span class="title function_">f</span>(a);</span><br><span class="line"><span class="title function_">f</span>(b);</span><br><span class="line">%<span class="title class_">OptimizeFunctionOnNextCall</span>(f);</span><br><span class="line"><span class="title function_">print</span>(<span class="title function_">f</span>(a));</span><br><span class="line"><span class="title function_">print</span>(<span class="title function_">f</span>(c));</span><br></pre></td></tr></table></figure>
+<p>这里的重点是：</p>
+<ul>
+<li><code>a</code> 和 <code>b</code> 都有属性 <code>x</code></li>
+<li><code>c</code> 没有属性 <code>x</code>，只有属性 <code>y</code></li>
+<li><code>a</code> 和 <code>b</code> 的对象形状比较接近</li>
+<li><code>c</code> 的对象形状和前两个对象不同</li>
+</ul>
+<p>在 V8 中，对象的形状通常会通过 <code>Map</code> 描述。TurboFan 可能会根据之前收集到的反馈信息，认为参数 <code>o</code> 大概率会保持同一种对象形状。</p>
+<h2 id="运行命令" tabindex="-1"><a class="headerlink" href="#运行命令" aria-hidden="true"></a> 运行命令</h2>
+<p>使用 <code>d8</code> 运行测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/x2n/Documents/v8-cve-2020-6418</span><br><span class="line"></span><br><span class="line">./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-opt \</span><br><span class="line">  --trace-deopt \</span><br><span class="line">  testjs/turbofan-deopt-01.js</span><br></pre></td></tr></table></figure>
+<p>参数含义：</p>
+<ul>
+<li><code>--allow-natives-syntax</code>：允许使用 <code>%PrepareFunctionForOptimization</code>、<code>%OptimizeFunctionOnNextCall</code> 这类 V8 内部调试函数</li>
+<li><code>--trace-opt</code>：打印函数被优化的日志</li>
+<li><code>--trace-deopt</code>：打印函数发生 Deopt 的日志</li>
+</ul>
+<h2 id="执行流程" tabindex="-1"><a class="headerlink" href="#执行流程" aria-hidden="true"></a> 执行流程</h2>
+<p>这段代码的执行过程可以画成下面这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;sequence&quot;: &#123;&quot;actorMargin&quot;: 70, &quot;messageMargin&quot;: 55, &quot;width&quot;: 180, &quot;boxTextMargin&quot;: 8&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">sequenceDiagram</span><br><span class="line">    participant JS as JavaScript 代码</span><br><span class="line">    participant V8 as V8</span><br><span class="line">    participant TF as TurboFan</span><br><span class="line">    participant DEOPT as Deopt</span><br><span class="line"></span><br><span class="line">    JS-&gt;&gt;V8: %PrepareFunctionForOptimization(f)</span><br><span class="line">    JS-&gt;&gt;V8: f(a)</span><br><span class="line">    JS-&gt;&gt;V8: f(b)</span><br><span class="line">    V8-&gt;&gt;V8: 收集 o.x 的运行时反馈</span><br><span class="line">    JS-&gt;&gt;V8: %OptimizeFunctionOnNextCall(f)</span><br><span class="line">    JS-&gt;&gt;V8: f(a)</span><br><span class="line">    V8-&gt;&gt;TF: 使用 TurboFan 编译 f</span><br><span class="line">    TF--&gt;&gt;V8: 生成 optimized code</span><br><span class="line">    V8--&gt;&gt;JS: 输出 2</span><br><span class="line">    JS-&gt;&gt;V8: f(c)</span><br><span class="line">    V8-&gt;&gt;V8: 优化代码检查对象 Map</span><br><span class="line">    V8-&gt;&gt;DEOPT: Map 不匹配，触发 wrong map</span><br><span class="line">    DEOPT--&gt;&gt;V8: 恢复解释器帧</span><br><span class="line">    V8--&gt;&gt;JS: 按 JavaScript 语义继续执行，输出 NaN</span><br></pre></td></tr></table></figure>
+<h2 id="关键输出" tabindex="-1"><a class="headerlink" href="#关键输出" aria-hidden="true"></a> 关键输出</h2>
+<p>运行后可以看到如下关键日志：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">x2n@x2n:~/Documents/v8-cve-2020-6418$ ./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-opt \</span><br><span class="line">  --trace-deopt \</span><br><span class="line">  testjs/turbofan-deopt-01.js</span><br><span class="line"></span><br><span class="line">[manually marking 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; for non-concurrent optimization]</span><br><span class="line">[compiling method 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; using TurboFan]</span><br><span class="line">[optimizing 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; - took 7.899, 7.852, 0.518 ms]</span><br><span class="line">2</span><br><span class="line">[deoptimizing (DEOPT eager): begin 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; (opt #0) @1, FP to SP delta: 24, caller sp: 0x7fff0706aa90]</span><br><span class="line">            ;;; deoptimize at &lt;testjs/turbofan-deopt-01.js:2:12&gt;, wrong map</span><br><span class="line">  reading input frame f =&gt; bytecode_offset=0, args=2, height=0, retval=0(#0); inputs:</span><br><span class="line">      0: 0x0645082502b1 ;  [fp -  16]  0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt;</span><br><span class="line">      1: 0x0645080c0ddd ;  [fp +  24]  0x0645080c0ddd &lt;JSGlobal Object&gt;</span><br><span class="line">      2: 0x0645080c5e9d ; rcx 0x0645080c5e9d &lt;Object map = 0x64508284ea1&gt;</span><br><span class="line">      3: 0x064508250295 ;  [fp -  24]  0x064508250295 &lt;ScriptContext[5]&gt;</span><br><span class="line">      4: 0x064508040815 ; (literal  2) 0x064508040815 &lt;Odd Oddball: optimized_out&gt;</span><br><span class="line">  translating interpreted frame f =&gt; bytecode_offset=0, variable_frame_size=8, frame_size=72</span><br><span class="line">    0x7fff0706aa88: [top +  64] &lt;- 0x0645080c0ddd &lt;JSGlobal Object&gt; ;  stack parameter (input #1)</span><br><span class="line">    0x7fff0706aa80: [top +  56] &lt;- 0x0645080c5e9d &lt;Object map = 0x64508284ea1&gt; ;  stack parameter (input #2)</span><br><span class="line">    -------------------------</span><br><span class="line">    0x7fff0706aa78: [top +  48] &lt;- 0x74f506b91a91 ;  caller&#x27;s pc</span><br><span class="line">    0x7fff0706aa70: [top +  40] &lt;- 0x7fff0706aad0 ;  caller&#x27;s fp</span><br><span class="line">    0x7fff0706aa68: [top +  32] &lt;- 0x064508250295 &lt;ScriptContext[5]&gt; ;  context (input #3)</span><br><span class="line">    0x7fff0706aa60: [top +  24] &lt;- 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; ;  function (input #0)</span><br><span class="line">    0x7fff0706aa58: [top +  16] &lt;- 0x064508250385 &lt;BytecodeArray[8]&gt; ;  bytecode array</span><br><span class="line">    0x7fff0706aa50: [top +   8] &lt;- 0x000000000042 &lt;Smi 33&gt; ;  bytecode offset</span><br><span class="line">    -------------------------</span><br><span class="line">    0x7fff0706aa48: [top +   0] &lt;- 0x064508040815 &lt;Odd Oddball: optimized_out&gt; ;  accumulator (input #4)</span><br><span class="line">[deoptimizing (eager): end 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; @1 =&gt; node=0, pc=0x74f506b922a0, caller sp=0x7fff0706aa90, took 0.458 ms]</span><br><span class="line">NaN</span><br></pre></td></tr></table></figure>
+<p>这些输出说明：</p>
+<ol>
+<li><code>f</code> 被手动标记为需要优化</li>
+<li>V8 使用 TurboFan 编译 <code>f</code></li>
+<li>TurboFan 成功生成优化代码</li>
+<li><code>print(f(a))</code> 输出 <code>2</code></li>
+<li><code>print(f(c))</code> 触发 <code>wrong map</code> Deopt</li>
+<li>Deopt 后程序继续按照 JavaScript 语义执行，最终输出 <code>NaN</code></li>
+</ol>
+<h2 id="日志解析" tabindex="-1"><a class="headerlink" href="#日志解析" aria-hidden="true"></a> 日志解析</h2>
+<h3 id="优化日志" tabindex="-1"><a class="headerlink" href="#优化日志" aria-hidden="true"></a> 优化日志</h3>
+<p>第一段日志：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[manually marking 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; for non-concurrent optimization]</span><br></pre></td></tr></table></figure>
+<p>这是因为测试代码中调用了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%<span class="title class_">OptimizeFunctionOnNextCall</span>(f);</span><br></pre></td></tr></table></figure>
+<p>它告诉 V8：下一次调用 <code>f</code> 时，尝试对该函数进行优化编译。</p>
+<p>随后出现：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[compiling method 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; using TurboFan]</span><br></pre></td></tr></table></figure>
+<p>这说明 <code>f</code> 被交给 TurboFan 编译。TurboFan 会结合函数 bytecode 和之前收集到的反馈信息，生成优化后的机器码。</p>
+<p>再后面：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[optimizing 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; - took 7.899, 7.852, 0.518 ms]</span><br></pre></td></tr></table></figure>
+<p>表示 TurboFan 已经完成优化编译。</p>
+<h3 id="输出-2-的原因" tabindex="-1"><a class="headerlink" href="#输出-2-的原因" aria-hidden="true"></a> 输出 2 的原因</h3>
+<p>在执行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">print</span>(<span class="title function_">f</span>(a));</span><br></pre></td></tr></table></figure>
+<p>时，<code>a.x</code> 的值是 <code>1</code>，所以：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> a.<span class="property">x</span> + <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>结果为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2</span><br></pre></td></tr></table></figure>
+<p>这一次调用发生在 <code>f</code> 被标记优化之后，因此 V8 会尝试对 <code>f</code> 进行 TurboFan 优化。</p>
+<h3 id="wrong-map-的原因" tabindex="-1"><a class="headerlink" href="#wrong-map-的原因" aria-hidden="true"></a> wrong map 的原因</h3>
+<p>关键日志是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">;;; deoptimize at &lt;testjs/turbofan-deopt-01.js:2:12&gt;, wrong map</span><br></pre></td></tr></table></figure>
+<p>源码第 2 行是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> o.<span class="property">x</span> + <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>也就是说，Deopt 发生在读取 <code>o.x</code> 附近。</p>
+<p>前面 <code>f(a)</code>、<code>f(b)</code> 的调用让 V8 收集到一种反馈：参数 <code>o</code> 看起来像是拥有属性 <code>x</code> 的对象。于是 TurboFan 可以生成一条更快的属性读取路径。</p>
+<p>但是这条快速路径通常不是无条件执行的，它依赖一个假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">传入对象的 Map 仍然是之前见过的 Map。</span><br></pre></td></tr></table></figure>
+<p>当执行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">print</span>(<span class="title function_">f</span>(c));</span><br></pre></td></tr></table></figure>
+<p>时，<code>c</code> 是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">y</span>: <span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>它和 <code>{x: 1}</code>、<code>{x: 2}</code> 的对象形状不同，因此 Map 不同。优化代码中的 Map 检查失败，V8 不能继续相信当前优化代码，于是触发 Deopt。</p>
+<p>这就是 <code>wrong map</code> 的含义。</p>
+<p>可以把这个过程理解为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 55, &quot;rankSpacing&quot;: 55, &quot;wrappingWidth&quot;: 340&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart TD</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;f(a), f(b)&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:280px&#x27;&gt;反馈显示参数 o 通常拥有属性 x&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C[&quot;&lt;div style=&#x27;min-width:300px&#x27;&gt;TurboFan 为 o.x 生成快速属性读取路径&lt;/div&gt;&quot;]</span><br><span class="line">    C --&gt; D[&quot;&lt;div style=&#x27;min-width:240px&#x27;&gt;优化代码中保留 Map Check&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; E[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;f(c) 传入 &#123;y: 3&#125;&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; F&#123;&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;对象 Map 是否匹配？&lt;/div&gt;&quot;&#125;</span><br><span class="line">    F -- &quot;匹配&quot; --&gt; G[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;继续执行优化代码&lt;/div&gt;&quot;]</span><br><span class="line">    F -- &quot;不匹配&quot; --&gt; H[&quot;&lt;div style=&#x27;min-width:240px&#x27;&gt;触发 wrong map Deopt&lt;/div&gt;&quot;]</span><br><span class="line">    H --&gt; I[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;回到解释器继续执行&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<h3 id="输出-nan-的原因" tabindex="-1"><a class="headerlink" href="#输出-nan-的原因" aria-hidden="true"></a> 输出 NaN 的原因</h3>
+<p>Deopt 并不代表程序崩溃，也不代表 JavaScript 语义错误。</p>
+<p>Deopt 的作用是：当优化代码的假设失败时，V8 回退到解释器可以理解的执行状态，然后继续按照普通 JavaScript 语义运行。</p>
+<p>对于：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">f</span>(c)</span><br></pre></td></tr></table></figure>
+<p>因为 <code>c</code> 没有 <code>x</code> 属性，所以：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c.<span class="property">x</span></span><br></pre></td></tr></table></figure>
+<p>结果是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">undefined</span></span><br></pre></td></tr></table></figure>
+<p>因此：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">undefined</span> + <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>结果就是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NaN</span><br></pre></td></tr></table></figure>
+<h2 id="deopt-的作用" tabindex="-1"><a class="headerlink" href="#deopt-的作用" aria-hidden="true"></a> Deopt 的作用</h2>
+<p>Deopt 的核心作用是保证语义正确性。</p>
+<p>优化代码为了性能，会省略一些通用路径，只保留更快的执行路径。但是这些快速路径依赖运行时假设。当假设失效时，V8 不能继续执行当前优化代码，而是需要恢复到解释器能够理解的状态。</p>
+<p>这个恢复过程依赖 TurboFan 编译时记录的 deopt metadata，例如 <code>FrameState</code>。这些信息可以帮助 V8 把 optimized frame 转换回 interpreted frame。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 55, &quot;rankSpacing&quot;: 55, &quot;wrappingWidth&quot;: 360&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart TD</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;Optimized Code 正在执行&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;Guard / Map Check 失败&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;触发 eager deopt&lt;/div&gt;&quot;]</span><br><span class="line">    C --&gt; D[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;读取 optimized frame&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; E[&quot;&lt;div style=&#x27;min-width:340px&#x27;&gt;根据 FrameState 和 deopt metadata 翻译状态&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; F[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;恢复 interpreted frame&lt;/div&gt;&quot;]</span><br><span class="line">    F --&gt; G[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;回到 Ignition&lt;/div&gt;&quot;]</span><br><span class="line">    G --&gt; H[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;继续执行 JavaScript 语义&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<p>在本次实验的日志中，可以看到类似：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">reading input frame f =&gt; bytecode_offset=0, args=2, height=0, retval=0(#0); inputs:</span><br><span class="line">    0: 0x0645082502b1 ;  [fp -  16]  0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt;</span><br><span class="line">    1: 0x0645080c0ddd ;  [fp +  24]  0x0645080c0ddd &lt;JSGlobal Object&gt;</span><br><span class="line">    2: 0x0645080c5e9d ; rcx 0x0645080c5e9d &lt;Object map = 0x64508284ea1&gt;</span><br><span class="line">    3: 0x064508250295 ;  [fp -  24]  0x064508250295 &lt;ScriptContext[5]&gt;</span><br><span class="line">    4: 0x064508040815 ; (literal  2) 0x064508040815 &lt;Odd Oddball: optimized_out&gt;</span><br><span class="line">translating interpreted frame f =&gt; bytecode_offset=0, variable_frame_size=8, frame_size=72</span><br><span class="line">  0x7fff0706aa88: [top +  64] &lt;- 0x0645080c0ddd &lt;JSGlobal Object&gt; ;  stack parameter (input #1)</span><br><span class="line">  0x7fff0706aa80: [top +  56] &lt;- 0x0645080c5e9d &lt;Object map = 0x64508284ea1&gt; ;  stack parameter (input #2)</span><br><span class="line">  -------------------------</span><br><span class="line">  0x7fff0706aa78: [top +  48] &lt;- 0x74f506b91a91 ;  caller&#x27;s pc</span><br><span class="line">  0x7fff0706aa70: [top +  40] &lt;- 0x7fff0706aad0 ;  caller&#x27;s fp</span><br><span class="line">  0x7fff0706aa68: [top +  32] &lt;- 0x064508250295 &lt;ScriptContext[5]&gt; ;  context (input #3)</span><br><span class="line">  0x7fff0706aa60: [top +  24] &lt;- 0x0645082502b1 &lt;JSFunction f (sfi = 0x645082500bd)&gt; ;  function (input #0)</span><br><span class="line">  0x7fff0706aa58: [top +  16] &lt;- 0x064508250385 &lt;BytecodeArray[8]&gt; ;  bytecode array</span><br><span class="line">  0x7fff0706aa50: [top +   8] &lt;- 0x000000000042 &lt;Smi 33&gt; ;  bytecode offset</span><br><span class="line">  -------------------------</span><br><span class="line">  0x7fff0706aa48: [top +   0] &lt;- 0x064508040815 &lt;Odd Oddball: optimized_out&gt; ;  accumulator (input #4)</span><br></pre></td></tr></table></figure>
+<p>这说明 V8 正在把优化代码中的执行现场翻译成解释器帧，然后回到 Ignition 继续执行。</p>
+<h2 id="从-bytecode-看属性访问反馈" tabindex="-1"><a class="headerlink" href="#从-bytecode-看属性访问反馈" aria-hidden="true"></a> 从 Bytecode 看属性访问反馈</h2>
+<p>前面的实验已经观察到 <code>wrong map</code> Deopt。接下来需要继续理解一个问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TurboFan 是怎么知道参数对象之前是什么形状的？</span><br></pre></td></tr></table></figure>
+<p>这就需要往前看 Ignition 执行阶段的 bytecode 和反馈信息。</p>
+<h3 id="测试代码" tabindex="-1"><a class="headerlink" href="#测试代码" aria-hidden="true"></a> 测试代码</h3>
+<p>创建一个更聚焦的属性读取测试：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">f</span>(<span class="params">o</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> o.<span class="property">x</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> a = &#123;<span class="attr">x</span>: <span class="number">1</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> b = &#123;<span class="attr">x</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="title function_">f</span>(a);</span><br><span class="line"><span class="title function_">f</span>(b);</span><br><span class="line"><span class="title function_">f</span>(c);</span><br></pre></td></tr></table></figure>
+<p>这里想观察的是 <code>o.x</code> 这个属性读取点，在 Ignition bytecode 里会被表示成什么。</p>
+<h3 id="trace-ic-没有输出" tabindex="-1"><a class="headerlink" href="#trace-ic-没有输出" aria-hidden="true"></a> trace-ic 没有输出</h3>
+<p>先尝试使用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-ic \</span><br><span class="line">  testjs/feedback-map-01.js</span><br></pre></td></tr></table></figure>
+<p>这次运行没有明显输出。这个现象暂时不影响继续分析，因为不同 V8 版本中 IC 相关日志不一定都会直接打印到 stdout，也可能需要配合其他 log 参数。</p>
+<p>当前阶段可以先使用 <code>--print-bytecode</code> 观察 Ignition 生成的字节码。</p>
+<p>需要注意，文件名应该是：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">testjs/feedback-map-01.js</span><br></pre></td></tr></table></figure>
+<p>如果写成 <code>testjs/feedback-map-01.jss</code>，末尾多了一个 <code>s</code>，就不是同一个测试文件。</p>
+<h3 id="print-bytecode-输出" tabindex="-1"><a class="headerlink" href="#print-bytecode-输出" aria-hidden="true"></a> print-bytecode 输出</h3>
+<p>使用下面的命令打印 bytecode：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --print-bytecode \</span><br><span class="line">  testjs/feedback-map-01.js</span><br></pre></td></tr></table></figure>
+<p>输出中最重要的是 <code>function f</code> 这一段：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[generated bytecode for function: f (0x26b208250025 &lt;SharedFunctionInfo f&gt;)]</span><br><span class="line">Parameter count 2</span><br><span class="line">Register count 0</span><br><span class="line">Frame size 0</span><br><span class="line">         0x26b20825029a @    0 : 28 02 00 00       LdaNamedProperty a0, [0], [0]</span><br><span class="line">         0x26b20825029e @    4 : ab                Return</span><br><span class="line">Constant pool (size = 1)</span><br><span class="line">0x26b20825026d: [FixedArray] in OldSpace</span><br><span class="line">- map: 0x26b2080404b1 &lt;Map&gt;</span><br><span class="line">- length: 1</span><br><span class="line">  0: 0x26b20824ff81 &lt;String[#1]: x&gt;</span><br></pre></td></tr></table></figure>
+<p>其中最关键的一行是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [0]</span><br></pre></td></tr></table></figure>
+<p>它对应源码中的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> o.<span class="property">x</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="ldanamedproperty-的含义" tabindex="-1"><a class="headerlink" href="#ldanamedproperty-的含义" aria-hidden="true"></a> LdaNamedProperty 的含义</h3>
+<p>可以把这条 bytecode 拆开理解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [0]</span><br></pre></td></tr></table></figure>
+<p>含义大致是：</p>
+<ul>
+<li><code>LdaNamedProperty</code>：读取一个命名属性</li>
+<li><code>a0</code>：从函数第一个参数上读取属性，也就是参数 <code>o</code></li>
+<li>第一个 <code>[0]</code>：属性名在 Constant Pool 中的索引</li>
+<li>第二个 <code>[0]</code>：这个属性读取点对应的 feedback slot</li>
+</ul>
+<p>Constant Pool 中可以看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0: &lt;String[#1]: x&gt;</span><br></pre></td></tr></table></figure>
+<p>所以第一个 <code>[0]</code> 对应的属性名就是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x</span><br></pre></td></tr></table></figure>
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [0]</span><br></pre></td></tr></table></figure>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">从参数 o 上读取属性 x，并把这个属性读取点的运行时反馈记录到 feedback slot 0。</span><br></pre></td></tr></table></figure>
+<h3 id="属性读取与-feedback-的关系" tabindex="-1"><a class="headerlink" href="#属性读取与-feedback-的关系" aria-hidden="true"></a> 属性读取与 Feedback 的关系</h3>
+<p>这一点非常关键。<code>o.x</code> 并不是简单地读取一次属性就结束了。</p>
+<p>在 Ignition 执行阶段，V8 会通过 bytecode 中关联的 feedback slot 记录这个属性访问点的运行时信息，例如：</p>
+<ul>
+<li>这个位置之前读过哪些对象形状</li>
+<li>对象的 Map 是否稳定</li>
+<li>属性访问是 monomorphic、polymorphic 还是 megamorphic</li>
+<li>后续 TurboFan 是否可以基于这些信息生成快速路径</li>
+</ul>
+<p>可以把关系画成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 60, &quot;rankSpacing&quot;: 60, &quot;wrappingWidth&quot;: 360&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart TD</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;源码：return o.x&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;Bytecode：LdaNamedProperty a0, [0], [0]&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;Constant Pool [0]：属性名 x&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; D[&quot;&lt;div style=&#x27;min-width:280px&#x27;&gt;Feedback Slot [0]：记录属性访问反馈&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; E[&quot;&lt;div style=&#x27;min-width:300px&#x27;&gt;记录对象 Map / IC 状态&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; F[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;TurboFan 后续基于反馈进行优化&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<p>因此，TurboFan 后续优化 <code>o.x</code> 时，并不是凭空猜测对象形状，而是会读取 Ignition 执行过程中积累下来的反馈。</p>
+<h3 id="顶层脚本-bytecode" tabindex="-1"><a class="headerlink" href="#顶层脚本-bytecode" aria-hidden="true"></a> 顶层脚本 bytecode</h3>
+<p><code>--print-bytecode</code> 输出中还有一大段匿名函数的 bytecode，它对应的是顶层脚本逻辑，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CreateObjectLiteral</span><br><span class="line">CallUndefinedReceiver1</span><br></pre></td></tr></table></figure>
+<p>这些指令主要负责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">创建对象字面量 a、b、c</span><br><span class="line">调用 f(a)</span><br><span class="line">调用 f(b)</span><br><span class="line">调用 f(c)</span><br></pre></td></tr></table></figure>
+<p>当前阶段暂时不需要细读顶层脚本的每一条 bytecode。重点先关注 <code>function f</code> 中的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [0]</span><br></pre></td></tr></table></figure>
+<p>因为它就是后续理解 FeedbackVector、Inline Cache、Map 推断和 TurboFan 属性访问优化的入口。</p>
+<h3 id="当前小结" tabindex="-1"><a class="headerlink" href="#当前小结" aria-hidden="true"></a> 当前小结</h3>
+<p>通过这个 bytecode 实验，可以得到一个更明确的结论：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Ignition 在执行 o.x 时，会生成 LdaNamedProperty 字节码。</span><br><span class="line">这个字节码不仅负责读取属性，还关联一个 feedback slot。</span><br><span class="line">该 feedback slot 会记录这个属性访问点的运行时反馈。</span><br><span class="line">TurboFan 后续优化属性读取时，会依赖这些反馈信息。</span><br></pre></td></tr></table></figure>
+<h2 id="从-feedbackvector-看-monomorphic-和-polymorphic" tabindex="-1"><a class="headerlink" href="#从-feedbackvector-看-monomorphic-和-polymorphic" aria-hidden="true"></a> 从 FeedbackVector 看 MONOMORPHIC 和 POLYMORPHIC</h2>
+<p>前面已经知道 <code>LdaNamedProperty a0, [0], [0]</code> 中的第二个 <code>[0]</code> 表示 feedback slot。接下来继续观察这个 slot 在函数执行之后到底记录了什么。</p>
+<h3 id="测试代码-1" tabindex="-1"><a class="headerlink" href="#测试代码-1" aria-hidden="true"></a> 测试代码</h3>
+<p>测试文件为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">testjs/map-feedback-02.js</span><br></pre></td></tr></table></figure>
+<p>代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">f</span>(<span class="params">o</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> o.<span class="property">x</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> a = &#123;<span class="attr">x</span>: <span class="number">1</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> b = &#123;<span class="attr">x</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;a and b same map:&quot;</span>, %<span class="title class_">HaveSameMap</span>(a, b));</span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;a and c same map:&quot;</span>, %<span class="title class_">HaveSameMap</span>(a, c));</span><br><span class="line"></span><br><span class="line">%<span class="title class_">PrepareFunctionForOptimization</span>(f);</span><br><span class="line"></span><br><span class="line"><span class="title function_">f</span>(a);</span><br><span class="line"><span class="title function_">f</span>(b);</span><br><span class="line"><span class="title function_">f</span>(a);</span><br><span class="line"><span class="title function_">f</span>(b);</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;after monomorphic calls:&quot;</span>);</span><br><span class="line">%<span class="title class_">DebugPrint</span>(f);</span><br><span class="line"></span><br><span class="line"><span class="title function_">f</span>(c);</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;after polymorphic call:&quot;</span>);</span><br><span class="line">%<span class="title class_">DebugPrint</span>(f);</span><br></pre></td></tr></table></figure>
+<p>这个实验分成两步：</p>
+<ul>
+<li>先多次调用 <code>f(a)</code>、<code>f(b)</code>，让 <code>o.x</code> 只见到同一种对象 Map</li>
+<li>再调用一次 <code>f(c)</code>，让同一个属性读取点见到另一种 Map</li>
+</ul>
+<h3 id="完整调试输出" tabindex="-1"><a class="headerlink" href="#完整调试输出" aria-hidden="true"></a> 完整调试输出</h3>
+<p>运行命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  testjs/map-feedback-02.js</span><br></pre></td></tr></table></figure>
+<p>完整输出如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line">x2n@x2n:~/Documents/v8-cve-2020-6418$ ./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  testjs/map-feedback-02.js</span><br><span class="line">a and b same map: true</span><br><span class="line">a and c same map: false</span><br><span class="line">after monomorphic calls:</span><br><span class="line">DebugPrint: 0x199008250335: [Function] in OldSpace</span><br><span class="line"> - map: 0x199008280289 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x199008241185 &lt;JSFunction (sfi = 0x1990081c4ef9)&gt;</span><br><span class="line"> - elements: 0x1990080406e9 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - function prototype: </span><br><span class="line"> - initial_map: </span><br><span class="line"> - shared_info: 0x199008250109 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - name: 0x19900824ff61 &lt;String[#1]: f&gt;</span><br><span class="line"> - formal_parameter_count: 1</span><br><span class="line"> - kind: NormalFunction</span><br><span class="line"> - context: 0x199008250319 &lt;ScriptContext[5]&gt;</span><br><span class="line"> - code: 0x1990000433e1 &lt;Code BUILTIN InterpreterEntryTrampoline&gt;</span><br><span class="line"> - interpreted</span><br><span class="line"> - bytecode: 0x199008250409 &lt;BytecodeArray[5]&gt;</span><br><span class="line"> - source code: (o) &#123;</span><br><span class="line">  return o.x;</span><br><span class="line">&#125;</span><br><span class="line"> - properties: 0x1990080406e9 &lt;FixedArray[0]&gt; &#123;</span><br><span class="line">    #length: 0x1990081c0341 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #name: 0x1990081c02fd &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #arguments: 0x1990081c0275 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #caller: 0x1990081c02b9 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #prototype: 0x1990081c0385 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line"> &#125;</span><br><span class="line"> - feedback vector: 0x199008250441: [FeedbackVector] in OldSpace</span><br><span class="line"> - map: 0x1990080406b9 &lt;Map&gt;</span><br><span class="line"> - length: 2</span><br><span class="line"> - shared function info: 0x199008250109 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - optimized code/marker: OptimizationMarker::kNone</span><br><span class="line"> - invocation count: 4</span><br><span class="line"> - profiler ticks: 0</span><br><span class="line"> - slot #0 LoadProperty MONOMORPHIC &#123;</span><br><span class="line">     [0]: [weak] 0x199008284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line">     [1]: 836</span><br><span class="line">  &#125;</span><br><span class="line">0x199008280289: [Map]</span><br><span class="line"> - type: JS_FUNCTION_TYPE</span><br><span class="line"> - instance size: 32</span><br><span class="line"> - inobject properties: 0</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - callable</span><br><span class="line"> - constructor</span><br><span class="line"> - has_prototype_slot</span><br><span class="line"> - back pointer: 0x19900804030d &lt;undefined&gt;</span><br><span class="line"> - prototype_validity cell: 0x1990081c0451 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #5: 0x19900824132d &lt;DescriptorArray[5]&gt;</span><br><span class="line"> - prototype: 0x199008241185 &lt;JSFunction (sfi = 0x1990081c4ef9)&gt;</span><br><span class="line"> - constructor: 0x1990082412b9 &lt;JSFunction Function (sfi = 0x1990081c4ffd)&gt;</span><br><span class="line"> - dependent code: 0x1990080401ed &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br><span class="line"></span><br><span class="line">after polymorphic call:</span><br><span class="line">DebugPrint: 0x199008250335: [Function] in OldSpace</span><br><span class="line"> - map: 0x199008280289 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x199008241185 &lt;JSFunction (sfi = 0x1990081c4ef9)&gt;</span><br><span class="line"> - elements: 0x1990080406e9 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - function prototype: </span><br><span class="line"> - initial_map: </span><br><span class="line"> - shared_info: 0x199008250109 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - name: 0x19900824ff61 &lt;String[#1]: f&gt;</span><br><span class="line"> - formal_parameter_count: 1</span><br><span class="line"> - kind: NormalFunction</span><br><span class="line"> - context: 0x199008250319 &lt;ScriptContext[5]&gt;</span><br><span class="line"> - code: 0x1990000433e1 &lt;Code BUILTIN InterpreterEntryTrampoline&gt;</span><br><span class="line"> - interpreted</span><br><span class="line"> - bytecode: 0x199008250409 &lt;BytecodeArray[5]&gt;</span><br><span class="line"> - source code: (o) &#123;</span><br><span class="line">  return o.x;</span><br><span class="line">&#125;</span><br><span class="line"> - properties: 0x1990080406e9 &lt;FixedArray[0]&gt; &#123;</span><br><span class="line">    #length: 0x1990081c0341 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #name: 0x1990081c02fd &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #arguments: 0x1990081c0275 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #caller: 0x1990081c02b9 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #prototype: 0x1990081c0385 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line"> &#125;</span><br><span class="line"> - feedback vector: 0x199008250441: [FeedbackVector] in OldSpace</span><br><span class="line"> - map: 0x1990080406b9 &lt;Map&gt;</span><br><span class="line"> - length: 2</span><br><span class="line"> - shared function info: 0x199008250109 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - optimized code/marker: OptimizationMarker::kNone</span><br><span class="line"> - invocation count: 5</span><br><span class="line"> - profiler ticks: 0</span><br><span class="line"> - slot #0 LoadProperty POLYMORPHIC &#123;</span><br><span class="line">     [0]: 0x1990080c5f99 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line">     [1]: 0x199008043049 &lt;Symbol: (uninitialized_symbol)&gt;</span><br><span class="line">  &#125;</span><br><span class="line">0x199008280289: [Map]</span><br><span class="line"> - type: JS_FUNCTION_TYPE</span><br><span class="line"> - instance size: 32</span><br><span class="line"> - inobject properties: 0</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - callable</span><br><span class="line"> - constructor</span><br><span class="line"> - has_prototype_slot</span><br><span class="line"> - back pointer: 0x19900804030d &lt;undefined&gt;</span><br><span class="line"> - prototype_validity cell: 0x1990081c0451 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #5: 0x19900824132d &lt;DescriptorArray[5]&gt;</span><br><span class="line"> - prototype: 0x199008241185 &lt;JSFunction (sfi = 0x1990081c4ef9)&gt;</span><br><span class="line"> - constructor: 0x1990082412b9 &lt;JSFunction Function (sfi = 0x1990081c4ffd)&gt;</span><br><span class="line"> - dependent code: 0x1990080401ed &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br></pre></td></tr></table></figure>
+<h3 id="a、b-和-c-的-map-关系" tabindex="-1"><a class="headerlink" href="#a、b-和-c-的-map-关系" aria-hidden="true"></a> a、b 和 c 的 Map 关系</h3>
+<p>最开始的输出是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a and b same map: true</span><br><span class="line">a and c same map: false</span><br></pre></td></tr></table></figure>
+<p>这说明：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> a = &#123;<span class="attr">x</span>: <span class="number">1</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> b = &#123;<span class="attr">x</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>其中 <code>a</code> 和 <code>b</code> 的对象形状一致，都是只有一个属性 <code>x</code>，所以它们共享同一个 Map。</p>
+<p>而 <code>c</code> 比 <code>a</code>、<code>b</code> 多了一个属性 <code>y</code>，所以 <code>c</code> 的对象形状不同，Map 也不同。</p>
+<p>也就是说：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Map 可以理解为 V8 描述对象形状的结构。</span><br><span class="line">属性布局一样的对象，往往可以共享同一个 Map。</span><br><span class="line">属性布局不同的对象，会使用不同的 Map。</span><br></pre></td></tr></table></figure>
+<h3 id="monomorphic-状态" tabindex="-1"><a class="headerlink" href="#monomorphic-状态" aria-hidden="true"></a> MONOMORPHIC 状态</h3>
+<p>在只调用 <code>f(a)</code>、<code>f(b)</code> 之后，<code>%DebugPrint(f)</code> 中可以看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- feedback vector: 0x199008250441: [FeedbackVector] in OldSpace</span><br><span class="line">- invocation count: 4</span><br><span class="line">- slot #0 LoadProperty MONOMORPHIC &#123;</span><br><span class="line">  [0]: [weak] 0x199008284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line">  [1]: 836</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这说明 <code>f</code> 的 FeedbackVector 已经创建出来了。</p>
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slot #0 LoadProperty MONOMORPHIC</span><br></pre></td></tr></table></figure>
+<p>对应的就是前面 bytecode 中的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [0]</span><br></pre></td></tr></table></figure>
+<p>也就是源码中的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> o.<span class="property">x</span>;</span><br></pre></td></tr></table></figure>
+<p><code>MONOMORPHIC</code> 表示这个属性读取点目前只见过一种对象 Map。</p>
+<p>这里记录的 Map 是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x199008284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br></pre></td></tr></table></figure>
+<p>这个 Map 对应的就是 <code>a</code> 和 <code>b</code> 共享的对象形状。</p>
+<p>此时 V8 对 <code>f(o)</code> 中 <code>o.x</code> 的理解可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">过去这个属性访问点一直看到同一种对象 Map。</span><br><span class="line">因此这个 LoadProperty slot 处于 MONOMORPHIC 状态。</span><br></pre></td></tr></table></figure>
+<p>如果后续 TurboFan 基于这个反馈优化 <code>o.x</code>，它就可以生成比较直接的快速路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">检查对象 Map 是否为 0x199008284e79</span><br><span class="line">  -&gt; 如果匹配，就直接按照该 Map 的属性布局读取 x</span><br><span class="line">  -&gt; 如果不匹配，就不能继续相信这条快速路径</span><br></pre></td></tr></table></figure>
+<h3 id="polymorphic-状态" tabindex="-1"><a class="headerlink" href="#polymorphic-状态" aria-hidden="true"></a> POLYMORPHIC 状态</h3>
+<p>在继续调用一次：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">f</span>(c);</span><br></pre></td></tr></table></figure>
+<p>之后，再次 <code>%DebugPrint(f)</code>，可以看到同一个 slot 发生了变化：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- invocation count: 5</span><br><span class="line">- slot #0 LoadProperty POLYMORPHIC &#123;</span><br><span class="line">  [0]: 0x1990080c5f99 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line">  [1]: 0x199008043049 &lt;Symbol: (uninitialized_symbol)&gt;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>状态从：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MONOMORPHIC</span><br></pre></td></tr></table></figure>
+<p>变成了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POLYMORPHIC</span><br></pre></td></tr></table></figure>
+<p>原因是 <code>c</code> 的 Map 和 <code>a</code>、<code>b</code> 不同。虽然 <code>c</code> 也有属性 <code>x</code>，但它的对象形状不一样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>因此，同一个属性读取点 <code>o.x</code> 现在见过多种 Map，FeedbackVector 就把这个 slot 从单态变成多态。</p>
+<p>进入 <code>POLYMORPHIC</code> 后，slot 中不再直接保存一个 Map，而是保存：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x1990080c5f99 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br></pre></td></tr></table></figure>
+<p>可以把它理解为一个弱引用数组，用来记录多组 Map / handler 信息。也就是说，多态状态下，V8 需要保存的不再是“一个对象形状”，而是一组可能见过的对象形状。</p>
+<h3 id="monomorphic、polymorphic、megamorphic" tabindex="-1"><a class="headerlink" href="#monomorphic、polymorphic、megamorphic" aria-hidden="true"></a> MONOMORPHIC、POLYMORPHIC、MEGAMORPHIC</h3>
+<p>目前可以先这样理解这几个状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MONOMORPHIC:</span><br><span class="line">  一个属性访问点只见过一种 Map。</span><br><span class="line"></span><br><span class="line">POLYMORPHIC:</span><br><span class="line">  一个属性访问点见过多种 Map，但数量还不算太多。</span><br><span class="line"></span><br><span class="line">MEGAMORPHIC:</span><br><span class="line">  一个属性访问点见过太多种 Map，V8 不再为少数 Map 做精确记录。</span><br></pre></td></tr></table></figure>
+<p>它们和 TurboFan 优化的关系是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 60, &quot;rankSpacing&quot;: 60, &quot;wrappingWidth&quot;: 380&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart TD</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:280px&#x27;&gt;LdaNamedProperty 关联 feedback slot&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;FeedbackVector 记录 IC 状态&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C&#123;&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;这个访问点见过几个 Map？&lt;/div&gt;&quot;&#125;</span><br><span class="line">    C -- &quot;一个 Map&quot; --&gt; D[&quot;&lt;div style=&#x27;min-width:240px&#x27;&gt;MONOMORPHIC&lt;/div&gt;&quot;]</span><br><span class="line">    C -- &quot;多个 Map&quot; --&gt; E[&quot;&lt;div style=&#x27;min-width:240px&#x27;&gt;POLYMORPHIC&lt;/div&gt;&quot;]</span><br><span class="line">    C -- &quot;太多 Map&quot; --&gt; F[&quot;&lt;div style=&#x27;min-width:240px&#x27;&gt;MEGAMORPHIC&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; G[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;TurboFan 可生成单一 Map Check 快速路径&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; H[&quot;&lt;div style=&#x27;min-width:340px&#x27;&gt;TurboFan 可能生成多组 Map Check 快速路径&lt;/div&gt;&quot;]</span><br><span class="line">    F --&gt; I[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;优化空间变小，更多依赖通用路径&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<h3 id="当前小结-1" tabindex="-1"><a class="headerlink" href="#当前小结-1" aria-hidden="true"></a> 当前小结</h3>
+<p>通过这个实验，可以把前面几部分串起来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">源码 return o.x</span><br><span class="line">  -&gt; Ignition 生成 LdaNamedProperty a0, [0], [0]</span><br><span class="line">  -&gt; feedback slot #0 记录 LoadProperty 的运行时反馈</span><br><span class="line">  -&gt; f(a)、f(b) 只传入同一种 Map，slot #0 为 MONOMORPHIC</span><br><span class="line">  -&gt; f(c) 传入不同 Map，slot #0 变成 POLYMORPHIC</span><br><span class="line">  -&gt; TurboFan 后续优化 o.x 时会依赖这些 Map 反馈</span><br></pre></td></tr></table></figure>
+<p>这也解释了前面的 <code>wrong map</code> Deopt：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">优化代码基于已有 Map 反馈生成快速路径。</span><br><span class="line">当运行时传入一个不符合优化假设的 Map 时，就会触发 wrong map Deopt。</span><br></pre></td></tr></table></figure>
+<h2 id="从-monomorphic-feedback-到-wrong-map-deopt" tabindex="-1"><a class="headerlink" href="#从-monomorphic-feedback-到-wrong-map-deopt" aria-hidden="true"></a> 从 MONOMORPHIC Feedback 到 wrong map Deopt</h2>
+<p>前面已经分别观察了两个现象：</p>
+<ul>
+<li><code>LdaNamedProperty</code> 会关联 feedback slot</li>
+<li><code>LoadProperty</code> 的 feedback slot 可以从 <code>MONOMORPHIC</code> 变成 <code>POLYMORPHIC</code></li>
+</ul>
+<p>接下来继续把这两部分和 TurboFan 优化连接起来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MONOMORPHIC Map 反馈</span><br><span class="line">  -&gt; TurboFan 基于该 Map 生成优化代码</span><br><span class="line">  -&gt; 传入不同 Map 的对象</span><br><span class="line">  -&gt; 优化假设失败</span><br><span class="line">  -&gt; 触发 wrong map Deopt</span><br></pre></td></tr></table></figure>
+<h3 id="测试代码-2" tabindex="-1"><a class="headerlink" href="#测试代码-2" aria-hidden="true"></a> 测试代码</h3>
+<p>测试文件为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">testjs/map-feedback-deopt-03.js</span><br></pre></td></tr></table></figure>
+<p>代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">f</span>(<span class="params">o</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> o.<span class="property">x</span> + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> a = &#123;<span class="attr">x</span>: <span class="number">1</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> b = &#123;<span class="attr">x</span>: <span class="number">2</span>&#125;;</span><br><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;a and b same map:&quot;</span>, %<span class="title class_">HaveSameMap</span>(a, b));</span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;a and c same map:&quot;</span>, %<span class="title class_">HaveSameMap</span>(a, c));</span><br><span class="line"></span><br><span class="line">%<span class="title class_">PrepareFunctionForOptimization</span>(f);</span><br><span class="line"></span><br><span class="line"><span class="title function_">f</span>(a);</span><br><span class="line"><span class="title function_">f</span>(b);</span><br><span class="line"><span class="title function_">f</span>(a);</span><br><span class="line"><span class="title function_">f</span>(b);</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;before optimization:&quot;</span>);</span><br><span class="line">%<span class="title class_">DebugPrint</span>(f);</span><br><span class="line"></span><br><span class="line">%<span class="title class_">OptimizeFunctionOnNextCall</span>(f);</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;optimized call result:&quot;</span>, <span class="title function_">f</span>(a));</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;after optimization:&quot;</span>);</span><br><span class="line">%<span class="title class_">DebugPrint</span>(f);</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;different map call result:&quot;</span>, <span class="title function_">f</span>(c));</span><br><span class="line"></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;after different map:&quot;</span>);</span><br><span class="line">%<span class="title class_">DebugPrint</span>(f);</span><br></pre></td></tr></table></figure>
+<p>这个实验和前面 <code>return o.x</code> 的实验相比，多了 <code>+ 1</code>。因此 FeedbackVector 中不仅会记录属性读取反馈，还会记录二元运算反馈。</p>
+<h3 id="运行命令-1" tabindex="-1"><a class="headerlink" href="#运行命令-1" aria-hidden="true"></a> 运行命令</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/x2n/Documents/v8-cve-2020-6418</span><br><span class="line"></span><br><span class="line">./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-opt \</span><br><span class="line">  --trace-deopt \</span><br><span class="line">  testjs/map-feedback-deopt-03.js</span><br></pre></td></tr></table></figure>
+<h3 id="完整调试输出-1" tabindex="-1"><a class="headerlink" href="#完整调试输出-1" aria-hidden="true"></a> 完整调试输出</h3>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br></pre></td><td class="code"><pre><span class="line">x2n@x2n:~/Documents/v8-cve-2020-6418$ ./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --trace-opt \</span><br><span class="line">  --trace-deopt \</span><br><span class="line">  testjs/map-feedback-deopt-03.js</span><br><span class="line">a and b same map: true</span><br><span class="line">a and c same map: false</span><br><span class="line">before optimization:</span><br><span class="line">DebugPrint: 0x47308250511: [Function] in OldSpace</span><br><span class="line"> - map: 0x047308280289 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x047308241185 &lt;JSFunction (sfi = 0x473081c4ef9)&gt;</span><br><span class="line"> - elements: 0x0473080406e9 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - function prototype: </span><br><span class="line"> - initial_map: </span><br><span class="line"> - shared_info: 0x047308250221 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - name: 0x04730824ffed &lt;String[#1]: f&gt;</span><br><span class="line"> - formal_parameter_count: 1</span><br><span class="line"> - kind: NormalFunction</span><br><span class="line"> - context: 0x0473082504f5 &lt;ScriptContext[5]&gt;</span><br><span class="line"> - code: 0x0473000433e1 &lt;Code BUILTIN InterpreterEntryTrampoline&gt;</span><br><span class="line"> - interpreted</span><br><span class="line"> - bytecode: 0x0473082505e5 &lt;BytecodeArray[8]&gt;</span><br><span class="line"> - source code: (o) &#123;</span><br><span class="line">  return o.x + 1;</span><br><span class="line">&#125;</span><br><span class="line"> - properties: 0x0473080406e9 &lt;FixedArray[0]&gt; &#123;</span><br><span class="line">    #length: 0x0473081c0341 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #name: 0x0473081c02fd &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #arguments: 0x0473081c0275 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #caller: 0x0473081c02b9 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #prototype: 0x0473081c0385 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line"> &#125;</span><br><span class="line"> - feedback vector: 0x47308250631: [FeedbackVector] in OldSpace</span><br><span class="line"> - map: 0x0473080406b9 &lt;Map&gt;</span><br><span class="line"> - length: 3</span><br><span class="line"> - shared function info: 0x047308250221 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - optimized code/marker: OptimizationMarker::kNone</span><br><span class="line"> - invocation count: 4</span><br><span class="line"> - profiler ticks: 0</span><br><span class="line"> - slot #0 BinaryOp BinaryOp:SignedSmall &#123;</span><br><span class="line">     [0]: 1</span><br><span class="line">  &#125;</span><br><span class="line"> - slot #1 LoadProperty MONOMORPHIC &#123;</span><br><span class="line">     [1]: [weak] 0x047308284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line">     [2]: 836</span><br><span class="line">  &#125;</span><br><span class="line">0x47308280289: [Map]</span><br><span class="line"> - type: JS_FUNCTION_TYPE</span><br><span class="line"> - instance size: 32</span><br><span class="line"> - inobject properties: 0</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - callable</span><br><span class="line"> - constructor</span><br><span class="line"> - has_prototype_slot</span><br><span class="line"> - back pointer: 0x04730804030d &lt;undefined&gt;</span><br><span class="line"> - prototype_validity cell: 0x0473081c0451 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #5: 0x04730824132d &lt;DescriptorArray[5]&gt;</span><br><span class="line"> - prototype: 0x047308241185 &lt;JSFunction (sfi = 0x473081c4ef9)&gt;</span><br><span class="line"> - constructor: 0x0473082412b9 &lt;JSFunction Function (sfi = 0x473081c4ffd)&gt;</span><br><span class="line"> - dependent code: 0x0473080401ed &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br><span class="line"></span><br><span class="line">[manually marking 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; for non-concurrent optimization]</span><br><span class="line">[compiling method 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; using TurboFan]</span><br><span class="line">[optimizing 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; - took 93.060, 52.100, 0.982 ms]</span><br><span class="line">optimized call result: 2</span><br><span class="line">after optimization:</span><br><span class="line">DebugPrint: 0x47308250511: [Function] in OldSpace</span><br><span class="line"> - map: 0x047308280289 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x047308241185 &lt;JSFunction (sfi = 0x473081c4ef9)&gt;</span><br><span class="line"> - elements: 0x0473080406e9 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - function prototype: </span><br><span class="line"> - initial_map: </span><br><span class="line"> - shared_info: 0x047308250221 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - name: 0x04730824ffed &lt;String[#1]: f&gt;</span><br><span class="line"> - formal_parameter_count: 1</span><br><span class="line"> - kind: NormalFunction</span><br><span class="line"> - context: 0x0473082504f5 &lt;ScriptContext[5]&gt;</span><br><span class="line"> - code: 0x047300082ae1 &lt;Code OPTIMIZED_FUNCTION&gt;</span><br><span class="line"> - source code: (o) &#123;</span><br><span class="line">  return o.x + 1;</span><br><span class="line">&#125;</span><br><span class="line"> - properties: 0x0473080406e9 &lt;FixedArray[0]&gt; &#123;</span><br><span class="line">    #length: 0x0473081c0341 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #name: 0x0473081c02fd &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #arguments: 0x0473081c0275 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #caller: 0x0473081c02b9 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #prototype: 0x0473081c0385 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line"> &#125;</span><br><span class="line"> - feedback vector: 0x47308250631: [FeedbackVector] in OldSpace</span><br><span class="line"> - map: 0x0473080406b9 &lt;Map&gt;</span><br><span class="line"> - length: 3</span><br><span class="line"> - shared function info: 0x047308250221 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - optimized code/marker: OptimizationMarker::kNone</span><br><span class="line"> - invocation count: 4</span><br><span class="line"> - profiler ticks: 0</span><br><span class="line"> - slot #0 BinaryOp BinaryOp:SignedSmall &#123;</span><br><span class="line">     [0]: 1</span><br><span class="line">  &#125;</span><br><span class="line"> - slot #1 LoadProperty MONOMORPHIC &#123;</span><br><span class="line">     [1]: [weak] 0x047308284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line">     [2]: 836</span><br><span class="line">  &#125;</span><br><span class="line">0x47308280289: [Map]</span><br><span class="line"> - type: JS_FUNCTION_TYPE</span><br><span class="line"> - instance size: 32</span><br><span class="line"> - inobject properties: 0</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - callable</span><br><span class="line"> - constructor</span><br><span class="line"> - has_prototype_slot</span><br><span class="line"> - back pointer: 0x04730804030d &lt;undefined&gt;</span><br><span class="line"> - prototype_validity cell: 0x0473081c0451 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #5: 0x04730824132d &lt;DescriptorArray[5]&gt;</span><br><span class="line"> - prototype: 0x047308241185 &lt;JSFunction (sfi = 0x473081c4ef9)&gt;</span><br><span class="line"> - constructor: 0x0473082412b9 &lt;JSFunction Function (sfi = 0x473081c4ffd)&gt;</span><br><span class="line"> - dependent code: 0x0473080401ed &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br><span class="line"></span><br><span class="line">[deoptimizing (DEOPT eager): begin 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; (opt #0) @1, FP to SP delta: 24, caller sp: 0x7ffd87fc68c8]</span><br><span class="line">            ;;; deoptimize at &lt;testjs/map-feedback-deopt-03.js:2:12&gt;, wrong map</span><br><span class="line">  reading input frame f =&gt; bytecode_offset=0, args=2, height=0, retval=0(#0); inputs:</span><br><span class="line">      0: 0x047308250511 ;  [fp -  16]  0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt;</span><br><span class="line">      1: 0x0473080c0ddd ;  [fp +  24]  0x0473080c0ddd &lt;JSGlobal Object&gt;</span><br><span class="line">      2: 0x0473080c5fe1 ; rcx 0x0473080c5fe1 &lt;Object map = 0x47308284ec9&gt;</span><br><span class="line">      3: 0x0473082504f5 ;  [fp -  24]  0x0473082504f5 &lt;ScriptContext[5]&gt;</span><br><span class="line">      4: 0x047308040815 ; (literal  2) 0x047308040815 &lt;Odd Oddball: optimized_out&gt;</span><br><span class="line">  translating interpreted frame f =&gt; bytecode_offset=0, variable_frame_size=8, frame_size=72</span><br><span class="line">    0x7ffd87fc68c0: [top +  64] &lt;- 0x0473080c0ddd &lt;JSGlobal Object&gt; ;  stack parameter (input #1)</span><br><span class="line">    0x7ffd87fc68b8: [top +  56] &lt;- 0x0473080c5fe1 &lt;Object map = 0x47308284ec9&gt; ;  stack parameter (input #2)</span><br><span class="line">    -------------------------</span><br><span class="line">    0x7ffd87fc68b0: [top +  48] &lt;- 0x7ba270791a91 ;  caller&#x27;s pc</span><br><span class="line">    0x7ffd87fc68a8: [top +  40] &lt;- 0x7ffd87fc6910 ;  caller&#x27;s fp</span><br><span class="line">    0x7ffd87fc68a0: [top +  32] &lt;- 0x0473082504f5 &lt;ScriptContext[5]&gt; ;  context (input #3)</span><br><span class="line">    0x7ffd87fc6898: [top +  24] &lt;- 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; ;  function (input #0)</span><br><span class="line">    0x7ffd87fc6890: [top +  16] &lt;- 0x0473082505e5 &lt;BytecodeArray[8]&gt; ;  bytecode array</span><br><span class="line">    0x7ffd87fc6888: [top +   8] &lt;- 0x000000000042 &lt;Smi 33&gt; ;  bytecode offset</span><br><span class="line">    -------------------------</span><br><span class="line">    0x7ffd87fc6880: [top +   0] &lt;- 0x047308040815 &lt;Odd Oddball: optimized_out&gt; ;  accumulator (input #4)</span><br><span class="line">[deoptimizing (eager): end 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; @1 =&gt; node=0, pc=0x7ba2707922a0, caller sp=0x7ffd87fc68c8, took 0.686 ms]</span><br><span class="line">different map call result: 4</span><br><span class="line">after different map:</span><br><span class="line">DebugPrint: 0x47308250511: [Function] in OldSpace</span><br><span class="line"> - map: 0x047308280289 &lt;Map(HOLEY_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x047308241185 &lt;JSFunction (sfi = 0x473081c4ef9)&gt;</span><br><span class="line"> - elements: 0x0473080406e9 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]</span><br><span class="line"> - function prototype: </span><br><span class="line"> - initial_map: </span><br><span class="line"> - shared_info: 0x047308250221 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - name: 0x04730824ffed &lt;String[#1]: f&gt;</span><br><span class="line"> - formal_parameter_count: 1</span><br><span class="line"> - kind: NormalFunction</span><br><span class="line"> - context: 0x0473082504f5 &lt;ScriptContext[5]&gt;</span><br><span class="line"> - code: 0x047300082ae1 &lt;Code OPTIMIZED_FUNCTION&gt;</span><br><span class="line"> - interpreted</span><br><span class="line"> - bytecode: 0x0473082505e5 &lt;BytecodeArray[8]&gt;</span><br><span class="line"> - source code: (o) &#123;</span><br><span class="line">  return o.x + 1;</span><br><span class="line">&#125;</span><br><span class="line"> - properties: 0x0473080406e9 &lt;FixedArray[0]&gt; &#123;</span><br><span class="line">    #length: 0x0473081c0341 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #name: 0x0473081c02fd &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #arguments: 0x0473081c0275 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #caller: 0x0473081c02b9 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line">    #prototype: 0x0473081c0385 &lt;AccessorInfo&gt; (const accessor descriptor)</span><br><span class="line"> &#125;</span><br><span class="line"> - feedback vector: 0x47308250631: [FeedbackVector] in OldSpace</span><br><span class="line"> - map: 0x0473080406b9 &lt;Map&gt;</span><br><span class="line"> - length: 3</span><br><span class="line"> - shared function info: 0x047308250221 &lt;SharedFunctionInfo f&gt;</span><br><span class="line"> - optimized code/marker: OptimizationMarker::kNone</span><br><span class="line"> - invocation count: 4</span><br><span class="line"> - profiler ticks: 0</span><br><span class="line"> - slot #0 BinaryOp BinaryOp:SignedSmall &#123;</span><br><span class="line">     [0]: 1</span><br><span class="line">  &#125;</span><br><span class="line"> - slot #1 LoadProperty POLYMORPHIC &#123;</span><br><span class="line">     [1]: 0x0473080c6051 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line">     [2]: 0x047308043049 &lt;Symbol: (uninitialized_symbol)&gt;</span><br><span class="line">  &#125;</span><br><span class="line">0x47308280289: [Map]</span><br><span class="line"> - type: JS_FUNCTION_TYPE</span><br><span class="line"> - instance size: 32</span><br><span class="line"> - inobject properties: 0</span><br><span class="line"> - elements kind: HOLEY_ELEMENTS</span><br><span class="line"> - unused property fields: 0</span><br><span class="line"> - enum length: invalid</span><br><span class="line"> - stable_map</span><br><span class="line"> - callable</span><br><span class="line"> - constructor</span><br><span class="line"> - has_prototype_slot</span><br><span class="line"> - back pointer: 0x04730804030d &lt;undefined&gt;</span><br><span class="line"> - prototype_validity cell: 0x0473081c0451 &lt;Cell value= 1&gt;</span><br><span class="line"> - instance descriptors (own) #5: 0x04730824132d &lt;DescriptorArray[5]&gt;</span><br><span class="line"> - prototype: 0x047308241185 &lt;JSFunction (sfi = 0x473081c4ef9)&gt;</span><br><span class="line"> - constructor: 0x0473082412b9 &lt;JSFunction Function (sfi = 0x473081c4ffd)&gt;</span><br><span class="line"> - dependent code: 0x0473080401ed &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line"> - construction counter: 0</span><br></pre></td></tr></table></figure>
+<h3 id="bytecode-与-slot-对应关系" tabindex="-1"><a class="headerlink" href="#bytecode-与-slot-对应关系" aria-hidden="true"></a> Bytecode 与 slot 对应关系</h3>
+<p>为了确认 FeedbackVector 中 slot 的含义，可以只打印 <code>f</code> 的 bytecode：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">./v8/out.gn/x64.cve.debug/d8 \</span><br><span class="line">  --allow-natives-syntax \</span><br><span class="line">  --print-bytecode \</span><br><span class="line">  --print-bytecode-filter=f \</span><br><span class="line">  testjs/map-feedback-deopt-03.js</span><br></pre></td></tr></table></figure>
+<p>输出中 <code>f</code> 的 bytecode 为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[generated bytecode for function: f (0x3c4c08250195 &lt;SharedFunctionInfo f&gt;)]</span><br><span class="line">Parameter count 2</span><br><span class="line">Register count 0</span><br><span class="line">Frame size 0</span><br><span class="line">         0x3c4c08250512 @    0 : 28 02 00 01       LdaNamedProperty a0, [0], [1]</span><br><span class="line">         0x3c4c08250516 @    4 : 40 01 00          AddSmi [1], [0]</span><br><span class="line">         0x3c4c08250519 @    7 : ab                Return </span><br><span class="line">Constant pool (size = 1)</span><br><span class="line">0x3c4c082504e5: [FixedArray] in OldSpace</span><br><span class="line"> - map: 0x3c4c080404b1 &lt;Map&gt;</span><br><span class="line"> - length: 1</span><br><span class="line">           0: 0x3c4c0824ff81 &lt;String[#1]: x&gt;</span><br></pre></td></tr></table></figure>
+<p>这里需要注意 slot 编号：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [1]</span><br><span class="line">AddSmi [1], [0]</span><br></pre></td></tr></table></figure>
+<p>对应关系是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">slot #1：LoadProperty，也就是 o.x</span><br><span class="line">slot #0：BinaryOp，也就是 + 1</span><br></pre></td></tr></table></figure>
+<p>因此，在这个实验中，属性读取反馈不是 <code>slot #0</code>，而是 <code>slot #1</code>。</p>
+<h3 id="优化前：loadproperty-处于-monomorphic" tabindex="-1"><a class="headerlink" href="#优化前：loadproperty-处于-monomorphic" aria-hidden="true"></a> 优化前：LoadProperty 处于 MONOMORPHIC</h3>
+<p>优化前的 FeedbackVector 中可以看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- code: 0x0473000433e1 &lt;Code BUILTIN InterpreterEntryTrampoline&gt;</span><br><span class="line">- interpreted</span><br><span class="line">- feedback vector: 0x47308250631: [FeedbackVector] in OldSpace</span><br><span class="line">- invocation count: 4</span><br><span class="line">- slot #0 BinaryOp BinaryOp:SignedSmall &#123;</span><br><span class="line">     [0]: 1</span><br><span class="line">  &#125;</span><br><span class="line">- slot #1 LoadProperty MONOMORPHIC &#123;</span><br><span class="line">     [1]: [weak] 0x047308284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line">     [2]: 836</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>此时 <code>f</code> 仍然运行在解释器入口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Code BUILTIN InterpreterEntryTrampoline&gt;</span><br></pre></td></tr></table></figure>
+<p><code>slot #1 LoadProperty MONOMORPHIC</code> 说明 <code>o.x</code> 这个属性读取点目前只见过一种 Map：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x047308284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br></pre></td></tr></table></figure>
+<p>这个 Map 来自 <code>a</code> 和 <code>b</code> 共享的对象形状。</p>
+<h3 id="turbofan-优化" tabindex="-1"><a class="headerlink" href="#turbofan-优化" aria-hidden="true"></a> TurboFan 优化</h3>
+<p>执行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">%<span class="title class_">OptimizeFunctionOnNextCall</span>(f);</span><br><span class="line"><span class="title function_">print</span>(<span class="string">&quot;optimized call result:&quot;</span>, <span class="title function_">f</span>(a));</span><br></pre></td></tr></table></figure>
+<p>之后，可以看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[manually marking 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; for non-concurrent optimization]</span><br><span class="line">[compiling method 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; using TurboFan]</span><br><span class="line">[optimizing 0x047308250511 &lt;JSFunction f (sfi = 0x47308250221)&gt; - took 93.060, 52.100, 0.982 ms]</span><br><span class="line">optimized call result: 2</span><br></pre></td></tr></table></figure>
+<p>这说明 <code>f</code> 被 TurboFan 编译，并生成了优化代码。</p>
+<p>再次 <code>%DebugPrint(f)</code>，可以看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- code: 0x047300082ae1 &lt;Code OPTIMIZED_FUNCTION&gt;</span><br><span class="line">- slot #1 LoadProperty MONOMORPHIC &#123;</span><br><span class="line">     [1]: [weak] 0x047308284e79 &lt;Map(HOLEY_ELEMENTS)&gt;</span><br><span class="line">     [2]: 836</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>此时 <code>f</code> 的 <code>code</code> 已经变成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Code OPTIMIZED_FUNCTION&gt;</span><br></pre></td></tr></table></figure>
+<p>但是 <code>slot #1</code> 仍然是 <code>MONOMORPHIC</code>，说明 TurboFan 优化时可以使用这个单态 Map 反馈来生成属性读取快速路径。</p>
+<h3 id="传入不同-map-后触发-wrong-map-deopt" tabindex="-1"><a class="headerlink" href="#传入不同-map-后触发-wrong-map-deopt" aria-hidden="true"></a> 传入不同 Map 后触发 wrong map Deopt</h3>
+<p>接着执行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">print</span>(<span class="string">&quot;different map call result:&quot;</span>, <span class="title function_">f</span>(c));</span><br></pre></td></tr></table></figure>
+<p>日志中出现：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">;;; deoptimize at &lt;testjs/map-feedback-deopt-03.js:2:12&gt;, wrong map</span><br></pre></td></tr></table></figure>
+<p>Deopt 日志里还可以看到传入对象的 Map：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2: 0x0473080c5fe1 ; rcx 0x0473080c5fe1 &lt;Object map = 0x47308284ec9&gt;</span><br></pre></td></tr></table></figure>
+<p>这个 Map 是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x47308284ec9</span><br></pre></td></tr></table></figure>
+<p>它和优化前 <code>LoadProperty MONOMORPHIC</code> 记录的 Map 不同：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x047308284e79</span><br></pre></td></tr></table></figure>
+<p>所以优化代码中的 Map Check 失败，触发 <code>wrong map</code> Deopt。</p>
+<p>这里需要注意：<code>c</code> 虽然 Map 不同，但它仍然有 <code>x</code> 属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> c = &#123;<span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>因此 Deopt 后回到普通 JavaScript 语义继续执行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">c.<span class="property">x</span> + <span class="number">1</span></span><br><span class="line"><span class="comment">// 3 + 1</span></span><br><span class="line"><span class="comment">// 4</span></span><br></pre></td></tr></table></figure>
+<p>所以最终输出是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">different map call result: 4</span><br></pre></td></tr></table></figure>
+<h3 id="deopt-后：loadproperty-变为-polymorphic" tabindex="-1"><a class="headerlink" href="#deopt-后：loadproperty-变为-polymorphic" aria-hidden="true"></a> Deopt 后：LoadProperty 变为 POLYMORPHIC</h3>
+<p>最后再次 <code>%DebugPrint(f)</code>，可以看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- slot #1 LoadProperty POLYMORPHIC &#123;</span><br><span class="line">     [1]: 0x0473080c6051 &lt;Other heap object (WEAK_FIXED_ARRAY_TYPE)&gt;</span><br><span class="line">     [2]: 0x047308043049 &lt;Symbol: (uninitialized_symbol)&gt;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>也就是说，<code>f(c)</code> 执行之后，同一个属性读取点 <code>o.x</code> 从：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LoadProperty MONOMORPHIC</span><br></pre></td></tr></table></figure>
+<p>变成了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LoadProperty POLYMORPHIC</span><br></pre></td></tr></table></figure>
+<p>原因是该访问点现在至少见过两种 Map：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a / b 的 Map：0x047308284e79</span><br><span class="line">c 的 Map：0x47308284ec9</span><br></pre></td></tr></table></figure>
+<p>进入 <code>POLYMORPHIC</code> 后，FeedbackVector 中不再直接保存单个 Map，而是使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WEAK_FIXED_ARRAY_TYPE</span><br></pre></td></tr></table></figure>
+<p>来记录多组 Map / handler 信息。</p>
+<h3 id="当前实验结论" tabindex="-1"><a class="headerlink" href="#当前实验结论" aria-hidden="true"></a> 当前实验结论</h3>
+<p>这次实验把 <code>FeedbackVector</code>、<code>TurboFan</code> 和 <code>wrong map Deopt</code> 的关系串起来了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 60, &quot;rankSpacing&quot;: 60, &quot;wrappingWidth&quot;: 380&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart TD</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:280px&#x27;&gt;f(a), f(b) 收集运行时反馈&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;slot #1 LoadProperty MONOMORPHIC&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;FeedbackVector 记录单一对象 Map&lt;/div&gt;&quot;]</span><br><span class="line">    C --&gt; D[&quot;&lt;div style=&#x27;min-width:300px&#x27;&gt;TurboFan 基于该 Map 优化 o.x&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; E[&quot;&lt;div style=&#x27;min-width:300px&#x27;&gt;生成 Optimized Code&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; F[&quot;&lt;div style=&#x27;min-width:280px&#x27;&gt;f(c) 传入不同 Map&lt;/div&gt;&quot;]</span><br><span class="line">    F --&gt; G[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;Map Check 失败&lt;/div&gt;&quot;]</span><br><span class="line">    G --&gt; H[&quot;&lt;div style=&#x27;min-width:260px&#x27;&gt;触发 wrong map Deopt&lt;/div&gt;&quot;]</span><br><span class="line">    H --&gt; I[&quot;&lt;div style=&#x27;min-width:320px&#x27;&gt;Feedback 更新为 POLYMORPHIC&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<p>可以总结为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LdaNamedProperty a0, [0], [1]</span><br><span class="line">  -&gt; slot #1 记录 o.x 的 LoadProperty feedback</span><br><span class="line">  -&gt; f(a)、f(b) 让 slot #1 处于 MONOMORPHIC</span><br><span class="line">  -&gt; TurboFan 基于 MONOMORPHIC Map 反馈生成优化代码</span><br><span class="line">  -&gt; f(c) 传入不同 Map</span><br><span class="line">  -&gt; 优化代码触发 wrong map Deopt</span><br><span class="line">  -&gt; V8 回到解释器语义继续执行</span><br><span class="line">  -&gt; FeedbackVector 更新为 POLYMORPHIC</span><br></pre></td></tr></table></figure>
+<h2 id="turbofan-优化流程总结" tabindex="-1"><a class="headerlink" href="#turbofan-优化流程总结" aria-hidden="true"></a> TurboFan 优化流程总结</h2>
+<p>通过这个实验，可以先把 TurboFan 的优化流程理解成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">%%&#123;init: &#123;&quot;flowchart&quot;: &#123;&quot;htmlLabels&quot;: true, &quot;nodeSpacing&quot;: 60, &quot;rankSpacing&quot;: 65, &quot;wrappingWidth&quot;: 300&#125;, &quot;themeVariables&quot;: &#123;&quot;fontSize&quot;: &quot;15px&quot;&#125;&#125;&#125;%%</span><br><span class="line">flowchart LR</span><br><span class="line">    A[&quot;&lt;div style=&#x27;min-width:170px&#x27;&gt;运行 JavaScript&lt;/div&gt;&quot;] --&gt; B[&quot;&lt;div style=&#x27;min-width:200px&#x27;&gt;Ignition 执行 Bytecode&lt;/div&gt;&quot;]</span><br><span class="line">    B --&gt; C[&quot;&lt;div style=&#x27;min-width:180px&#x27;&gt;收集 Feedback&lt;/div&gt;&quot;]</span><br><span class="line">    C --&gt; D[&quot;&lt;div style=&#x27;min-width:180px&#x27;&gt;触发优化&lt;/div&gt;&quot;]</span><br><span class="line">    D --&gt; E[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;TurboFan 构建 IR 图&lt;/div&gt;&quot;]</span><br><span class="line">    E --&gt; F[&quot;&lt;div style=&#x27;min-width:220px&#x27;&gt;类型推断 / Map 推断&lt;/div&gt;&quot;]</span><br><span class="line">    F --&gt; G[&quot;&lt;div style=&#x27;min-width:200px&#x27;&gt;生成优化机器码&lt;/div&gt;&quot;]</span><br><span class="line">    G --&gt; H[&quot;&lt;div style=&#x27;min-width:180px&#x27;&gt;执行快速路径&lt;/div&gt;&quot;]</span><br><span class="line">    H --&gt; I&#123;&quot;&lt;div style=&#x27;min-width:160px&#x27;&gt;假设失败？&lt;/div&gt;&quot;&#125;</span><br><span class="line">    I -- &quot;否&quot; --&gt; H</span><br><span class="line">    I -- &quot;是&quot; --&gt; J[&quot;&lt;div style=&#x27;min-width:200px&#x27;&gt;Deopt 回解释器&lt;/div&gt;&quot;]</span><br></pre></td></tr></table></figure>
+<p>在这个例子里，对应关系是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">f(a)、f(b)</span><br><span class="line">  -&gt; 收集到对象拥有属性 x 的反馈</span><br><span class="line">  -&gt; TurboFan 基于该反馈优化 o.x 读取</span><br><span class="line">  -&gt; 优化代码中保留 Map check</span><br><span class="line">  -&gt; f(c) 传入不同 Map 的对象</span><br><span class="line">  -&gt; Map check 失败</span><br><span class="line">  -&gt; wrong map deopt</span><br></pre></td></tr></table></figure>
+<h2 id="小结" tabindex="-1"><a class="headerlink" href="#小结" aria-hidden="true"></a> 小结</h2>
+<p>TurboFan 优化并不是简单地把 JavaScript 源码翻译成机器码，而是基于运行时反馈做推测性优化。</p>
+<p>这些推测通常由 Map check、类型 check 等检查保护。当检查失败时，V8 会通过 Deopt 回退到解释器，恢复普通 JavaScript 语义。</p>
+<p>这个实验中最重要的观察是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TurboFan 会相信之前的运行反馈，但这种相信不是无条件的。</span><br><span class="line">当对象 Map 和优化代码预期不一致时，V8 会触发 wrong map deopt。</span><br></pre></td></tr></table></figure>
+<p>后面继续学习 Deopt 时，需要重点理解：</p>
+<ul>
+<li>FeedbackVector 如何记录运行时反馈</li>
+<li>Map / HiddenClass 如何描述对象形状</li>
+<li>TurboFan 如何根据反馈生成优化代码</li>
+<li>FrameState 如何帮助 V8 从优化代码恢复到解释器状态</li>
+<li>为什么 JIT 漏洞经常出现在“优化假设被错误维持”的位置</li>
+</ul>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2026/06/10/k8s%E7%9A%84%E6%B8%97%E9%80%8F/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2026-08-27 02:08:09
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Chrome/" title="Chrome">
+                        #Chrome
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/V8/" title="V8">
+                        #V8
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/TurboFan/" title="TurboFan">
+                        #TurboFan
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/JIT/" title="JIT">
+                        #JIT
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Deopt/" title="Deopt">
+                        #Deopt
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog" role="button" tabindex="0" aria-controls="catalog" aria-expanded="false" title="目录">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div id="catalog-backdrop" class="catalog-backdrop hidden" aria-hidden="true"></div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text"> 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="toc-text"> 实验环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="toc-text"> 实验目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BB%A3%E7%A0%81"><span class="toc-text"> 实验代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-text"> 运行命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-text"> 执行流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E8%BE%93%E5%87%BA"><span class="toc-text"> 关键输出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90"><span class="toc-text"> 日志解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%97%A5%E5%BF%97"><span class="toc-text"> 优化日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA-2-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-text"> 输出 2 的原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wrong-map-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-text"> wrong map 的原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA-nan-%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-text"> 输出 NaN 的原因</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deopt-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text"> Deopt 的作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E-bytecode-%E7%9C%8B%E5%B1%9E%E6%80%A7%E8%AE%BF%E9%97%AE%E5%8F%8D%E9%A6%88"><span class="toc-text"> 从 Bytecode 看属性访问反馈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="toc-text"> 测试代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#trace-ic-%E6%B2%A1%E6%9C%89%E8%BE%93%E5%87%BA"><span class="toc-text"> trace-ic 没有输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#print-bytecode-%E8%BE%93%E5%87%BA"><span class="toc-text"> print-bytecode 输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ldanamedproperty-%E7%9A%84%E5%90%AB%E4%B9%89"><span class="toc-text"> LdaNamedProperty 的含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%9E%E6%80%A7%E8%AF%BB%E5%8F%96%E4%B8%8E-feedback-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text"> 属性读取与 Feedback 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B6%E5%B1%82%E8%84%9A%E6%9C%AC-bytecode"><span class="toc-text"> 顶层脚本 bytecode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%93%E5%89%8D%E5%B0%8F%E7%BB%93"><span class="toc-text"> 当前小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E-feedbackvector-%E7%9C%8B-monomorphic-%E5%92%8C-polymorphic"><span class="toc-text"> 从 FeedbackVector 看 MONOMORPHIC 和 POLYMORPHIC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81-1"><span class="toc-text"> 测试代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E8%B0%83%E8%AF%95%E8%BE%93%E5%87%BA"><span class="toc-text"> 完整调试输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#a%E3%80%81b-%E5%92%8C-c-%E7%9A%84-map-%E5%85%B3%E7%B3%BB"><span class="toc-text"> a、b 和 c 的 Map 关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#monomorphic-%E7%8A%B6%E6%80%81"><span class="toc-text"> MONOMORPHIC 状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#polymorphic-%E7%8A%B6%E6%80%81"><span class="toc-text"> POLYMORPHIC 状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#monomorphic%E3%80%81polymorphic%E3%80%81megamorphic"><span class="toc-text"> MONOMORPHIC、POLYMORPHIC、MEGAMORPHIC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%93%E5%89%8D%E5%B0%8F%E7%BB%93-1"><span class="toc-text"> 当前小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E-monomorphic-feedback-%E5%88%B0-wrong-map-deopt"><span class="toc-text"> 从 MONOMORPHIC Feedback 到 wrong map Deopt</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81-2"><span class="toc-text"> 测试代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E5%91%BD%E4%BB%A4-1"><span class="toc-text"> 运行命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E8%B0%83%E8%AF%95%E8%BE%93%E5%87%BA-1"><span class="toc-text"> 完整调试输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bytecode-%E4%B8%8E-slot-%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB"><span class="toc-text"> Bytecode 与 slot 对应关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%89%8D%EF%BC%9Aloadproperty-%E5%A4%84%E4%BA%8E-monomorphic"><span class="toc-text"> 优化前：LoadProperty 处于 MONOMORPHIC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#turbofan-%E4%BC%98%E5%8C%96"><span class="toc-text"> TurboFan 优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E5%85%A5%E4%B8%8D%E5%90%8C-map-%E5%90%8E%E8%A7%A6%E5%8F%91-wrong-map-deopt"><span class="toc-text"> 传入不同 Map 后触发 wrong map Deopt</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#deopt-%E5%90%8E%EF%BC%9Aloadproperty-%E5%8F%98%E4%B8%BA-polymorphic"><span class="toc-text"> Deopt 后：LoadProperty 变为 POLYMORPHIC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%93%E5%89%8D%E5%AE%9E%E9%AA%8C%E7%BB%93%E8%AE%BA"><span class="toc-text"> 当前实验结论</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#turbofan-%E4%BC%98%E5%8C%96%E6%B5%81%E7%A8%8B%E6%80%BB%E7%BB%93"><span class="toc-text"> TurboFan 优化流程总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text"> 小结</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+  <!-- Giscus 评论区：基于 GitHub Discussions -->
+  <div class="giscus"></div>
+  <script src="https://giscus.app/client.js"
+          data-repo="x2nn/x2nn.github.io"
+          data-repo-id="R_kgDOMV-gkA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOMV-gkM4C7iiE"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+  <!-- 跟随站点 light/dark 动态切换 Giscus 主题 -->
+  <script>
+    (function () {
+      function currentMode() {
+        return document.documentElement.getAttribute('color-mode') === 'dark' ? 'dark' : 'light';
+      }
+      function postTheme() {
+        var frame = document.querySelector('iframe.giscus-frame');
+        if (!frame) return;
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: currentMode() } } },
+          'https://giscus.app'
+        );
+      }
+      new MutationObserver(postTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['color-mode']
+      });
+    })();
+  </script>
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          
+              <a title="github" target="_blank" rel="noopener" href="https://github.com/x2nn">
+                <i class="iconfont icon-github"></i>
+              </a>
+              
+        </li>
+        
+        <li>
+          
+              <a title="rss" href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+              </a>
+              
+        </li>
+        
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a href="https://x2nn.github.io">Copyright © 2024 - 2026</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  
+<script src="/js/search.js"></script>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+    var resultArea = document.querySelector("#search-result")
+    var localSearchLoaded = false
+
+    function ensureSearchFile() {
+      if (!localSearchLoaded && typeof getSearchFile === 'function') {
+        localSearchLoaded = true
+        getSearchFile()
+      }
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        ensureSearchFile()
+        setTimeout(function() {
+          inputArea.focus()
+        }, 80)
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape" && !searchOverlayArea.classList.contains('hidden')) {
+        openOrHideSearchContent()
+      }
+    }, false)
+
+    document.querySelector("#search-close-icon").addEventListener("click", function() {
+      inputArea.value = ''
+      inputArea.dispatchEvent(new Event('input'))
+    }, false)
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Chrome%E5%AD%A6%E4%B9%A0-TurboFan%E4%BC%98%E5%8C%96%E4%B8%8EDeopt%E6%9C%BA%E5%88%B6 + '&url=' + https%3A%2F%2Fx2nn.github.io%2F2026%2F08%2F19%2FChrome%25E5%25AD%25A6%25E4%25B9%25A0-TurboFan%25E4%25BC%2598%25E5%258C%2596%25E4%25B8%258EDeopt%25E6%259C%25BA%25E5%2588%25B6%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://x2nn.github.io/2026/08/19/Chrome%E5%AD%A6%E4%B9%A0-TurboFan%E4%BC%98%E5%8C%96%E4%B8%8EDeopt%E6%9C%BA%E5%88%B6/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

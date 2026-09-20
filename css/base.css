@@ -290,6 +290,14 @@ a:hover {
   justify-content: center;
 }
 
+.navbar ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 12px;
+  padding: 0 16px;
+}
+
 .navbar ul li {
   position: relative;
   display: inline-block;
