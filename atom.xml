@@ -57,10 +57,10 @@
     <category term="浏览器安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%AE%89%E5%85%A8/"/>
     <category term="Chrome" scheme="https://x2nn.github.io/tags/Chrome/"/>
     <category term="V8" scheme="https://x2nn.github.io/tags/V8/"/>
-    <category term="Ignition" scheme="https://x2nn.github.io/tags/Ignition/"/>
-    <category term="Sparkplug" scheme="https://x2nn.github.io/tags/Sparkplug/"/>
     <category term="TurboFan" scheme="https://x2nn.github.io/tags/TurboFan/"/>
     <category term="JIT" scheme="https://x2nn.github.io/tags/JIT/"/>
+    <category term="Ignition" scheme="https://x2nn.github.io/tags/Ignition/"/>
+    <category term="Sparkplug" scheme="https://x2nn.github.io/tags/Sparkplug/"/>
     <id>https://x2nn.github.io/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurboFan-JIT%E7%BC%96%E8%AF%91/</id>
     <link href="https://x2nn.github.io/2026/05/14/Chrome%E5%AD%A6%E4%B9%A0-Ignition%E3%80%81Sparkplug%E5%92%8CTurboFan-JIT%E7%BC%96%E8%AF%91/"/>
     <published>2026-05-14T15:18:46.000Z</published>
@@ -332,8 +332,8 @@
     </author>
     <category term="二进制安全" scheme="https://x2nn.github.io/categories/%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E5%85%A8/"/>
     <category term="动态链接" scheme="https://x2nn.github.io/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/"/>
-    <category term="Stack Overflow" scheme="https://x2nn.github.io/tags/Stack-Overflow/"/>
     <category term="ROP" scheme="https://x2nn.github.io/tags/ROP/"/>
+    <category term="Stack Overflow" scheme="https://x2nn.github.io/tags/Stack-Overflow/"/>
     <id>https://x2nn.github.io/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/</id>
     <link href="https://x2nn.github.io/2025/09/02/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%AD%E7%9A%84ROP/"/>
     <published>2025-09-02T14:43:44.000Z</published>
